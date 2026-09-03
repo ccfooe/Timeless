@@ -1,0 +1,89 @@
+package com.classbell.app
+
+import android.app.Application
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.content.Context
+import android.os.Build
+import com.classbell.app.data.backup.BackupManager
+import com.classbell.app.data.local.ClassBellDatabase
+import com.classbell.app.data.repository.AffairRepository
+import com.classbell.app.data.repository.CourseRepository
+import com.classbell.app.data.repository.PeriodRepository
+import com.classbell.app.data.repository.ScheduleRepository
+import com.classbell.app.data.repository.SemesterRepository
+import com.classbell.app.data.repository.SettingsRepository
+import com.classbell.app.service.AlarmScheduler
+
+class ClassBellApp : Application() {
+
+    companion object {
+        const val CHANNEL_IN_CLASS_ID = "classbell_in_class"
+        const val CHANNEL_WARNING_ID = "classbell_warning"
+        const val CHANNEL_AFFAIRS_ID = "classbell_affairs"
+    }
+
+    val database by lazy { ClassBellDatabase.getDatabase(this) }
+    val settingsRepository by lazy { SettingsRepository(this) }
+    val semesterRepository by lazy { SemesterRepository(database.semesterDao()) }
+    val courseRepository by lazy { CourseRepository(database.courseDao()) }
+    val periodRepository by lazy { PeriodRepository(database.periodSlotDao()) }
+    val affairRepository by lazy { AffairRepository(database.affairDao()) }
+    val scheduleRepository by lazy {
+        ScheduleRepository(
+            database.semesterDao(),
+            database.courseDao(),
+            database.periodSlotDao(),
+            database.holidayDao(),
+            database.overrideDao()
+        )
+    }
+    val backupManager by lazy { BackupManager(database) }
+    val alarmScheduler by lazy { AlarmScheduler(this) }
+
+    override fun onCreate() {
+        super.onCreate()
+        createNotificationChannels()
+    }
+
+    private fun createNotificationChannels() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+            // 1. In-Class Progress Channel (Low importance for silent ongoing lock-screen updates)
+            val inClassChannel = NotificationChannel(
+                CHANNEL_IN_CLASS_ID,
+                getString(R.string.notification_channel_in_class),
+                NotificationManager.IMPORTANCE_LOW
+            ).apply {
+                description = getString(R.string.notification_channel_in_class_desc)
+                setShowBadge(false)
+                lockscreenVisibility = android.app.Notification.VISIBILITY_PUBLIC
+            }
+
+            // 2. Class End Warning Channel (High importance for vibration and heads-up)
+            val warningChannel = NotificationChannel(
+                CHANNEL_WARNING_ID,
+                getString(R.string.notification_channel_warning),
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = getString(R.string.notification_channel_warning_desc)
+                enableVibration(true)
+                setShowBadge(true)
+            }
+
+            // 3. Affairs Reminder Channel
+            val affairsChannel = NotificationChannel(
+                CHANNEL_AFFAIRS_ID,
+                getString(R.string.notification_channel_affairs),
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = getString(R.string.notification_channel_affairs_desc)
+                enableVibration(true)
+                setShowBadge(true)
+            }
+
+            manager.createNotificationChannels(listOf(inClassChannel, warningChannel, affairsChannel))
+        }
+    }
+}

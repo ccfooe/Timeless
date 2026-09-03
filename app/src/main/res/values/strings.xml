@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ClassBell</string>
+
+    <!-- Navigation Tabs -->
+    <string name="tab_today">今日</string>
+    <string name="tab_schedule">课表</string>
+    <string name="tab_calendar">日历</string>
+    <string name="tab_stats">统计</string>
+    <string name="tab_settings">我的</string>
+
+    <!-- Today Screen -->
+    <string name="today_title">今日课程</string>
+    <string name="status_in_progress">进行中</string>
+    <string name="status_upcoming">未开始</string>
+    <string name="status_finished">已结束</string>
+    <string name="status_holiday">放假停课</string>
+    <string name="next_class_prefix">下一节</string>
+    <string name="no_classes_today">今天没有课程安排，好好享受休息时光吧！</string>
+    <string name="no_affairs_today">暂无事务待办</string>
+    <string name="today_affairs_title">今日事务</string>
+    <string name="class_end_label">下课</string>
+    <string name="time_remaining_format">剩余 %d 分钟</string>
+
+    <!-- Schedule Screen -->
+    <string name="schedule_title">学期课表</string>
+    <string name="week_format">第%d周</string>
+    <string name="current_week_badge">本周</string>
+    <string name="teaching_week">教学周</string>
+    <string name="exam_week">考试周</string>
+    <string name="practice_week">实践周</string>
+    <string name="vacation_week">假期</string>
+    <string name="registration_week">报到周</string>
+    <string name="add_course">新增课程</string>
+    <string name="edit_course">编辑课程</string>
+    <string name="delete_course">删除课程</string>
+
+    <!-- Calendar Screen -->
+    <string name="calendar_title">校务日历</string>
+    <string name="add_affair">新增事务</string>
+    <string name="edit_affair">编辑事务</string>
+    <string name="delete_affair">删除事务</string>
+    <string name="affair_category_meeting">会议</string>
+    <string name="affair_category_exam">考试</string>
+    <string name="affair_category_affair">事务</string>
+    <string name="affair_category_other">其他</string>
+    <string name="reminder_none">不提醒</string>
+    <string name="reminder_at_time">准时提醒</string>
+    <string name="reminder_min10">提前10分钟</string>
+    <string name="reminder_hour1">提前1小时</string>
+    <string name="reminder_day1">提前1天</string>
+
+    <!-- Stats Screen -->
+    <string name="stats_title">教学统计</string>
+    <string name="stats_this_week">本周上课</string>
+    <string name="stats_total_hours">累计学时</string>
+    <string name="stats_total_meetings">授课次数</string>
+    <string name="stats_total_students">覆盖学生</string>
+    <string name="stats_hours_unit">学时</string>
+    <string name="stats_times_unit">次</string>
+    <string name="stats_people_unit">人</string>
+    <string name="stats_progress">完成进度</string>
+
+    <!-- Settings & Mine Screen -->
+    <string name="settings_title">我的与设置</string>
+    <string name="semester_manager">学期管理</string>
+    <string name="period_table_manager">作息时间表</string>
+    <string name="import_schedule_screenshot">导入课程表截图 (LLM)</string>
+    <string name="import_calendar_screenshot">导入校历截图 (LLM)</string>
+    <string name="llm_settings">大模型 API 设置 (BYOK)</string>
+    <string name="alarm_settings">提醒与通知设置</string>
+    <string name="survival_guide">后台保活与提醒指南</string>
+    <string name="backup_and_restore">数据备份与导出</string>
+    <string name="about_classbell">关于 ClassBell</string>
+    <string name="clear_all_data">清除全部本地数据</string>
+
+    <!-- Notification & Alarms -->
+    <string name="notification_channel_in_class">课堂实时进度</string>
+    <string name="notification_channel_in_class_desc">上课期间常驻显示下课时间及进度</string>
+    <string name="notification_channel_warning">下课前提醒</string>
+    <string name="notification_channel_warning_desc">下课前震动与横幅提醒</string>
+    <string name="notification_channel_affairs">事务日程提醒</string>
+    <string name="notification_channel_affairs_desc">校务日程闹钟与通知</string>
+    <string name="class_end_warning_title">下课倒计时提醒</string>
+    <string name="class_end_warning_body">还有 %d 分钟下课（%s 下课）</string>
+    <string name="class_end_dismiss_title">下课时间到</string>
+    <string name="class_end_dismiss_body">%s 课程已结束</string>
+
+    <!-- Common UI -->
+    <string name="save">保存</string>
+    <string name="cancel">取消</string>
+    <string name="delete">删除</string>
+    <string name="confirm">确认</string>
+    <string name="close">关闭</string>
+    <string name="success">操作成功</string>
+</resources>

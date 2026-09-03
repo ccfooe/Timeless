@@ -1,0 +1,75 @@
+package com.classbell.app.ui.glass
+
+import android.os.Build
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Surface
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import com.classbell.app.ui.theme.GlassDark
+import com.classbell.app.ui.theme.GlassDarkStroke
+import com.classbell.app.ui.theme.GlassWhite
+import com.classbell.app.ui.theme.GlassWhiteStroke
+
+@Composable
+fun GlassCard(
+    modifier: Modifier = Modifier,
+    shape: Shape = RoundedCornerShape(24.dp),
+    elevation: Dp = 8.dp,
+    contentPadding: Dp = 20.dp,
+    content: @Composable BoxScope.() -> Unit
+) {
+    val isDark = isSystemInDarkTheme()
+    val bgColor = if (isDark) GlassDark else GlassWhite
+    val strokeColor = if (isDark) GlassDarkStroke else GlassWhiteStroke
+
+    Box(
+        modifier = modifier
+            .shadow(
+                elevation = elevation,
+                shape = shape,
+                ambientColor = Color.Black.copy(alpha = 0.08f),
+                spotColor = Color.Black.copy(alpha = 0.12f)
+            )
+            .clip(shape)
+            .then(
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    Modifier.blur(0.5.dp)
+                } else {
+                    Modifier
+                }
+            )
+            .background(
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        bgColor,
+                        bgColor.copy(alpha = if (isDark) 0.85f else 0.65f)
+                    )
+                )
+            )
+    ) {
+        Surface(
+            modifier = Modifier.matchParentSize(),
+            shape = shape,
+            color = Color.Transparent,
+            border = BorderStroke(1.dp, strokeColor)
+        ) {}
+
+        Box(modifier = Modifier.padding(contentPadding)) {
+            content()
+        }
+    }
+}
