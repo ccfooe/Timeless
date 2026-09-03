@@ -81,7 +81,7 @@ fi
 
 # Escape application args
 save () {
-    for i do printf %s\\n "$i" | sed "s/'/'\\\\''/g;1s/^/'/\;\$s/\$/' \\\\/" ; done
+    for i do printf '%s\n' "$i" | sed -e "s/'/'\\\\''/g" -e "1s/^/'/" -e "\$s/\$/' \\\\/" ; done
     echo " "
 }
 APP_ARGS=`save "$@"`

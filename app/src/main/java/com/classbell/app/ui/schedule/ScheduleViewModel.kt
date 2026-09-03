@@ -69,7 +69,15 @@ class ScheduleViewModel(
         _selectedMeetingForDetail,
         _isEditingCourse,
         _courseToEdit
-    ) { semester, week, periods, detail, isEditing, editCourse ->
+    ) { args: Array<Any?> ->
+        val semester = args[0] as Semester?
+        val week = args[1] as Int
+        @Suppress("UNCHECKED_CAST")
+        val periods = args[2] as List<PeriodSlot>
+        val detail = args[3] as MeetingOccurrence?
+        val isEditing = args[4] as Boolean
+        val editCourse = args[5] as Course?
+
         val currentWeek = if (semester != null) {
             WeekCalculator.calculateWeekNumber(LocalDate.now(), semester.week1Monday)
         } else 1

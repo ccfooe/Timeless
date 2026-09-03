@@ -124,7 +124,7 @@ class LlmClient(
             .post(requestBodyJson.toRequestBody("application/json".toMediaType()))
             .build()
 
-        client.newCall(request).execute().use { response ->
+        return client.newCall(request).execute().use { response ->
             if (!response.isSuccessful) {
                 val code = response.code
                 val errBody = response.body?.string() ?: ""
