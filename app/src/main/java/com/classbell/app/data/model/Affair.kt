@@ -36,5 +36,6 @@ data class Affair(
     val place: String? = null,
     val note: String? = null,
     val category: AffairCategory = AffairCategory.AFFAIR,
-    val reminder: ReminderChoice = ReminderChoice.NONE
+    val reminder: ReminderChoice = ReminderChoice.NONE,
+    val isDone: Boolean = false
 )

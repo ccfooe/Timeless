@@ -60,6 +60,7 @@ import com.classbell.app.core.TimeUtils
 import com.classbell.app.data.model.Course
 import com.classbell.app.data.model.MeetingOccurrence
 import com.classbell.app.data.model.MeetingStatus
+import com.classbell.app.ui.calendar.AffairEditDialog
 import com.classbell.app.ui.glass.GlassCard
 import com.classbell.app.ui.theme.AccentAmber
 import com.classbell.app.ui.theme.AccentOrange
@@ -73,6 +74,7 @@ fun TodayScreen(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     var showStartClassDialog by remember { mutableStateOf(false) }
+    var showAddAffairDialog by remember { mutableStateOf(false) }
 
     Box(modifier = modifier.fillMaxSize()) {
         // Ambient soft light gradient background (Apple Lockscreen subtle aura feel)
@@ -115,6 +117,9 @@ fun TodayScreen(
                     currentMeeting = state.currentMeeting,
                     nextMeeting = state.nextMeeting,
                     currentTime = state.currentTime,
+                    todayAffairs = state.todayAffairs,
+                    onToggleAffair = { viewModel.toggleAffair(it) },
+                    onAddAffair = { showAddAffairDialog = true },
                     onEndClass = { viewModel.endClassNow() },
                     onExtendClass = { viewModel.extendClass(it) }
                 )
@@ -270,6 +275,19 @@ fun TodayScreen(
             onStart = { course, duration ->
                 viewModel.startClassNow(course, duration)
                 showStartClassDialog = false
+            }
+        )
+    }
+
+    // Add Affair Dialog directly from Today screen
+    if (showAddAffairDialog) {
+        AffairEditDialog(
+            initialAffair = null,
+            defaultDate = state.currentDate,
+            onDismiss = { showAddAffairDialog = false },
+            onSave = {
+                viewModel.addAffair(it)
+                showAddAffairDialog = false
             }
         )
     }

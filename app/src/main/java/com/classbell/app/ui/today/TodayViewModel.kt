@@ -184,6 +184,21 @@ class TodayViewModel(
         InClassService.extend(context, extraMinutes)
     }
 
+    fun toggleAffair(affair: Affair) {
+        viewModelScope.launch {
+            affairRepository.updateAffair(affair.copy(isDone = !affair.isDone))
+        }
+    }
+
+    fun addAffair(affair: Affair) {
+        viewModelScope.launch {
+            val newId = affairRepository.insertAffair(affair)
+            if (affair.reminder != com.classbell.app.data.model.ReminderChoice.NONE && affair.time != null) {
+                alarmScheduler.scheduleAffairAlarm(affair.copy(id = newId))
+            }
+        }
+    }
+
     class Factory(
         private val context: Context,
         private val scheduleRepository: ScheduleRepository,

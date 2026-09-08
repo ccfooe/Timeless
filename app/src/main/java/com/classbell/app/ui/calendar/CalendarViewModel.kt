@@ -138,6 +138,12 @@ class CalendarViewModel(
         }
     }
 
+    fun toggleAffair(affair: Affair) {
+        viewModelScope.launch {
+            affairRepository.updateAffair(affair.copy(isDone = !affair.isDone))
+        }
+    }
+
     fun deleteAffair(affair: Affair) {
         viewModelScope.launch {
             affairRepository.deleteAffair(affair)

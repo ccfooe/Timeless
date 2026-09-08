@@ -29,6 +29,7 @@ import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.CloudUpload
 import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Key
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Schedule
@@ -267,10 +268,10 @@ fun SettingsScreen(
         item {
             SettingsCard {
                 SettingsItem(
-                    icon = Icons.Default.Language,
+                    icon = Icons.Default.Info,
                     iconColor = MaterialTheme.colorScheme.onSurfaceVariant,
                     title = stringResource(R.string.about_timeless),
-                    subtitle = "v2.1.0 · 专为高校教师打造的课堂节拍掌控伴侣",
+                    subtitle = "v2.1.1 · 专为高校教师打造的课堂节拍掌控伴侣",
                     onClick = { showAboutDialog = true }
                 )
             }
@@ -415,7 +416,7 @@ fun SettingsScreen(
                         color = AccentOrange
                     )
                     Text(
-                        text = "版本：v2.1.0\n" +
+                        text = "版本：v2.1.1\n" +
                                 "核心特性：\n" +
                                 "• 苹果级灵动倒计时与防拖堂震动提醒\n" +
                                 "• 锁屏常驻教学进度卡片，息屏实时掌控\n" +

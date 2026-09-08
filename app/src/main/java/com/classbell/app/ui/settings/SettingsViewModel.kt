@@ -10,11 +10,11 @@ import com.classbell.app.data.repository.SemesterRepository
 import com.classbell.app.data.repository.SettingsRepository
 import com.classbell.app.llm.LlmClient
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 data class SettingsUiState(
@@ -39,98 +39,66 @@ class SettingsViewModel(
     private val backupManager: BackupManager
 ) : ViewModel() {
 
-    private val _isTesting = MutableStateFlow(false)
-    val isTesting = _isTesting.asStateFlow()
+    private val _uiState = MutableStateFlow(SettingsUiState())
+    val uiState: StateFlow<SettingsUiState> = _uiState.asStateFlow()
 
-    private val _testMessage = MutableStateFlow<String?>(null)
-    val testMessage = _testMessage.asStateFlow()
-
-    private val _showLlmDialog = MutableStateFlow(false)
-    val showLlmDialog = _showLlmDialog.asStateFlow()
-
-    private val _showSurvivalDialog = MutableStateFlow(false)
-    val showSurvivalDialog = _showSurvivalDialog.asStateFlow()
-
-    private val _showLanguageDialog = MutableStateFlow(false)
-    val showLanguageDialog = _showLanguageDialog.asStateFlow()
-
-    private val _showClearConfirmDialog = MutableStateFlow(false)
-    val showClearConfirmDialog = _showClearConfirmDialog.asStateFlow()
-
-    private val _backupJson = MutableStateFlow<String?>(null)
-
-    // Clean 5-parameter combine for repository preferences (NO vararg, avoids Kotlin reified array covariance bug)
-    private val repoPreferencesFlow = combine(
-        settingsRepository.apiKeyFlow,
-        settingsRepository.baseUrlFlow,
-        settingsRepository.modelFlow,
-        settingsRepository.endWarnMinutesFlow,
-        settingsRepository.appLanguageFlow
-    ) { key, url, model, warn, lang ->
-        SettingsUiState(
-            apiKey = key,
-            baseUrl = url,
-            model = model,
-            endWarnMinutes = warn,
-            appLanguage = lang
-        )
+    init {
+        // Collect repository preferences safely in viewModelScope
+        viewModelScope.launch {
+            settingsRepository.apiKeyFlow.catch { }.collectLatest { key ->
+                _uiState.update { it.copy(apiKey = key) }
+            }
+        }
+        viewModelScope.launch {
+            settingsRepository.baseUrlFlow.catch { }.collectLatest { url ->
+                _uiState.update { it.copy(baseUrl = url) }
+            }
+        }
+        viewModelScope.launch {
+            settingsRepository.modelFlow.catch { }.collectLatest { mdl ->
+                _uiState.update { it.copy(model = mdl) }
+            }
+        }
+        viewModelScope.launch {
+            settingsRepository.endWarnMinutesFlow.catch { }.collectLatest { warn ->
+                _uiState.update { it.copy(endWarnMinutes = warn) }
+            }
+        }
+        viewModelScope.launch {
+            settingsRepository.appLanguageFlow.catch { }.collectLatest { lang ->
+                _uiState.update { it.copy(appLanguage = lang) }
+            }
+        }
     }
 
-    // Combine base repository preferences with transient dialog UI state
-    val uiState: StateFlow<SettingsUiState> = combine(
-        repoPreferencesFlow,
-        _isTesting,
-        _testMessage,
-        _showLlmDialog,
-        _showSurvivalDialog
-    ) { base, testing, msg, llmDlg, survDlg ->
-        base.copy(
-            isTestingConnection = testing,
-            testConnectionMessage = msg,
-            showLlmDialog = llmDlg,
-            showSurvivalDialog = survDlg
-        )
-    }.combine(_showLanguageDialog) { state, langDlg ->
-        state.copy(showLanguageDialog = langDlg)
-    }.combine(_showClearConfirmDialog) { state, clearDlg ->
-        state.copy(showClearConfirmDialog = clearDlg)
-    }.combine(_backupJson) { state, json ->
-        state.copy(backupJsonString = json)
-    }.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        initialValue = SettingsUiState()
-    )
-
     fun openLlmDialog() {
-        _testMessage.value = null
-        _showLlmDialog.value = true
+        _uiState.update { it.copy(showLlmDialog = true, testConnectionMessage = null) }
     }
 
     fun closeLlmDialog() {
-        _showLlmDialog.value = false
+        _uiState.update { it.copy(showLlmDialog = false) }
     }
 
     fun openLanguageDialog() {
-        _showLanguageDialog.value = true
+        _uiState.update { it.copy(showLanguageDialog = true) }
     }
 
     fun closeLanguageDialog() {
-        _showLanguageDialog.value = false
+        _uiState.update { it.copy(showLanguageDialog = false) }
     }
 
     fun openSurvivalGuide() {
-        _showSurvivalDialog.value = true
+        _uiState.update { it.copy(showSurvivalDialog = true) }
     }
 
     fun closeSurvivalGuide() {
-        _showSurvivalDialog.value = false
+        _uiState.update { it.copy(showSurvivalDialog = false) }
     }
 
     fun setAppLanguage(lang: String) {
         viewModelScope.launch {
             settingsRepository.updateAppLanguage(lang)
-            _showLanguageDialog.value = false
+            _uiState.update { it.copy(showLanguageDialog = false, appLanguage = lang) }
         }
     }
 
@@ -139,39 +107,50 @@ class SettingsViewModel(
             settingsRepository.updateApiKey(apiKey.trim())
             settingsRepository.updateBaseUrl(baseUrl.trim())
             settingsRepository.updateModel(model.trim())
-            closeLlmDialog()
+            _uiState.update {
+                it.copy(
+                    apiKey = apiKey.trim(),
+                    baseUrl = baseUrl.trim(),
+                    model = model.trim(),
+                    showLlmDialog = false
+                )
+            }
         }
     }
 
     fun testLlmConnection(apiKey: String, baseUrl: String, model: String) {
         viewModelScope.launch {
-            _isTesting.value = true
-            _testMessage.value = "正在测试连接..."
+            _uiState.update { it.copy(isTestingConnection = true, testConnectionMessage = "正在测试连接...") }
             val client = LlmClient(baseUrl, apiKey, model)
             val result = client.testConnection()
-            _isTesting.value = false
-            _testMessage.value = result.getOrElse { it.message ?: "连接失败" }
+            _uiState.update {
+                it.copy(
+                    isTestingConnection = false,
+                    testConnectionMessage = result.getOrElse { err -> err.message ?: "连接失败" }
+                )
+            }
         }
     }
 
     fun updateWarnMinutes(minutes: Int) {
         viewModelScope.launch {
             settingsRepository.updateEndWarnMinutes(minutes)
+            _uiState.update { it.copy(endWarnMinutes = minutes) }
         }
     }
 
     fun openClearConfirmDialog() {
-        _showClearConfirmDialog.value = true
+        _uiState.update { it.copy(showClearConfirmDialog = true) }
     }
 
     fun closeClearConfirmDialog() {
-        _showClearConfirmDialog.value = false
+        _uiState.update { it.copy(showClearConfirmDialog = false) }
     }
 
     fun clearAllData(onDone: () -> Unit) {
         viewModelScope.launch {
             backupManager.clearAllData()
-            _showClearConfirmDialog.value = false
+            _uiState.update { it.copy(showClearConfirmDialog = false) }
             onDone()
         }
     }
@@ -179,7 +158,7 @@ class SettingsViewModel(
     fun exportBackup(onResult: (String) -> Unit) {
         viewModelScope.launch {
             val json = backupManager.exportToJson()
-            _backupJson.value = json
+            _uiState.update { it.copy(backupJsonString = json) }
             onResult(json)
         }
     }

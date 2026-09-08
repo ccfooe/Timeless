@@ -55,6 +55,7 @@ import com.classbell.app.R
 import com.classbell.app.core.TimeUtils
 import com.classbell.app.core.WeekCalculator
 import com.classbell.app.data.model.Affair
+import com.classbell.app.data.model.AffairCategory
 import com.classbell.app.data.model.Holiday
 import com.classbell.app.data.model.HolidayType
 import com.classbell.app.data.model.MeetingOccurrence
@@ -205,6 +206,7 @@ fun CalendarScreen(
                 items(state.selectedDateAffairs) { affair ->
                     ColorOSAffairCard(
                         affair = affair,
+                        onToggle = { viewModel.toggleAffair(affair) },
                         onEdit = { viewModel.openEditAffair(affair) },
                         onDelete = { viewModel.deleteAffair(affair) }
                     )
@@ -513,9 +515,17 @@ fun ColorOSMeetingCard(meeting: MeetingOccurrence) {
 @Composable
 fun ColorOSAffairCard(
     affair: Affair,
+    onToggle: () -> Unit,
     onEdit: () -> Unit,
     onDelete: () -> Unit
 ) {
+    val categoryColor = when (affair.category) {
+        AffairCategory.MEETING -> Color(0xFF3A86FF)
+        AffairCategory.EXAM -> Color(0xFFE63946)
+        AffairCategory.AFFAIR -> AccentOrange
+        AffairCategory.OTHER -> Color(0xFF8338EC)
+    }
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -530,7 +540,9 @@ fun ColorOSAffairCard(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Row(
-                modifier = Modifier.weight(1f),
+                modifier = Modifier
+                    .weight(1f)
+                    .clickable(onClick = onToggle),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 // Category left bar
@@ -539,7 +551,7 @@ fun ColorOSAffairCard(
                         .width(4.dp)
                         .height(38.dp)
                         .clip(RoundedCornerShape(2.dp))
-                        .background(AccentAmber)
+                        .background(if (affair.isDone) categoryColor.copy(alpha = 0.4f) else categoryColor)
                 )
 
                 Spacer(modifier = Modifier.width(12.dp))
@@ -548,7 +560,9 @@ fun ColorOSAffairCard(
                     Text(
                         text = affair.title,
                         style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold
+                        fontWeight = if (affair.isDone) FontWeight.Normal else FontWeight.SemiBold,
+                        color = if (affair.isDone) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f) else MaterialTheme.colorScheme.onSurface,
+                        textDecoration = if (affair.isDone) androidx.compose.ui.text.style.TextDecoration.LineThrough else androidx.compose.ui.text.style.TextDecoration.None
                     )
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         if (!affair.place.isNullOrBlank()) {
@@ -565,7 +579,7 @@ fun ColorOSAffairCard(
                                 text = TimeUtils.formatTime(it),
                                 style = MaterialTheme.typography.bodySmall,
                                 fontWeight = FontWeight.Bold,
-                                color = AccentOrange
+                                color = if (affair.isDone) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f) else AccentOrange
                             )
                         }
                     }

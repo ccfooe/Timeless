@@ -26,7 +26,7 @@ import kotlinx.coroutines.launch
         Affair::class,
         Override::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -43,6 +43,12 @@ abstract class ClassBellDatabase : RoomDatabase() {
         @Volatile
         private var INSTANCE: ClassBellDatabase? = null
 
+        val MIGRATION_1_2 = object : androidx.room.migration.Migration(1, 2) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE affairs ADD COLUMN isDone INTEGER NOT NULL DEFAULT 0")
+            }
+        }
+
         fun getDatabase(context: Context): ClassBellDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
@@ -50,6 +56,7 @@ abstract class ClassBellDatabase : RoomDatabase() {
                     ClassBellDatabase::class.java,
                     "classbell.db"
                 )
+                    .addMigrations(MIGRATION_1_2)
                     .addCallback(DatabaseSeedCallback(context.applicationContext))
                     .fallbackToDestructiveMigration()
                     .build()

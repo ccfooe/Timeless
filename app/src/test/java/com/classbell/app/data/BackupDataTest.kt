@@ -80,5 +80,6 @@ class BackupDataTest {
         assertEquals(original.holidays.size, restored.holidays.size)
         assertEquals(original.affairs.size, restored.affairs.size)
         assertEquals(LocalTime.of(14, 0), restored.affairs[0].time)
+        assertEquals(false, restored.affairs[0].isDone)
     }
 }

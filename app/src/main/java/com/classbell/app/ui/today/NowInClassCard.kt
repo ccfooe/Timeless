@@ -12,10 +12,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material.icons.filled.MoreTime
@@ -29,8 +31,6 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -38,10 +38,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.classbell.app.R
 import com.classbell.app.core.TimeUtils
+import com.classbell.app.data.model.Affair
+import com.classbell.app.data.model.AffairCategory
 import com.classbell.app.data.model.MeetingOccurrence
 import com.classbell.app.ui.glass.GlassCard
 import com.classbell.app.ui.theme.AccentAmber
@@ -56,6 +59,9 @@ fun NowInClassCard(
     currentMeeting: MeetingOccurrence?,
     nextMeeting: MeetingOccurrence?,
     currentTime: LocalTime,
+    todayAffairs: List<Affair>,
+    onToggleAffair: (Affair) -> Unit,
+    onAddAffair: () -> Unit,
     onEndClass: () -> Unit,
     onExtendClass: (Int) -> Unit,
     modifier: Modifier = Modifier
@@ -321,24 +327,24 @@ fun NowInClassCard(
             }
         }
 
-        // Second Widget Card: Today's Tasks (Matching Reference Screenshot second card)
-        TodayTasksCard()
+        // Second Widget Card: Today's Tasks (Live synced from Room DB)
+        TodayTasksCard(
+            affairs = todayAffairs,
+            onToggleAffair = onToggleAffair,
+            onAddAffair = onAddAffair
+        )
     }
 }
 
-// Interactive Tasks Widget Card from the Reference Screenshot
+// Interactive Tasks Widget Card live synced with Room Database
 @Composable
-fun TodayTasksCard() {
-    data class TaskItem(val title: String, var isDone: Boolean, val timeTag: String)
-    val tasks = remember {
-        mutableStateListOf(
-            TaskItem("统计学生上课到勤人数", false, "00:59"),
-            TaskItem("课前准备播放多媒体课件素材", true, "已就绪")
-        )
-    }
-
-    val doneCount = tasks.count { it.isDone }
-    val totalCount = tasks.size
+fun TodayTasksCard(
+    affairs: List<Affair>,
+    onToggleAffair: (Affair) -> Unit,
+    onAddAffair: () -> Unit
+) {
+    val doneCount = affairs.count { it.isDone }
+    val totalCount = affairs.size
 
     GlassCard(
         modifier = Modifier.fillMaxWidth(),
@@ -373,77 +379,146 @@ fun TodayTasksCard() {
                     )
                 }
 
-                Text(
-                    text = "$doneCount/$totalCount",
-                    style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (totalCount > 0) {
+                        Text(
+                            text = "$doneCount/$totalCount",
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                    }
+
+                    // Quick add button in header
+                    Box(
+                        modifier = Modifier
+                            .size(24.dp)
+                            .clip(CircleShape)
+                            .background(AccentOrange.copy(alpha = 0.12f))
+                            .clickable(onClick = onAddAffair),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = "添加待办",
+                            tint = AccentOrange,
+                            modifier = Modifier.size(15.dp)
+                        )
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            tasks.forEachIndexed { index, task ->
+            if (affairs.isEmpty()) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(8.dp))
-                        .clickable {
-                            tasks[index] = task.copy(isDone = !task.isDone)
-                        }
-                        .padding(vertical = 4.dp),
+                        .clickable(onClick = onAddAffair)
+                        .padding(vertical = 12.dp, horizontal = 4.dp),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
+                    horizontalArrangement = Arrangement.Center
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        // Checkbox circle
-                        Box(
-                            modifier = Modifier
-                                .size(18.dp)
-                                .clip(CircleShape)
-                                .background(
-                                    if (task.isDone) SystemGreen else Color.Transparent
-                                )
-                                .then(
-                                    if (!task.isDone) {
-                                        Modifier.background(Color.Transparent, CircleShape)
-                                    } else Modifier
-                                ),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            if (task.isDone) {
-                                Icon(
-                                    imageVector = Icons.Default.Check,
-                                    contentDescription = null,
-                                    tint = Color.White,
-                                    modifier = Modifier.size(12.dp)
-                                )
-                            } else {
-                                Box(
-                                    modifier = Modifier
-                                        .size(14.dp)
-                                        .clip(CircleShape)
-                                        .background(MaterialTheme.colorScheme.surfaceVariant)
-                                )
-                            }
-                        }
-                        Spacer(modifier = Modifier.width(10.dp))
-                        Text(
-                            text = task.title,
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = if (task.isDone) FontWeight.Normal else FontWeight.Medium,
-                            color = if (task.isDone) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = null,
+                        tint = AccentOrange,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = task.timeTag,
-                        style = MaterialTheme.typography.labelSmall,
+                        text = "今日暂无日程事项 · 点击快速添加",
+                        style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+                }
+            } else {
+                affairs.forEach { affair ->
+                    val categoryColor = when (affair.category) {
+                        AffairCategory.MEETING -> Color(0xFF3A86FF)
+                        AffairCategory.EXAM -> Color(0xFFE63946)
+                        AffairCategory.AFFAIR -> AccentOrange
+                        AffairCategory.OTHER -> Color(0xFF8338EC)
+                    }
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(8.dp))
+                            .clickable { onToggleAffair(affair) }
+                            .padding(vertical = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            // Checkbox circle
+                            Box(
+                                modifier = Modifier
+                                    .size(20.dp)
+                                    .clip(CircleShape)
+                                    .background(
+                                        if (affair.isDone) SystemGreen else Color.Transparent
+                                    )
+                                    .border(
+                                        width = 1.5.dp,
+                                        color = if (affair.isDone) SystemGreen else MaterialTheme.colorScheme.outline.copy(alpha = 0.6f),
+                                        shape = CircleShape
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                if (affair.isDone) {
+                                    Icon(
+                                        imageVector = Icons.Default.Check,
+                                        contentDescription = null,
+                                        tint = Color.White,
+                                        modifier = Modifier.size(12.dp)
+                                    )
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.width(10.dp))
+
+                            // Category dot indicator
+                            Box(
+                                modifier = Modifier
+                                    .size(6.dp)
+                                    .clip(CircleShape)
+                                    .background(categoryColor)
+                            )
+
+                            Spacer(modifier = Modifier.width(6.dp))
+
+                            Column {
+                                Text(
+                                    text = affair.title,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = if (affair.isDone) FontWeight.Normal else FontWeight.Medium,
+                                    color = if (affair.isDone) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f) else MaterialTheme.colorScheme.onSurface,
+                                    textDecoration = if (affair.isDone) TextDecoration.LineThrough else TextDecoration.None
+                                )
+                                if (!affair.place.isNullOrBlank()) {
+                                    Text(
+                                        text = affair.place,
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                                    )
+                                }
+                            }
+                        }
+
+                        val timeStr = affair.time?.let { TimeUtils.formatTime(it) } ?: "全天"
+                        Text(
+                            text = timeStr,
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Medium,
+                            color = if (affair.isDone) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f) else AccentOrange
+                        )
+                    }
                 }
             }
         }
