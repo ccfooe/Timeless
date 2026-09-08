@@ -20,6 +20,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.automirrored.filled.Assignment
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ChevronRight
@@ -128,21 +129,42 @@ fun TodayScreen(
             // 3. Start Class Quick Trigger Hero Card (If not currently in class)
             if (state.currentMeeting == null) {
                 item {
-                    GlassCard(
+                    Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { showStartClassDialog = true },
-                        elevation = 3.dp,
-                        contentPadding = 18.dp
+                            .clip(RoundedCornerShape(22.dp))
+                            .clickable { showStartClassDialog = true }
+                            .border(
+                                width = 1.dp,
+                                brush = Brush.horizontalGradient(
+                                    listOf(AccentOrange.copy(alpha = 0.35f), AccentAmber.copy(alpha = 0.15f))
+                                ),
+                                shape = RoundedCornerShape(22.dp)
+                            ),
+                        shape = RoundedCornerShape(22.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surface
+                        ),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                     ) {
                         Row(
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(
+                                    Brush.horizontalGradient(
+                                        listOf(
+                                            AccentOrange.copy(alpha = 0.08f),
+                                            Color.Transparent
+                                        )
+                                    )
+                                )
+                                .padding(horizontal = 20.dp, vertical = 18.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            // Glowing Gradient Play Badge
+                            // Tactile Glowing Emblem
                             Box(
                                 modifier = Modifier
-                                    .size(46.dp)
+                                    .size(44.dp)
                                     .background(
                                         brush = Brush.linearGradient(
                                             listOf(AccentOrange, AccentAmber)
@@ -155,51 +177,45 @@ fun TodayScreen(
                                     imageVector = Icons.Default.PlayArrow,
                                     contentDescription = null,
                                     tint = Color.White,
-                                    modifier = Modifier.size(26.dp)
+                                    modifier = Modifier.size(24.dp)
                                 )
                             }
 
-                            Spacer(modifier = Modifier.width(14.dp))
+                            Spacer(modifier = Modifier.width(16.dp))
 
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    text = stringResource(R.string.btn_start_class),
+                                    text = "开始新的一节课",
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onSurface
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    letterSpacing = 0.2.sp
                                 )
                                 Spacer(modifier = Modifier.height(2.dp))
                                 Text(
-                                    text = stringResource(R.string.start_class_sheet_subtitle),
+                                    text = "专注课堂节拍 · 灵动倒计时",
                                     style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    color = AccentOrange.copy(alpha = 0.9f),
+                                    fontWeight = FontWeight.Medium
                                 )
                             }
 
-                            Spacer(modifier = Modifier.width(8.dp))
-
-                            // Sleek Pill Action Badge
+                            // Minimalist Action Indicator
                             Box(
                                 modifier = Modifier
-                                    .clip(RoundedCornerShape(12.dp))
-                                    .background(AccentOrangeSubtle)
-                                    .padding(horizontal = 12.dp, vertical = 7.dp)
+                                    .size(32.dp)
+                                    .background(
+                                        color = AccentOrange.copy(alpha = 0.12f),
+                                        shape = CircleShape
+                                    ),
+                                contentAlignment = Alignment.Center
                             ) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Text(
-                                        text = "进入课堂",
-                                        style = MaterialTheme.typography.labelMedium,
-                                        fontWeight = FontWeight.Bold,
-                                        color = AccentOrange
-                                    )
-                                    Spacer(modifier = Modifier.width(2.dp))
-                                    Icon(
-                                        imageVector = Icons.Default.ChevronRight,
-                                        contentDescription = null,
-                                        tint = AccentOrange,
-                                        modifier = Modifier.size(16.dp)
-                                    )
-                                }
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                                    contentDescription = null,
+                                    tint = AccentOrange,
+                                    modifier = Modifier.size(16.dp)
+                                )
                             }
                         }
                     }

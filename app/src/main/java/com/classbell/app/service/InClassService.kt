@@ -141,6 +141,8 @@ class InClassService : Service() {
         val elapsedSecs = Duration.between(startTime, now).seconds.coerceIn(0, totalSecs)
         val progressPercent = ((elapsedSecs * 100) / totalSecs).toInt()
         val remainingMinutes = ChronoUnit.MINUTES.between(now, endTime).coerceAtLeast(0)
+        val remainingSeconds = ChronoUnit.SECONDS.between(now, endTime).coerceAtLeast(0)
+        val targetWhen = System.currentTimeMillis() + (remainingSeconds * 1000L)
 
         val title = "$courseName · $className"
         val subtitle = "$room · 下课 ${endTime.hour}:${endTime.minute.toString().padStart(2, '0')} (余${remainingMinutes}分)"
@@ -175,6 +177,11 @@ class InClassService : Service() {
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setContentTitle("📕 $courseName · $className")
             .setContentText("📍 $room · 下课 ${endTime.hour}:${endTime.minute.toString().padStart(2, '0')} (余${remainingMinutes}分)")
+            .setSubText("授课进行中")
+            .setUsesChronometer(true)
+            .setChronometerCountDown(true)
+            .setWhen(targetWhen)
+            .setShowWhen(true)
             .setStyle(
                 NotificationCompat.BigTextStyle()
                     .setBigContentTitle("📕 $courseName · $className")
@@ -185,7 +192,7 @@ class InClassService : Service() {
             .setOngoing(true)
             .setOnlyAlertOnce(true)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-            .setCategory(NotificationCompat.CATEGORY_STATUS)
+            .setCategory(NotificationCompat.CATEGORY_PROGRESS)
             .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
             .setContentIntent(contentIntent)
             .addAction(0, "提前下课", stopIntent)

@@ -59,29 +59,38 @@ fun SurvivalGuideDialog(
 
                 GuideStep(
                     step = "1",
-                    title = "允许通知与全屏提醒",
-                    desc = "确保允许通知权限，并将通知设为锁屏显示。"
+                    title = "允许通知、锁屏显示与 ColorOS 流体云",
+                    desc = "点击下方按钮进入通知设置，务必开启「允许通知」、「锁屏通知（显示全部内容）」及「流体云」实时胶囊开关。"
                 )
 
                 GuideStep(
                     step = "2",
                     title = "忽略电池优化 (无限制)",
-                    desc = "点击下方按钮，将本应用电池策略设置为「无限制/不优化」，避免系统休眠时冻结倒计时闹钟。"
+                    desc = "点击下方按钮，将本应用电池策略设置为「无限制/不优化」，避免系统休眠时冻结倒计时与闹钟。"
                 )
 
                 GuideStep(
                     step = "3",
                     title = "ColorOS 允许自启动与关联启动",
-                    desc = "进入系统设置 → 应用管理 → 自启动管理，将 ClassBell 设为「允许自启动」。"
+                    desc = "进入系统设置 → 应用管理 → 自启动管理，将 Timeless 设为「允许自启动」。"
                 )
 
                 GuideStep(
                     step = "4",
                     title = "多任务后台锁定",
-                    desc = "上划进入多任务卡片页面，点击 ClassBell 卡片右上角菜单，选择「锁定」，防止一键清理误杀。"
+                    desc = "上划进入多任务卡片页面，点击 Timeless 卡片右上角菜单，选择「锁定」，防止一键清理误杀。"
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
+
+                OutlinedButton(
+                    onClick = {
+                        openNotificationSettings(context)
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("前往设置：通知、锁屏与流体云权限")
+                }
 
                 OutlinedButton(
                     onClick = {
@@ -152,6 +161,21 @@ private fun openAppSettings(context: Context) {
     val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
         data = Uri.parse("package:${context.packageName}")
         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    }
+    context.startActivity(intent)
+}
+
+private fun openNotificationSettings(context: Context) {
+    val intent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
+            putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+    } else {
+        Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+            data = Uri.parse("package:${context.packageName}")
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
     }
     context.startActivity(intent)
 }

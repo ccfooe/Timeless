@@ -3,6 +3,7 @@ package com.classbell.app.ui.settings
 import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
+import androidx.activity.compose.LocalActivityResultRegistryOwner
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -22,19 +23,17 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Alarm
-import androidx.compose.material.icons.filled.BatteryChargingFull
-import androidx.compose.material.icons.filled.CameraAlt
-import androidx.compose.material.icons.filled.ChevronRight
-import androidx.compose.material.icons.filled.CloudUpload
-import androidx.compose.material.icons.filled.DeleteForever
-import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.Build
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Key
-import androidx.compose.material.icons.filled.Language
-import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Share
-import androidx.compose.material.icons.filled.UploadFile
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -77,45 +76,52 @@ fun SettingsScreen(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    val registryOwner = LocalActivityResultRegistryOwner.current
 
-    // Image Picker for Timetable Screenshot
-    val timetablePickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
-    ) { uri: Uri? ->
-        uri?.let {
-            importViewModel.parseTimetableImage(it)
-            onNavigateToImportConfirm()
-        }
-    }
-
-    // Image Picker for Calendar Screenshot
-    val calendarPickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
-    ) { uri: Uri? ->
-        uri?.let {
-            importViewModel.parseCalendarImage(it)
-            onNavigateToImportConfirm()
-        }
-    }
-
-    // File Picker for JSON Backup Import
-    val jsonPickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
-    ) { uri: Uri? ->
-        uri?.let {
-            runCatching {
-                context.contentResolver.openInputStream(it)?.bufferedReader()?.use { reader ->
-                    val jsonContent = reader.readText()
-                    viewModel.importBackup(jsonContent) { success ->
-                        val msg = if (success) "备份恢复成功" else "备份文件解析失败"
-                        Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
-                    }
-                }
-            }.onFailure {
-                Toast.makeText(context, "读取文件失败: ${it.message}", Toast.LENGTH_SHORT).show()
+    // Image Picker for Timetable Screenshot (Safely guarded)
+    val timetablePickerLauncher = if (registryOwner != null) {
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.GetContent()
+        ) { uri: Uri? ->
+            uri?.let {
+                importViewModel.parseTimetableImage(it)
+                onNavigateToImportConfirm()
             }
         }
-    }
+    } else null
+
+    // Image Picker for Calendar Screenshot (Safely guarded)
+    val calendarPickerLauncher = if (registryOwner != null) {
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.GetContent()
+        ) { uri: Uri? ->
+            uri?.let {
+                importViewModel.parseCalendarImage(it)
+                onNavigateToImportConfirm()
+            }
+        }
+    } else null
+
+    // File Picker for JSON Backup Import (Safely guarded)
+    val jsonPickerLauncher = if (registryOwner != null) {
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.GetContent()
+        ) { uri: Uri? ->
+            uri?.let {
+                runCatching {
+                    context.contentResolver.openInputStream(it)?.bufferedReader()?.use { reader ->
+                        val jsonContent = reader.readText()
+                        viewModel.importBackup(jsonContent) { success ->
+                            val msg = if (success) "备份恢复成功" else "备份文件解析失败"
+                            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }.onFailure {
+                    Toast.makeText(context, "读取文件失败: ${it.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    } else null
 
     var showWarnMinutesDialog by remember { mutableStateOf(false) }
     var showAboutDialog by remember { mutableStateOf(false) }
@@ -143,7 +149,7 @@ fun SettingsScreen(
         item {
             SettingsCard {
                 SettingsItem(
-                    icon = Icons.Default.Language,
+                    icon = Icons.Default.Settings,
                     iconColor = AccentOrange,
                     title = stringResource(R.string.language_setting),
                     subtitle = if (state.appLanguage == "en") "English" else "简体中文",
@@ -160,19 +166,25 @@ fun SettingsScreen(
         item {
             SettingsCard {
                 SettingsItem(
-                    icon = Icons.Default.CameraAlt,
+                    icon = Icons.Default.Edit,
                     iconColor = AccentOrange,
                     title = stringResource(R.string.import_schedule_screenshot),
                     subtitle = "拍照或相册选取作息课程表图片，AI 自动提取",
-                    onClick = { timetablePickerLauncher.launch("image/*") }
+                    onClick = {
+                        timetablePickerLauncher?.launch("image/*")
+                            ?: Toast.makeText(context, "存储访问不可用", Toast.LENGTH_SHORT).show()
+                    }
                 )
                 SettingsDivider()
                 SettingsItem(
-                    icon = Icons.Default.CloudUpload,
+                    icon = Icons.Default.DateRange,
                     iconColor = Color(0xFF7209B7),
                     title = stringResource(R.string.import_calendar_screenshot),
                     subtitle = "提取第一周开学日期、教学周与节假日安排",
-                    onClick = { calendarPickerLauncher.launch("image/*") }
+                    onClick = {
+                        calendarPickerLauncher?.launch("image/*")
+                            ?: Toast.makeText(context, "存储访问不可用", Toast.LENGTH_SHORT).show()
+                    }
                 )
             }
         }
@@ -185,7 +197,7 @@ fun SettingsScreen(
         item {
             SettingsCard {
                 SettingsItem(
-                    icon = Icons.Default.Schedule,
+                    icon = Icons.Default.DateRange,
                     iconColor = Color(0xFF4361EE),
                     title = stringResource(R.string.period_table_manager),
                     subtitle = "当前为10节课作息（含晚课），可自定义各节起止时间",
@@ -193,7 +205,7 @@ fun SettingsScreen(
                 )
                 SettingsDivider()
                 SettingsItem(
-                    icon = Icons.Default.Alarm,
+                    icon = Icons.Default.Notifications,
                     iconColor = AccentAmber,
                     title = "下课前提醒时间",
                     subtitle = "提前 ${state.endWarnMinutes} 分钟发送震动与横幅提醒",
@@ -201,10 +213,10 @@ fun SettingsScreen(
                 )
                 SettingsDivider()
                 SettingsItem(
-                    icon = Icons.Default.BatteryChargingFull,
+                    icon = Icons.Default.Build,
                     iconColor = Color(0xFF2EC4B6),
                     title = stringResource(R.string.survival_guide),
-                    subtitle = "电池优化、自启动与多任务后台锁定设置",
+                    subtitle = "ColorOS 16 流体云、电池优化与多任务锁定设置",
                     onClick = { viewModel.openSurvivalGuide() }
                 )
             }
@@ -218,7 +230,7 @@ fun SettingsScreen(
         item {
             SettingsCard {
                 SettingsItem(
-                    icon = Icons.Default.Key,
+                    icon = Icons.Default.Lock,
                     iconColor = AccentOrange,
                     title = stringResource(R.string.llm_settings),
                     subtitle = if (state.apiKey.isBlank()) "未配置密钥 (点击添加)" else "已配置: ${state.model}",
@@ -243,15 +255,18 @@ fun SettingsScreen(
                 )
                 SettingsDivider()
                 SettingsItem(
-                    icon = Icons.Default.UploadFile,
+                    icon = Icons.AutoMirrored.Filled.Send,
                     iconColor = Color(0xFF00897B),
                     title = "导入数据备份 (JSON)",
                     subtitle = "从 JSON 文件中恢复全部课程、学期与日程",
-                    onClick = { jsonPickerLauncher.launch("application/json") }
+                    onClick = {
+                        jsonPickerLauncher?.launch("application/json")
+                            ?: Toast.makeText(context, "存储访问不可用", Toast.LENGTH_SHORT).show()
+                    }
                 )
                 SettingsDivider()
                 SettingsItem(
-                    icon = Icons.Default.DeleteForever,
+                    icon = Icons.Default.Delete,
                     iconColor = Color.Red,
                     title = stringResource(R.string.clear_all_data),
                     subtitle = "重置数据库至初始状态",
@@ -271,7 +286,7 @@ fun SettingsScreen(
                     icon = Icons.Default.Info,
                     iconColor = MaterialTheme.colorScheme.onSurfaceVariant,
                     title = stringResource(R.string.about_timeless),
-                    subtitle = "v2.1.1 · 专为高校教师打造的课堂节拍掌控伴侣",
+                    subtitle = "v2.1.2 · 专为高校教师打造的课堂节拍掌控伴侣",
                     onClick = { showAboutDialog = true }
                 )
             }
@@ -416,7 +431,7 @@ fun SettingsScreen(
                         color = AccentOrange
                     )
                     Text(
-                        text = "版本：v2.1.1\n" +
+                        text = "版本：v2.1.2\n" +
                                 "核心特性：\n" +
                                 "• 苹果级灵动倒计时与防拖堂震动提醒\n" +
                                 "• 锁屏常驻教学进度卡片，息屏实时掌控\n" +
@@ -514,7 +529,7 @@ private fun SettingsItem(
         }
 
         Icon(
-            imageVector = Icons.Default.ChevronRight,
+            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
             contentDescription = null,
             tint = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.size(20.dp)

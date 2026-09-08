@@ -15,6 +15,11 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -179,7 +184,21 @@ fun ClassBellNavHost(modifier: Modifier = Modifier) {
         NavHost(
             navController = navController,
             startDestination = Screen.Today.route,
-            modifier = Modifier.padding(innerPadding)
+            modifier = Modifier.padding(innerPadding),
+            enterTransition = {
+                fadeIn(animationSpec = tween(280, easing = FastOutSlowInEasing)) +
+                        scaleIn(initialScale = 0.98f, animationSpec = tween(280, easing = FastOutSlowInEasing))
+            },
+            exitTransition = {
+                fadeOut(animationSpec = tween(200, easing = FastOutSlowInEasing))
+            },
+            popEnterTransition = {
+                fadeIn(animationSpec = tween(280, easing = FastOutSlowInEasing)) +
+                        scaleIn(initialScale = 0.98f, animationSpec = tween(280, easing = FastOutSlowInEasing))
+            },
+            popExitTransition = {
+                fadeOut(animationSpec = tween(200, easing = FastOutSlowInEasing))
+            }
         ) {
             composable(Screen.Today.route) {
                 TodayScreen(viewModel = todayViewModel)

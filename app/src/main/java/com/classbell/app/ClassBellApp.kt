@@ -43,18 +43,37 @@ class ClassBellApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        setupCrashHandler()
         createNotificationChannels()
+    }
+
+    private fun setupCrashHandler() {
+        val defaultHandler = Thread.getDefaultUncaughtExceptionHandler()
+        Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
+            android.util.Log.e("TimelessCrash", "Fatal exception on thread ${thread.name}", throwable)
+            try {
+                val dir = getExternalFilesDir(null) ?: filesDir
+                val file = java.io.File(dir, "crash_log.txt")
+                val sw = java.io.StringWriter()
+                val pw = java.io.PrintWriter(sw)
+                throwable.printStackTrace(pw)
+                file.writeText("Time: ${java.util.Date()}\nThread: ${thread.name}\nException:\n$sw")
+            } catch (e: Throwable) {
+                e.printStackTrace()
+            }
+            defaultHandler?.uncaughtException(thread, throwable)
+        }
     }
 
     private fun createNotificationChannels() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-            // 1. In-Class Progress Channel (Default importance for guaranteed lock-screen card display)
+            // 1. In-Class Progress Channel (High importance for lock-screen card & ColorOS Fluid Cloud display)
             val inClassChannel = NotificationChannel(
                 CHANNEL_IN_CLASS_ID,
                 getString(R.string.notification_channel_in_class),
-                NotificationManager.IMPORTANCE_DEFAULT
+                NotificationManager.IMPORTANCE_HIGH
             ).apply {
                 description = getString(R.string.notification_channel_in_class_desc)
                 setShowBadge(true)
