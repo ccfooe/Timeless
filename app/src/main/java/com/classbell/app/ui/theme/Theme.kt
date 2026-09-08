@@ -16,6 +16,7 @@ import androidx.core.view.WindowCompat
 
 val LocalAccentColor = compositionLocalOf { AppAccentColor.COBALT.primary }
 val LocalAccentColorSubtle = compositionLocalOf { AppAccentColor.COBALT.subtle }
+val LocalIsDarkTheme = compositionLocalOf { false }
 
 @Composable
 fun ClassBellTheme(
@@ -77,7 +78,8 @@ fun ClassBellTheme(
 
     CompositionLocalProvider(
         LocalAccentColor provides accent.primary,
-        LocalAccentColorSubtle provides accent.subtle
+        LocalAccentColorSubtle provides accent.subtle,
+        LocalIsDarkTheme provides darkTheme
     ) {
         MaterialTheme(
             colorScheme = colorScheme,

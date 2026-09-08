@@ -2,7 +2,7 @@ package com.classbell.app.ui.glass
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
+import com.classbell.app.ui.theme.LocalIsDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.padding
@@ -30,7 +30,7 @@ fun GlassCard(
     contentPadding: Dp = 18.dp,
     content: @Composable BoxScope.() -> Unit
 ) {
-    val isDark = isSystemInDarkTheme()
+    val isDark = LocalIsDarkTheme.current
     val bgColor = if (isDark) GlassDark else GlassWhite
     val strokeColor = if (isDark) GlassDarkStroke else GlassWhiteStroke
 

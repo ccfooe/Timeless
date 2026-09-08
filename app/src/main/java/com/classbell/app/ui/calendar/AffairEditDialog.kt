@@ -1,5 +1,6 @@
 package com.classbell.app.ui.calendar
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -186,10 +187,10 @@ fun AffairEditDialog(
         Surface(
             modifier = Modifier
                 .fillMaxWidth(0.92f)
-                .clip(RoundedCornerShape(28.dp))
-                .border(1.dp, Color.White.copy(alpha = 0.4f), RoundedCornerShape(28.dp)),
+                .clip(RoundedCornerShape(28.dp)),
             shape = RoundedCornerShape(28.dp),
             color = MaterialTheme.colorScheme.surface,
+            border = BorderStroke(0.6.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.15f)),
             tonalElevation = 6.dp
         ) {
             Column(
