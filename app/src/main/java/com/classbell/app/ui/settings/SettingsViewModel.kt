@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.classbell.app.data.backup.BackupManager
+import com.classbell.app.data.backup.ImportMode
 import com.classbell.app.data.repository.PeriodRepository
 import com.classbell.app.data.repository.SemesterRepository
 import com.classbell.app.data.repository.SettingsRepository
@@ -11,6 +12,7 @@ import com.classbell.app.llm.LlmClient
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -38,41 +40,62 @@ class SettingsViewModel(
 ) : ViewModel() {
 
     private val _isTesting = MutableStateFlow(false)
+    val isTesting = _isTesting.asStateFlow()
+
     private val _testMessage = MutableStateFlow<String?>(null)
+    val testMessage = _testMessage.asStateFlow()
+
     private val _showLlmDialog = MutableStateFlow(false)
+    val showLlmDialog = _showLlmDialog.asStateFlow()
+
     private val _showSurvivalDialog = MutableStateFlow(false)
+    val showSurvivalDialog = _showSurvivalDialog.asStateFlow()
+
     private val _showLanguageDialog = MutableStateFlow(false)
+    val showLanguageDialog = _showLanguageDialog.asStateFlow()
+
     private val _showClearConfirmDialog = MutableStateFlow(false)
+    val showClearConfirmDialog = _showClearConfirmDialog.asStateFlow()
+
     private val _backupJson = MutableStateFlow<String?>(null)
 
-    val uiState: StateFlow<SettingsUiState> = combine(
+    // Clean 5-parameter combine for repository preferences (NO vararg, avoids Kotlin reified array covariance bug)
+    private val repoPreferencesFlow = combine(
         settingsRepository.apiKeyFlow,
         settingsRepository.baseUrlFlow,
         settingsRepository.modelFlow,
         settingsRepository.endWarnMinutesFlow,
-        settingsRepository.appLanguageFlow,
+        settingsRepository.appLanguageFlow
+    ) { key, url, model, warn, lang ->
+        SettingsUiState(
+            apiKey = key,
+            baseUrl = url,
+            model = model,
+            endWarnMinutes = warn,
+            appLanguage = lang
+        )
+    }
+
+    // Combine base repository preferences with transient dialog UI state
+    val uiState: StateFlow<SettingsUiState> = combine(
+        repoPreferencesFlow,
         _isTesting,
         _testMessage,
         _showLlmDialog,
-        _showSurvivalDialog,
-        _showLanguageDialog,
-        _showClearConfirmDialog,
-        _backupJson
-    ) { params: Array<Any?> ->
-        SettingsUiState(
-            apiKey = params[0] as String,
-            baseUrl = params[1] as String,
-            model = params[2] as String,
-            endWarnMinutes = params[3] as Int,
-            appLanguage = params[4] as String,
-            isTestingConnection = params[5] as Boolean,
-            testConnectionMessage = params[6] as String?,
-            showLlmDialog = params[7] as Boolean,
-            showSurvivalDialog = params[8] as Boolean,
-            showLanguageDialog = params[9] as Boolean,
-            showClearConfirmDialog = params[10] as Boolean,
-            backupJsonString = params[11] as String?
+        _showSurvivalDialog
+    ) { base, testing, msg, llmDlg, survDlg ->
+        base.copy(
+            isTestingConnection = testing,
+            testConnectionMessage = msg,
+            showLlmDialog = llmDlg,
+            showSurvivalDialog = survDlg
         )
+    }.combine(_showLanguageDialog) { state, langDlg ->
+        state.copy(showLanguageDialog = langDlg)
+    }.combine(_showClearConfirmDialog) { state, clearDlg ->
+        state.copy(showClearConfirmDialog = clearDlg)
+    }.combine(_backupJson) { state, json ->
+        state.copy(backupJsonString = json)
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
@@ -94,6 +117,14 @@ class SettingsViewModel(
 
     fun closeLanguageDialog() {
         _showLanguageDialog.value = false
+    }
+
+    fun openSurvivalGuide() {
+        _showSurvivalDialog.value = true
+    }
+
+    fun closeSurvivalGuide() {
+        _showSurvivalDialog.value = false
     }
 
     fun setAppLanguage(lang: String) {
@@ -129,14 +160,6 @@ class SettingsViewModel(
         }
     }
 
-    fun openSurvivalDialog() {
-        _showSurvivalDialog.value = true
-    }
-
-    fun closeSurvivalDialog() {
-        _showSurvivalDialog.value = false
-    }
-
     fun openClearConfirmDialog() {
         _showClearConfirmDialog.value = true
     }
@@ -163,7 +186,7 @@ class SettingsViewModel(
 
     fun importBackup(jsonString: String, onComplete: (Boolean) -> Unit) {
         viewModelScope.launch {
-            val result = backupManager.importFromJson(jsonString, com.classbell.app.data.backup.ImportMode.REPLACE)
+            val result = backupManager.importFromJson(jsonString, ImportMode.REPLACE)
             onComplete(result.isSuccess)
         }
     }

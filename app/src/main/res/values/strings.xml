@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Tempo</string>
-    <string name="app_tagline">教师伴侣 · 专注课堂掌控</string>
+    <string name="app_name">Timeless</string>
+    <string name="app_tagline">Timeless · 专注大学课堂节拍与时间掌控</string>
 
     <!-- Navigation Tabs -->
     <string name="tab_today">今日</string>
@@ -87,7 +87,7 @@
     <string name="alarm_settings">提醒与通知设置</string>
     <string name="survival_guide">后台保活与提醒指南</string>
     <string name="backup_and_restore">数据备份与导出</string>
-    <string name="about_tempo">关于 Tempo</string>
+    <string name="about_timeless">关于 Timeless</string>
     <string name="clear_all_data">清除全部本地数据</string>
 
     <!-- Notification & Alarms -->

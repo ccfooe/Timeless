@@ -204,7 +204,7 @@ fun SettingsScreen(
                     iconColor = Color(0xFF2EC4B6),
                     title = stringResource(R.string.survival_guide),
                     subtitle = "电池优化、自启动与多任务后台锁定设置",
-                    onClick = { viewModel.openSurvivalDialog() }
+                    onClick = { viewModel.openSurvivalGuide() }
                 )
             }
         }
@@ -269,8 +269,8 @@ fun SettingsScreen(
                 SettingsItem(
                     icon = Icons.Default.Language,
                     iconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                    title = stringResource(R.string.about_tempo),
-                    subtitle = "v2.0.0 · 专为高校教师打造的课堂节拍掌控伴侣",
+                    title = stringResource(R.string.about_timeless),
+                    subtitle = "v2.1.0 · 专为高校教师打造的课堂节拍掌控伴侣",
                     onClick = { showAboutDialog = true }
                 )
             }
@@ -340,7 +340,7 @@ fun SettingsScreen(
     // ColorOS Survival Guide Dialog
     if (state.showSurvivalDialog) {
         SurvivalGuideDialog(
-            onDismiss = { viewModel.closeSurvivalDialog() }
+            onDismiss = { viewModel.closeSurvivalGuide() }
         )
     }
 
@@ -405,23 +405,23 @@ fun SettingsScreen(
     if (showAboutDialog) {
         AlertDialog(
             onDismissRequest = { showAboutDialog = false },
-            title = { Text(stringResource(R.string.about_tempo), fontWeight = FontWeight.Bold) },
+            title = { Text(stringResource(R.string.about_timeless), fontWeight = FontWeight.Bold) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
-                        text = "Tempo 律动",
-                        style = MaterialTheme.typography.titleMedium,
+                        text = "Timeless",
+                        style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
                         color = AccentOrange
                     )
                     Text(
-                        text = "版本：v2.0.0 Pro\n" +
+                        text = "版本：v2.1.0\n" +
                                 "核心特性：\n" +
-                                "• 苹果级毛玻璃灵动倒计时与防拖堂震动\n" +
-                                "• 锁屏常驻进度条，息屏掌控课堂节奏\n" +
+                                "• 苹果级灵动倒计时与防拖堂震动提醒\n" +
+                                "• 锁屏常驻教学进度卡片，息屏实时掌控\n" +
                                 "• ColorOS 16 风格教学日历与 10 节作息网格\n" +
-                                "• 多模态 AI 大模型 (BYOK) 课表校历拍照录入\n" +
-                                "• 离线本地运行，绝对保护教学隐私",
+                                "• 多模态 AI 大模型 (BYOK) 课表校历智能录入\n" +
+                                "• 纯本地离线运行，严密保障教学隐私",
                         style = MaterialTheme.typography.bodyMedium,
                         lineHeight = 22.sp
                     )

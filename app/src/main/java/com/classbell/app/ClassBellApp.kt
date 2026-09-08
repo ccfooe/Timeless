@@ -50,14 +50,14 @@ class ClassBellApp : Application() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-            // 1. In-Class Progress Channel (Low importance for silent ongoing lock-screen updates)
+            // 1. In-Class Progress Channel (Default importance for guaranteed lock-screen card display)
             val inClassChannel = NotificationChannel(
                 CHANNEL_IN_CLASS_ID,
                 getString(R.string.notification_channel_in_class),
-                NotificationManager.IMPORTANCE_LOW
+                NotificationManager.IMPORTANCE_DEFAULT
             ).apply {
                 description = getString(R.string.notification_channel_in_class_desc)
-                setShowBadge(false)
+                setShowBadge(true)
                 lockscreenVisibility = android.app.Notification.VISIBILITY_PUBLIC
             }
 

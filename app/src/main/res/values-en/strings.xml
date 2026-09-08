@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Tempo</string>
-    <string name="app_tagline">Teacher Companion · Time Mastery</string>
+    <string name="app_name">Timeless</string>
+    <string name="app_tagline">Timeless · Pedagogical Rhythm &amp; Time Mastery</string>
 
     <!-- Navigation Tabs -->
     <string name="tab_today">Today</string>
@@ -87,7 +87,7 @@
     <string name="alarm_settings">Reminders &amp; Alarms</string>
     <string name="survival_guide">Background Survival Guide</string>
     <string name="backup_and_restore">Data Backup &amp; Export</string>
-    <string name="about_tempo">About Tempo</string>
+    <string name="about_timeless">About Timeless</string>
     <string name="clear_all_data">Clear All Local Data</string>
 
     <!-- Notification & Alarms -->

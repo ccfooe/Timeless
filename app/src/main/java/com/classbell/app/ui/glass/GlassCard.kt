@@ -1,6 +1,5 @@
 package com.classbell.app.ui.glass
 
-import android.os.Build
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -11,7 +10,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
@@ -28,8 +26,8 @@ import com.classbell.app.ui.theme.GlassWhiteStroke
 fun GlassCard(
     modifier: Modifier = Modifier,
     shape: Shape = RoundedCornerShape(24.dp),
-    elevation: Dp = 8.dp,
-    contentPadding: Dp = 20.dp,
+    elevation: Dp = 3.dp,
+    contentPadding: Dp = 18.dp,
     content: @Composable BoxScope.() -> Unit
 ) {
     val isDark = isSystemInDarkTheme()
@@ -41,22 +39,15 @@ fun GlassCard(
             .shadow(
                 elevation = elevation,
                 shape = shape,
-                ambientColor = Color.Black.copy(alpha = 0.08f),
-                spotColor = Color.Black.copy(alpha = 0.12f)
+                ambientColor = Color.Black.copy(alpha = 0.04f),
+                spotColor = Color.Black.copy(alpha = 0.08f)
             )
             .clip(shape)
-            .then(
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    Modifier.blur(0.5.dp)
-                } else {
-                    Modifier
-                }
-            )
             .background(
                 brush = Brush.verticalGradient(
                     colors = listOf(
                         bgColor,
-                        bgColor.copy(alpha = if (isDark) 0.85f else 0.65f)
+                        bgColor.copy(alpha = if (isDark) 0.92f else 0.88f)
                     )
                 )
             )
