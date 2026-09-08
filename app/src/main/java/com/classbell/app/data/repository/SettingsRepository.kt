@@ -24,6 +24,8 @@ class SettingsRepository(private val context: Context) {
         val SURVIVAL_GUIDE_SHOWN = booleanPreferencesKey("survival_guide_shown")
         val ACTIVE_SEMESTER_ID = longPreferencesKey("active_semester_id")
         val APP_LANGUAGE = stringPreferencesKey("app_language")
+        val THEME_MODE = stringPreferencesKey("theme_mode")
+        val ACCENT_COLOR = stringPreferencesKey("accent_color")
     }
 
     val apiKeyFlow: Flow<String> = context.dataStore.data.map { preferences ->
@@ -32,6 +34,14 @@ class SettingsRepository(private val context: Context) {
 
     val appLanguageFlow: Flow<String> = context.dataStore.data.map { preferences ->
         preferences[PreferencesKeys.APP_LANGUAGE] ?: "zh"
+    }
+
+    val themeModeFlow: Flow<String> = context.dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.THEME_MODE] ?: "system"
+    }
+
+    val accentColorFlow: Flow<String> = context.dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.ACCENT_COLOR] ?: "blue"
     }
 
     val baseUrlFlow: Flow<String> = context.dataStore.data.map { preferences ->
@@ -93,6 +103,18 @@ class SettingsRepository(private val context: Context) {
     suspend fun updateAppLanguage(lang: String) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.APP_LANGUAGE] = lang
+        }
+    }
+
+    suspend fun updateThemeMode(mode: String) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.THEME_MODE] = mode
+        }
+    }
+
+    suspend fun updateAccentColor(color: String) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.ACCENT_COLOR] = color
         }
     }
 }

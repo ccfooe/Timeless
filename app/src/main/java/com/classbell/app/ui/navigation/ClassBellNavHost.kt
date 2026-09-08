@@ -57,6 +57,7 @@ import com.classbell.app.ui.stats.StatsScreen
 import com.classbell.app.ui.stats.StatsViewModel
 import com.classbell.app.ui.theme.AccentOrange
 import com.classbell.app.ui.theme.AccentOrangeSubtle
+import com.classbell.app.ui.theme.LocalAccentColor
 import com.classbell.app.ui.today.TodayScreen
 import com.classbell.app.ui.today.TodayViewModel
 
@@ -165,6 +166,7 @@ fun ClassBellNavHost(modifier: Modifier = Modifier) {
                                 else -> screen.title
                             }
 
+                            val accentColor = LocalAccentColor.current
                             NavigationBarItem(
                                 icon = {
                                     screen.icon?.let {
@@ -192,8 +194,8 @@ fun ClassBellNavHost(modifier: Modifier = Modifier) {
                                     }
                                 },
                                 colors = NavigationBarItemDefaults.colors(
-                                    selectedIconColor = AccentOrange,
-                                    selectedTextColor = AccentOrange,
+                                    selectedIconColor = accentColor,
+                                    selectedTextColor = accentColor,
                                     indicatorColor = Color.Transparent,
                                     unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.55f),
                                     unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.55f)

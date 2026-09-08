@@ -18,7 +18,7 @@ import com.classbell.app.service.AlarmScheduler
 class ClassBellApp : Application() {
 
     companion object {
-        const val CHANNEL_IN_CLASS_ID = "classbell_in_class"
+        const val CHANNEL_IN_CLASS_ID = "classbell_in_class_v2"
         const val CHANNEL_WARNING_ID = "classbell_warning"
         const val CHANNEL_AFFAIRS_ID = "classbell_affairs"
     }

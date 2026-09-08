@@ -44,6 +44,7 @@ import com.classbell.app.ui.components.PureSurface
 import com.classbell.app.ui.theme.AccentAmber
 import com.classbell.app.ui.theme.AccentOrange
 import com.classbell.app.ui.theme.CountdownDigits
+import com.classbell.app.ui.theme.LocalAccentColor
 import com.classbell.app.ui.theme.SystemGreen
 import java.time.Duration
 import java.time.LocalTime
@@ -60,6 +61,8 @@ fun NowInClassCard(
     onExtendClass: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val accentColor = LocalAccentColor.current
+
     Column(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(14.dp)
@@ -82,14 +85,14 @@ fun NowInClassCard(
                                 modifier = Modifier
                                     .size(7.dp)
                                     .clip(CircleShape)
-                                    .background(AccentOrange)
+                                    .background(accentColor)
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
                                 text = stringResource(R.string.status_in_progress),
                                 style = MaterialTheme.typography.labelSmall,
                                 fontWeight = FontWeight.Bold,
-                                color = AccentOrange
+                                color = accentColor
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
@@ -144,7 +147,7 @@ fun NowInClassCard(
                     Text(
                         text = timerStr,
                         style = CountdownDigits,
-                        color = AccentOrange
+                        color = accentColor
                     )
 
                     Spacer(modifier = Modifier.height(14.dp))
@@ -156,8 +159,8 @@ fun NowInClassCard(
                             .fillMaxWidth()
                             .height(4.dp)
                             .clip(RoundedCornerShape(2.dp)),
-                        color = AccentOrange,
-                        trackColor = AccentOrange.copy(alpha = 0.15f)
+                        color = accentColor,
+                        trackColor = accentColor.copy(alpha = 0.15f)
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
@@ -223,7 +226,7 @@ fun NowInClassCard(
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(12.dp),
                             colors = ButtonDefaults.outlinedButtonColors(
-                                contentColor = AccentAmber
+                                contentColor = accentColor
                             )
                         ) {
                             Icon(
@@ -254,13 +257,13 @@ fun NowInClassCard(
                                 modifier = Modifier
                                     .size(6.dp)
                                     .clip(CircleShape)
-                                    .background(AccentOrange)
+                                    .background(accentColor)
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
                                 text = stringResource(R.string.next_class_prefix),
                                 style = MaterialTheme.typography.labelSmall,
-                                color = AccentOrange,
+                                color = accentColor,
                                 fontWeight = FontWeight.Bold
                             )
                             Spacer(modifier = Modifier.width(6.dp))
@@ -320,6 +323,7 @@ fun TodayTasksCard(
 ) {
     val doneCount = affairs.count { it.isDone }
     val totalCount = affairs.size
+    val accentColor = LocalAccentColor.current
 
     PureSurface(
         modifier = Modifier.fillMaxWidth(),
@@ -335,7 +339,7 @@ fun TodayTasksCard(
                     Icon(
                         imageVector = Icons.Default.PendingActions,
                         contentDescription = null,
-                        tint = AccentOrange,
+                        tint = accentColor,
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(modifier = Modifier.width(6.dp))
@@ -362,14 +366,14 @@ fun TodayTasksCard(
                         modifier = Modifier
                             .size(24.dp)
                             .clip(CircleShape)
-                            .background(AccentOrange.copy(alpha = 0.12f))
+                            .background(accentColor.copy(alpha = 0.12f))
                             .clickable(onClick = onAddAffair),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.Default.Add,
                             contentDescription = stringResource(R.string.affair_add_title),
-                            tint = AccentOrange,
+                            tint = accentColor,
                             modifier = Modifier.size(14.dp)
                         )
                     }
@@ -460,7 +464,7 @@ fun TodayTasksCard(
                             text = timeStr,
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.Medium,
-                            color = if (affair.isDone) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f) else AccentOrange
+                            color = if (affair.isDone) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f) else accentColor
                         )
                     }
                 }

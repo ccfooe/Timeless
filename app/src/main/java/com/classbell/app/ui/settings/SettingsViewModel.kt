@@ -23,11 +23,16 @@ data class SettingsUiState(
     val model: String = "",
     val endWarnMinutes: Int = 5,
     val appLanguage: String = "zh",
+    val themeMode: String = "system",
+    val accentColor: String = "blue",
     val isTestingConnection: Boolean = false,
     val testConnectionMessage: String? = null,
     val showLlmDialog: Boolean = false,
     val showSurvivalDialog: Boolean = false,
     val showLanguageDialog: Boolean = false,
+    val showThemeModeDialog: Boolean = false,
+    val showAccentColorDialog: Boolean = false,
+    val showLockscreenDialog: Boolean = false,
     val showClearConfirmDialog: Boolean = false,
     val backupJsonString: String? = null
 )
@@ -69,6 +74,54 @@ class SettingsViewModel(
                 _uiState.update { it.copy(appLanguage = lang) }
             }
         }
+        viewModelScope.launch {
+            settingsRepository.themeModeFlow.catch { }.collectLatest { mode ->
+                _uiState.update { it.copy(themeMode = mode) }
+            }
+        }
+        viewModelScope.launch {
+            settingsRepository.accentColorFlow.catch { }.collectLatest { color ->
+                _uiState.update { it.copy(accentColor = color) }
+            }
+        }
+    }
+
+    fun openThemeModeDialog() {
+        _uiState.update { it.copy(showThemeModeDialog = true) }
+    }
+
+    fun closeThemeModeDialog() {
+        _uiState.update { it.copy(showThemeModeDialog = false) }
+    }
+
+    fun setThemeMode(mode: String) {
+        viewModelScope.launch {
+            settingsRepository.updateThemeMode(mode)
+            _uiState.update { it.copy(showThemeModeDialog = false, themeMode = mode) }
+        }
+    }
+
+    fun openAccentColorDialog() {
+        _uiState.update { it.copy(showAccentColorDialog = true) }
+    }
+
+    fun closeAccentColorDialog() {
+        _uiState.update { it.copy(showAccentColorDialog = false) }
+    }
+
+    fun setAccentColor(color: String) {
+        viewModelScope.launch {
+            settingsRepository.updateAccentColor(color)
+            _uiState.update { it.copy(showAccentColorDialog = false, accentColor = color) }
+        }
+    }
+
+    fun openLockscreenDialog() {
+        _uiState.update { it.copy(showLockscreenDialog = true) }
+    }
+
+    fun closeLockscreenDialog() {
+        _uiState.update { it.copy(showLockscreenDialog = false) }
     }
 
     fun openLlmDialog() {

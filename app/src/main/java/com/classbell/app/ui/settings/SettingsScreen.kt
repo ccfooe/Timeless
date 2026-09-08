@@ -32,9 +32,13 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -52,6 +56,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
@@ -65,6 +70,8 @@ import com.classbell.app.data.backup.ImportMode
 import com.classbell.app.ui.import.ImportViewModel
 import com.classbell.app.ui.theme.AccentAmber
 import com.classbell.app.ui.theme.AccentOrange
+import com.classbell.app.ui.theme.AppAccentColor
+import com.classbell.app.ui.theme.LocalAccentColor
 
 @Composable
 fun SettingsScreen(
@@ -75,6 +82,7 @@ fun SettingsScreen(
     modifier: Modifier = Modifier
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val accentColor = LocalAccentColor.current
     val context = LocalContext.current
     val registryOwner = LocalActivityResultRegistryOwner.current
 
@@ -142,16 +150,36 @@ fun SettingsScreen(
             )
         }
 
-        // Section 0: 通用 / General (Language Switcher)
+        // Section 0: 外观与个性化 / Appearance & Display
         item {
-            SectionHeader(title = stringResource(R.string.settings_section_general))
+            SectionHeader(title = stringResource(R.string.appearance_settings))
         }
 
         item {
             SettingsCard {
                 SettingsItem(
+                    icon = Icons.Default.DarkMode,
+                    iconColor = accentColor,
+                    title = stringResource(R.string.theme_mode_title),
+                    subtitle = when (state.themeMode) {
+                        "light" -> stringResource(R.string.theme_mode_light)
+                        "dark" -> stringResource(R.string.theme_mode_dark)
+                        else -> stringResource(R.string.theme_mode_system)
+                    },
+                    onClick = { viewModel.openThemeModeDialog() }
+                )
+                SettingsDivider()
+                SettingsItem(
+                    icon = Icons.Default.Palette,
+                    iconColor = accentColor,
+                    title = stringResource(R.string.accent_color_title),
+                    subtitle = stringResource(AppAccentColor.fromKey(state.accentColor).titleRes),
+                    onClick = { viewModel.openAccentColorDialog() }
+                )
+                SettingsDivider()
+                SettingsItem(
                     icon = Icons.Default.Settings,
-                    iconColor = AccentOrange,
+                    iconColor = accentColor,
                     title = stringResource(R.string.language_setting),
                     subtitle = if (state.appLanguage == "en") "English" else "简体中文",
                     onClick = { viewModel.openLanguageDialog() }
@@ -168,7 +196,7 @@ fun SettingsScreen(
             SettingsCard {
                 SettingsItem(
                     icon = Icons.Default.Edit,
-                    iconColor = AccentOrange,
+                    iconColor = accentColor,
                     title = stringResource(R.string.import_schedule_screenshot),
                     subtitle = stringResource(R.string.import_schedule_screenshot_sub),
                     onClick = {
@@ -207,10 +235,18 @@ fun SettingsScreen(
                 SettingsDivider()
                 SettingsItem(
                     icon = Icons.Default.Notifications,
-                    iconColor = AccentAmber,
+                    iconColor = accentColor,
                     title = stringResource(R.string.warn_minutes_title),
                     subtitle = stringResource(R.string.warn_minutes_sub, state.endWarnMinutes),
                     onClick = { showWarnMinutesDialog = true }
+                )
+                SettingsDivider()
+                SettingsItem(
+                    icon = Icons.Default.Notifications,
+                    iconColor = accentColor,
+                    title = stringResource(R.string.lockscreen_cloud_title),
+                    subtitle = stringResource(R.string.lockscreen_cloud_sub),
+                    onClick = { viewModel.openLockscreenDialog() }
                 )
                 SettingsDivider()
                 SettingsItem(
@@ -309,6 +345,134 @@ fun SettingsScreen(
                 )
             }
         }
+    }
+
+    // Theme Mode Selection Dialog
+    if (state.showThemeModeDialog) {
+        val options = listOf(
+            "system" to stringResource(R.string.theme_mode_system),
+            "light" to stringResource(R.string.theme_mode_light),
+            "dark" to stringResource(R.string.theme_mode_dark)
+        )
+        AlertDialog(
+            onDismissRequest = { viewModel.closeThemeModeDialog() },
+            title = { Text(stringResource(R.string.dialog_theme_mode_title), fontWeight = FontWeight.Bold) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    options.forEach { (mode, label) ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { viewModel.setThemeMode(mode) }
+                                .padding(vertical = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(
+                                selected = state.themeMode == mode,
+                                onClick = { viewModel.setThemeMode(mode) }
+                            )
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Text(label, style = MaterialTheme.typography.bodyLarge)
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { viewModel.closeThemeModeDialog() }) {
+                    Text(stringResource(R.string.close))
+                }
+            }
+        )
+    }
+
+    // Accent Color Selection Dialog
+    if (state.showAccentColorDialog) {
+        AlertDialog(
+            onDismissRequest = { viewModel.closeAccentColorDialog() },
+            title = { Text(stringResource(R.string.dialog_accent_color_title), fontWeight = FontWeight.Bold) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    AppAccentColor.entries.forEach { accent ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(10.dp))
+                                .clickable { viewModel.setAccentColor(accent.key) }
+                                .padding(horizontal = 8.dp, vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(24.dp)
+                                        .clip(CircleShape)
+                                        .background(accent.primary)
+                                )
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Text(
+                                    text = stringResource(accent.titleRes),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = if (state.accentColor == accent.key) FontWeight.Bold else FontWeight.Normal
+                                )
+                            }
+                            RadioButton(
+                                selected = state.accentColor == accent.key,
+                                onClick = { viewModel.setAccentColor(accent.key) }
+                            )
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { viewModel.closeAccentColorDialog() }) {
+                    Text(stringResource(R.string.close))
+                }
+            }
+        )
+    }
+
+    // Lockscreen & Fluid Cloud Diagnostic Dialog
+    if (state.showLockscreenDialog) {
+        AlertDialog(
+            onDismissRequest = { viewModel.closeLockscreenDialog() },
+            title = { Text(stringResource(R.string.dialog_lockscreen_title), fontWeight = FontWeight.Bold) },
+            text = {
+                Column {
+                    Text(
+                        text = stringResource(R.string.dialog_lockscreen_content),
+                        style = MaterialTheme.typography.bodyMedium,
+                        lineHeight = 22.sp
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        viewModel.closeLockscreenDialog()
+                        val intent = Intent(android.provider.Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
+                            putExtra(android.provider.Settings.EXTRA_APP_PACKAGE, context.packageName)
+                        }
+                        runCatching {
+                            context.startActivity(intent)
+                        }.onFailure {
+                            val fallback = Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                                data = Uri.parse("package:${context.packageName}")
+                            }
+                            context.startActivity(fallback)
+                        }
+                    },
+                    colors = androidx.compose.material3.ButtonDefaults.buttonColors(containerColor = accentColor)
+                ) {
+                    Text(stringResource(R.string.btn_open_system_notification))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { viewModel.closeLockscreenDialog() }) {
+                    Text(stringResource(R.string.close))
+                }
+            }
+        )
     }
 
     // Language Selection Dialog

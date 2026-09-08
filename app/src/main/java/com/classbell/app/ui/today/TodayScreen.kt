@@ -55,6 +55,8 @@ import com.classbell.app.ui.calendar.AffairEditDialog
 import com.classbell.app.ui.components.PureSurface
 import com.classbell.app.ui.theme.AccentOrange
 import com.classbell.app.ui.theme.AccentOrangeSubtle
+import com.classbell.app.ui.theme.LocalAccentColor
+import com.classbell.app.ui.theme.LocalAccentColorSubtle
 
 @Composable
 fun TodayScreen(
@@ -62,6 +64,8 @@ fun TodayScreen(
     modifier: Modifier = Modifier
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val accentColor = LocalAccentColor.current
+    val accentSubtle = LocalAccentColorSubtle.current
     var showStartClassDialog by remember { mutableStateOf(false) }
     var showAddAffairDialog by remember { mutableStateOf(false) }
 
@@ -118,13 +122,13 @@ fun TodayScreen(
                                 modifier = Modifier
                                     .size(42.dp)
                                     .clip(CircleShape)
-                                    .background(AccentOrange.copy(alpha = 0.12f)),
+                                    .background(accentColor.copy(alpha = 0.12f)),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.PlayArrow,
                                     contentDescription = null,
-                                    tint = AccentOrange,
+                                    tint = accentColor,
                                     modifier = Modifier.size(22.dp)
                                 )
                             }
@@ -309,19 +313,20 @@ fun TodayMeetingCard(
     meeting: MeetingOccurrence,
     onStartThisClass: () -> Unit
 ) {
+    val accentColor = LocalAccentColor.current
     PureSurface(
         modifier = Modifier.fillMaxWidth(),
-        contentPadding = 16.dp
+        contentPadding = 16.dp,
+        onClick = onStartThisClass
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            // Left: Bauhaus time block
+            // Left: Bauhaus Timetable Block
             Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.width(64.dp)
+                horizontalAlignment = Alignment.Start,
+                modifier = Modifier.width(68.dp)
             ) {
                 Text(
                     text = TimeUtils.formatTime(meeting.startTime),
@@ -338,7 +343,7 @@ fun TodayMeetingCard(
                 Text(
                     text = stringResource(R.string.course_period_format, meeting.periodStart, meeting.periodEnd),
                     style = MaterialTheme.typography.labelSmall,
-                    color = AccentOrange,
+                    color = accentColor,
                     fontWeight = FontWeight.SemiBold
                 )
             }
@@ -384,14 +389,14 @@ fun TodayMeetingCard(
                     modifier = Modifier
                         .size(36.dp)
                         .clip(CircleShape)
-                        .background(AccentOrange.copy(alpha = 0.12f))
+                        .background(accentColor.copy(alpha = 0.12f))
                         .clickable(onClick = onStartThisClass),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Default.PlayArrow,
                         contentDescription = stringResource(R.string.start_class_now),
-                        tint = AccentOrange,
+                        tint = accentColor,
                         modifier = Modifier.size(20.dp)
                     )
                 }
@@ -408,6 +413,9 @@ fun StartClassDialog(
 ) {
     var selectedCourse by remember { mutableStateOf(courses.firstOrNull()) }
     var selectedDuration by remember { mutableIntStateOf(45) }
+
+    val accentColor = LocalAccentColor.current
+    val accentSubtle = LocalAccentColorSubtle.current
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -433,10 +441,10 @@ fun StartClassDialog(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(12.dp))
-                                .background(if (isSelected) AccentOrangeSubtle else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                                .background(if (isSelected) accentSubtle else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
                                 .border(
                                     width = if (isSelected) 1.5.dp else 0.dp,
-                                    color = if (isSelected) AccentOrange else Color.Transparent,
+                                    color = if (isSelected) accentColor else Color.Transparent,
                                     shape = RoundedCornerShape(12.dp)
                                 )
                                 .clickable { selectedCourse = course }
@@ -447,7 +455,7 @@ fun StartClassDialog(
                                     text = course.name,
                                     style = MaterialTheme.typography.titleSmall,
                                     fontWeight = FontWeight.Bold,
-                                    color = if (isSelected) AccentOrange else MaterialTheme.colorScheme.onSurface
+                                    color = if (isSelected) accentColor else MaterialTheme.colorScheme.onSurface
                                 )
                                 Text(
                                     text = "${course.className} · ${course.room}",
@@ -506,7 +514,7 @@ fun StartClassDialog(
                     )
                     onStart(courseToStart, selectedDuration)
                 },
-                colors = ButtonDefaults.buttonColors(containerColor = AccentOrange)
+                colors = ButtonDefaults.buttonColors(containerColor = accentColor)
             ) {
                 Text(stringResource(R.string.start_class_now))
             }

@@ -64,6 +64,8 @@ import com.classbell.app.data.model.Semester
 import com.classbell.app.ui.theme.AccentAmber
 import com.classbell.app.ui.theme.AccentOrange
 import com.classbell.app.ui.theme.AccentOrangeSubtle
+import com.classbell.app.ui.theme.LocalAccentColor
+import com.classbell.app.ui.theme.LocalAccentColorSubtle
 import com.classbell.app.ui.theme.SystemBlue
 import com.classbell.app.ui.theme.SystemGreen
 import com.classbell.app.ui.theme.SystemRed
@@ -79,13 +81,14 @@ fun CalendarScreen(
     modifier: Modifier = Modifier
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val accentColor = LocalAccentColor.current
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { viewModel.openAddAffair() },
-                containerColor = AccentOrange,
+                containerColor = accentColor,
                 contentColor = Color.White,
                 shape = CircleShape
             ) {
@@ -369,54 +372,66 @@ fun ColorOSCalendarGrid(
                             val isRestHoliday = holiday?.type == HolidayType.REST
                             val isMakeupWorkday = holiday?.type == HolidayType.MAKEUP
 
+                            val accentColor = LocalAccentColor.current
+                            val accentSubtle = LocalAccentColorSubtle.current
+
                             Box(
                                 modifier = Modifier
                                     .weight(1f)
-                                    .height(44.dp)
-                                    .clip(CircleShape)
-                                    .background(
-                                        when {
-                                            isSelected -> AccentOrange
-                                            isToday -> AccentOrangeSubtle
-                                            else -> Color.Transparent
-                                        }
-                                    )
+                                    .height(48.dp)
                                     .clickable { onDateClick(thisDate) },
                                 contentAlignment = Alignment.Center
                             ) {
-                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                    Text(
-                                        text = currentDay.toString(),
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        fontWeight = if (isSelected || isToday) FontWeight.ExtraBold else FontWeight.Normal,
-                                        color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurface
-                                    )
-
-                                    Row(
-                                        horizontalArrangement = Arrangement.spacedBy(2.dp),
-                                        verticalAlignment = Alignment.CenterVertically
+                                Box(
+                                    modifier = Modifier
+                                        .size(38.dp)
+                                        .clip(CircleShape)
+                                        .background(
+                                            when {
+                                                isSelected -> accentColor
+                                                isToday -> accentSubtle
+                                                else -> Color.Transparent
+                                            }
+                                        ),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Column(
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        verticalArrangement = Arrangement.Center
                                     ) {
-                                        if (isRestHoliday) {
-                                            Text(
-                                                text = stringResource(R.string.marker_holiday),
-                                                fontSize = 8.sp,
-                                                fontWeight = FontWeight.Bold,
-                                                color = if (isSelected) Color.White else SystemRed
-                                            )
-                                        } else if (isMakeupWorkday) {
-                                            Text(
-                                                text = stringResource(R.string.marker_workday),
-                                                fontSize = 8.sp,
-                                                fontWeight = FontWeight.Bold,
-                                                color = if (isSelected) Color.White else SystemBlue
-                                            )
-                                        } else if (hasAffair) {
-                                            Box(
-                                                modifier = Modifier
-                                                    .size(3.dp)
-                                                    .clip(CircleShape)
-                                                    .background(if (isSelected) Color.White else AccentOrange)
-                                            )
+                                        Text(
+                                            text = currentDay.toString(),
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            fontWeight = if (isSelected || isToday) FontWeight.ExtraBold else FontWeight.Normal,
+                                            color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurface
+                                        )
+
+                                        Row(
+                                            horizontalArrangement = Arrangement.spacedBy(2.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            if (isRestHoliday) {
+                                                Text(
+                                                    text = stringResource(R.string.marker_holiday),
+                                                    fontSize = 8.sp,
+                                                    fontWeight = FontWeight.Bold,
+                                                    color = if (isSelected) Color.White else SystemRed
+                                                )
+                                            } else if (isMakeupWorkday) {
+                                                Text(
+                                                    text = stringResource(R.string.marker_workday),
+                                                    fontSize = 8.sp,
+                                                    fontWeight = FontWeight.Bold,
+                                                    color = if (isSelected) Color.White else SystemBlue
+                                                )
+                                            } else if (hasAffair) {
+                                                Box(
+                                                    modifier = Modifier
+                                                        .size(3.dp)
+                                                        .clip(CircleShape)
+                                                        .background(if (isSelected) Color.White else accentColor)
+                                                )
+                                            }
                                         }
                                     }
                                 }

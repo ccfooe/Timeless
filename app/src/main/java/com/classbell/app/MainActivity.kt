@@ -48,6 +48,8 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val appLanguage by app.settingsRepository.appLanguageFlow.collectAsStateWithLifecycle(initialValue = "zh")
+            val themeMode by app.settingsRepository.themeModeFlow.collectAsStateWithLifecycle(initialValue = "system")
+            val accentColor by app.settingsRepository.accentColorFlow.collectAsStateWithLifecycle(initialValue = "blue")
 
             val (localizedContext, localizedConfiguration) = remember(appLanguage) {
                 val locale = if (appLanguage == "en") Locale.ENGLISH else Locale.SIMPLIFIED_CHINESE
@@ -64,7 +66,10 @@ class MainActivity : ComponentActivity() {
                 LocalConfiguration provides localizedConfiguration,
                 LocalActivityResultRegistryOwner provides this@MainActivity
             ) {
-                ClassBellTheme {
+                ClassBellTheme(
+                    themeMode = themeMode,
+                    accentKey = accentColor
+                ) {
                     ClassBellNavHost()
                 }
             }
