@@ -21,23 +21,14 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.automirrored.filled.Assignment
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ChevronRight
-import androidx.compose.material.icons.filled.Group
-import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Schedule
-import androidx.compose.material.icons.filled.School
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -49,7 +40,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -62,11 +52,9 @@ import com.classbell.app.data.model.Course
 import com.classbell.app.data.model.MeetingOccurrence
 import com.classbell.app.data.model.MeetingStatus
 import com.classbell.app.ui.calendar.AffairEditDialog
-import com.classbell.app.ui.glass.GlassCard
-import com.classbell.app.ui.theme.AccentAmber
+import com.classbell.app.ui.components.PureSurface
 import com.classbell.app.ui.theme.AccentOrange
 import com.classbell.app.ui.theme.AccentOrangeSubtle
-import com.classbell.app.ui.theme.SystemGreen
 
 @Composable
 fun TodayScreen(
@@ -77,23 +65,11 @@ fun TodayScreen(
     var showStartClassDialog by remember { mutableStateOf(false) }
     var showAddAffairDialog by remember { mutableStateOf(false) }
 
-    Box(modifier = modifier.fillMaxSize()) {
-        // Ambient soft light gradient background (Apple Lockscreen subtle aura feel)
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    brush = Brush.radialGradient(
-                        colors = listOf(
-                            AccentOrange.copy(alpha = 0.07f),
-                            Color(0xFF30B0C7).copy(alpha = 0.04f),
-                            Color.Transparent
-                        ),
-                        radius = 1200f
-                    )
-                )
-        )
-
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+    ) {
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -112,7 +88,7 @@ fun TodayScreen(
                 )
             }
 
-            // 2. Live Activity / Now-In-Class Card (Matching Reference Screenshot)
+            // 2. Live Activity / Now-In-Class Active Card & Today's Tasks
             item {
                 NowInClassCard(
                     currentMeeting = state.currentMeeting,
@@ -126,139 +102,89 @@ fun TodayScreen(
                 )
             }
 
-            // 3. Start Class Quick Trigger Hero Card (If not currently in class)
+            // 3. Quick Start Class Hero Banner (Only shown when not currently in class)
             if (state.currentMeeting == null) {
                 item {
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(22.dp))
-                            .clickable { showStartClassDialog = true }
-                            .border(
-                                width = 1.dp,
-                                brush = Brush.horizontalGradient(
-                                    listOf(AccentOrange.copy(alpha = 0.35f), AccentAmber.copy(alpha = 0.15f))
-                                ),
-                                shape = RoundedCornerShape(22.dp)
-                            ),
-                        shape = RoundedCornerShape(22.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surface
-                        ),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                    PureSurface(
+                        modifier = Modifier.fillMaxWidth(),
+                        contentPadding = 16.dp,
+                        onClick = { showStartClassDialog = true }
                     ) {
                         Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(
-                                    Brush.horizontalGradient(
-                                        listOf(
-                                            AccentOrange.copy(alpha = 0.08f),
-                                            Color.Transparent
-                                        )
-                                    )
-                                )
-                                .padding(horizontal = 20.dp, vertical = 18.dp),
+                            modifier = Modifier.fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            // Tactile Glowing Emblem
                             Box(
                                 modifier = Modifier
-                                    .size(44.dp)
-                                    .background(
-                                        brush = Brush.linearGradient(
-                                            listOf(AccentOrange, AccentAmber)
-                                        ),
-                                        shape = CircleShape
-                                    ),
+                                    .size(42.dp)
+                                    .clip(CircleShape)
+                                    .background(AccentOrange.copy(alpha = 0.12f)),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.PlayArrow,
                                     contentDescription = null,
-                                    tint = Color.White,
-                                    modifier = Modifier.size(24.dp)
+                                    tint = AccentOrange,
+                                    modifier = Modifier.size(22.dp)
                                 )
                             }
 
-                            Spacer(modifier = Modifier.width(16.dp))
+                            Spacer(modifier = Modifier.width(14.dp))
 
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
                                     text = stringResource(R.string.hero_start_class_title),
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onSurface,
-                                    letterSpacing = 0.2.sp
+                                    color = MaterialTheme.colorScheme.onSurface
                                 )
                                 Spacer(modifier = Modifier.height(2.dp))
                                 Text(
                                     text = stringResource(R.string.hero_start_class_subtitle),
                                     style = MaterialTheme.typography.bodySmall,
-                                    color = AccentOrange.copy(alpha = 0.9f),
-                                    fontWeight = FontWeight.Medium
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
 
-                            // Minimalist Action Indicator
-                            Box(
-                                modifier = Modifier
-                                    .size(32.dp)
-                                    .background(
-                                        color = AccentOrange.copy(alpha = 0.12f),
-                                        shape = CircleShape
-                                    ),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                                    contentDescription = null,
-                                    tint = AccentOrange,
-                                    modifier = Modifier.size(16.dp)
-                                )
-                            }
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                                modifier = Modifier.size(18.dp)
+                            )
                         }
                     }
                 }
             }
 
-            // 4. Today's Class Meetings Section
+            // 4. Today's Class Schedule Section Title
             item {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 4.dp, bottom = 2.dp),
+                        .padding(top = 4.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Schedule,
-                        contentDescription = null,
-                        tint = AccentOrange,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
                     Text(
                         text = stringResource(R.string.today_title),
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
             }
 
             if (state.todayMeetings.isEmpty()) {
                 item {
-                    GlassCard(modifier = Modifier.fillMaxWidth()) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 20.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
+                    PureSurface(
+                        modifier = Modifier.fillMaxWidth(),
+                        contentPadding = 24.dp
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(
-                                text = "☕",
-                                style = MaterialTheme.typography.displayMedium
-                            )
-                            Spacer(modifier = Modifier.height(6.dp))
                             Text(
                                 text = stringResource(R.string.no_classes_today),
                                 style = MaterialTheme.typography.bodyMedium,
@@ -318,44 +244,44 @@ fun TodayHeader(
     holidayName: String?,
     modifier: Modifier = Modifier
 ) {
-    Column(modifier = modifier.fillMaxWidth()) {
+    val displayPhase = when (phase) {
+        "教学周" -> stringResource(R.string.phase_teaching)
+        "考试周" -> stringResource(R.string.phase_exam)
+        "实践周" -> stringResource(R.string.phase_practice)
+        "假期/非教学周" -> stringResource(R.string.phase_break)
+        else -> phase
+    }
+
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(top = 8.dp, bottom = 4.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = dateString,
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Black,
+            letterSpacing = (-0.5).sp,
+            color = MaterialTheme.colorScheme.onBackground
+        )
+
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(8.dp))
-                    .background(AccentOrange)
-                    .padding(horizontal = 8.dp, vertical = 3.dp)
+                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f))
+                    .padding(horizontal = 8.dp, vertical = 4.dp)
             ) {
                 Text(
-                    text = stringResource(R.string.week_format, weekNumber),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-
-            val displayPhase = when (phase) {
-                "教学周" -> stringResource(R.string.phase_teaching)
-                "考试周" -> stringResource(R.string.phase_exam)
-                "实践周" -> stringResource(R.string.phase_practice)
-                "假期/非教学周" -> stringResource(R.string.phase_break)
-                else -> phase
-            }
-
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(MaterialTheme.colorScheme.surfaceVariant)
-                    .padding(horizontal = 8.dp, vertical = 3.dp)
-            ) {
-                Text(
-                    text = displayPhase,
-                    style = MaterialTheme.typography.labelMedium,
+                    text = "${stringResource(R.string.week_format, weekNumber)} · $displayPhase",
+                    style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontWeight = FontWeight.Medium
+                    fontWeight = FontWeight.SemiBold
                 )
             }
 
@@ -364,26 +290,17 @@ fun TodayHeader(
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
                         .background(Color(0xFFFFD8D6))
-                        .padding(horizontal = 8.dp, vertical = 3.dp)
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
                 ) {
                     Text(
                         text = stringResource(R.string.holiday_tag_format, holidayName),
-                        style = MaterialTheme.typography.labelMedium,
+                        style = MaterialTheme.typography.labelSmall,
                         color = Color(0xFFBA1A1A),
                         fontWeight = FontWeight.Bold
                     )
                 }
             }
         }
-
-        Spacer(modifier = Modifier.height(4.dp))
-
-        Text(
-            text = dateString,
-            style = MaterialTheme.typography.headlineLarge,
-            fontWeight = FontWeight.ExtraBold,
-            color = MaterialTheme.colorScheme.onBackground
-        )
     }
 }
 
@@ -392,118 +309,94 @@ fun TodayMeetingCard(
     meeting: MeetingOccurrence,
     onStartThisClass: () -> Unit
 ) {
-    Card(
+    PureSurface(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(18.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        contentPadding = 16.dp
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            // Left: Bauhaus time block
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.width(64.dp)
             ) {
                 Text(
-                    text = stringResource(
-                        R.string.meeting_periods_time,
-                        meeting.periodStart,
-                        meeting.periodEnd,
-                        TimeUtils.formatTime(meeting.startTime),
-                        TimeUtils.formatTime(meeting.endTime)
-                    ),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontWeight = FontWeight.Medium
+                    text = TimeUtils.formatTime(meeting.startTime),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
-
-                StatusBadge(status = meeting.status, holidayName = meeting.holidayName)
+                Text(
+                    text = TimeUtils.formatTime(meeting.endTime),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = stringResource(R.string.course_period_format, meeting.periodStart, meeting.periodEnd),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = AccentOrange,
+                    fontWeight = FontWeight.SemiBold
+                )
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.width(14.dp))
 
-            Text(
-                text = meeting.course.name,
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.Assignment,
-                        contentDescription = null,
-                        modifier = Modifier.size(15.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = meeting.course.className,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Default.LocationOn,
-                        contentDescription = null,
-                        modifier = Modifier.size(15.dp),
-                        tint = AccentOrange
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = meeting.course.room,
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.Medium,
-                        color = AccentOrange
-                    )
-                }
+            // Middle: Course Name & Room
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = meeting.course.name,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Spacer(modifier = Modifier.height(3.dp))
+                Text(
+                    text = "${meeting.course.room} · ${meeting.course.className}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
 
-            // Quick start button for this course
-            Spacer(modifier = Modifier.height(10.dp))
-            OutlinedButton(
-                onClick = onStartThisClass,
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(10.dp)
-            ) {
-                Icon(Icons.Default.PlayArrow, contentDescription = null, modifier = Modifier.size(16.dp))
-                Spacer(modifier = Modifier.width(6.dp))
-                Text(stringResource(R.string.start_this_class_btn))
+            Spacer(modifier = Modifier.width(10.dp))
+
+            // Right: Tactile Quick Play Glyph button
+            if (meeting.status == MeetingStatus.FINISHED) {
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Check,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+            } else {
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(CircleShape)
+                        .background(AccentOrange.copy(alpha = 0.12f))
+                        .clickable(onClick = onStartThisClass),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.PlayArrow,
+                        contentDescription = stringResource(R.string.start_class_now),
+                        tint = AccentOrange,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
             }
         }
-    }
-}
-
-@Composable
-fun StatusBadge(status: MeetingStatus, holidayName: String? = null) {
-    val (text, bgColor, textColor) = when (status) {
-        MeetingStatus.IN_PROGRESS -> Triple(stringResource(R.string.status_in_progress), AccentOrangeSubtle, AccentOrange)
-        MeetingStatus.UPCOMING -> Triple(stringResource(R.string.status_upcoming), Color(0xFFE8F5E9), Color(0xFF2E7D32))
-        MeetingStatus.FINISHED -> Triple(stringResource(R.string.status_finished), MaterialTheme.colorScheme.surfaceVariant, MaterialTheme.colorScheme.onSurfaceVariant)
-        MeetingStatus.HOLIDAY -> Triple(holidayName ?: stringResource(R.string.status_holiday), Color(0xFFFFEBEE), Color(0xFFC62828))
-    }
-
-    Box(
-        modifier = Modifier
-            .clip(RoundedCornerShape(6.dp))
-            .background(bgColor)
-            .padding(horizontal = 8.dp, vertical = 3.dp)
-    ) {
-        Text(
-            text = text,
-            style = MaterialTheme.typography.labelSmall,
-            color = textColor,
-            fontWeight = FontWeight.Bold
-        )
     }
 }
 

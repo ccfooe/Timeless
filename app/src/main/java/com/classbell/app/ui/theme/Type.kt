@@ -69,3 +69,13 @@ val Typography = Typography(
         lineHeight = 16.sp
     )
 )
+
+// Swiss mechanical / Apple countdown digital display typography
+val CountdownDigits = TextStyle(
+    fontFamily = FontFamily.Monospace,
+    fontWeight = FontWeight.Black,
+    fontSize = 38.sp,
+    lineHeight = 44.sp,
+    letterSpacing = (-1.2).sp
+)
+
