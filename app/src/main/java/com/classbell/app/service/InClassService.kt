@@ -109,7 +109,15 @@ class InClassService : Service() {
                     runCatching { endTime = LocalTime.parse(it) }
                 }
 
-                startForeground(NOTIFICATION_ID, buildProgressNotification())
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                    startForeground(
+                        NOTIFICATION_ID,
+                        buildProgressNotification(),
+                        android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE
+                    )
+                } else {
+                    startForeground(NOTIFICATION_ID, buildProgressNotification())
+                }
                 startTicker()
             }
         }
@@ -173,7 +181,35 @@ class InClassService : Service() {
 
         val bigTextContent = "📍 教室: $room\n⏰ 下课时间: ${endTime.hour}:${endTime.minute.toString().padStart(2, '0')} (剩余 ${remainingMinutes} 分钟)\n⏳ 课堂进度: $progressPercent%"
 
-        return NotificationCompat.Builder(this, CHANNEL_ID)
+        // Public-safe notification version for Lock Screen when device has privacy / hide sensitive content enabled
+        val publicNotification = NotificationCompat.Builder(this, CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_stat_in_class)
+            .setContentTitle("📕 $courseName · $className")
+            .setContentText("📍 $room · 下课 ${endTime.hour}:${endTime.minute.toString().padStart(2, '0')}")
+            .setUsesChronometer(true)
+            .setChronometerCountDown(true)
+            .setWhen(targetWhen)
+            .setShowWhen(true)
+            .setOngoing(true)
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+            .setCategory(NotificationCompat.CATEGORY_STOPWATCH)
+            .setContentIntent(contentIntent)
+            .build()
+
+        // Android 16 Live Updates / ColorOS 16+ Pantanal Fluid Cloud Promotion Extras
+        val extras = android.os.Bundle().apply {
+            // Android 16 Promoted Ongoing Notification (Live Updates status bar chip / pill)
+            putBoolean("android.requestPromotedOngoing", true)
+            // ColorOS / OxygenOS / realme UI Fluid Cloud & Capsule Keys
+            putBoolean("coloros.fluid_cloud", true)
+            putBoolean("coloros_capsule", true)
+            putBoolean("oplus.fluid_cloud", true)
+            putBoolean("oplus_capsule", true)
+            putInt("oplus_notification_type", 1) // 1: countdown / timer capsule
+            putString("android.substName", getString(R.string.app_name))
+        }
+
+        val notification = NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_stat_in_class)
             .setContentTitle("📕 $courseName · $className")
             .setContentText("📍 $room · 下课 ${endTime.hour}:${endTime.minute.toString().padStart(2, '0')} (余${remainingMinutes}分)")
@@ -192,13 +228,18 @@ class InClassService : Service() {
             .setOngoing(true)
             .setOnlyAlertOnce(true)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-            .setCategory(NotificationCompat.CATEGORY_WORKOUT)
+            .setPublicVersion(publicNotification)
+            .setCategory(NotificationCompat.CATEGORY_STOPWATCH)
             .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
             .setContentIntent(contentIntent)
-            .addAction(0, "提前下课", stopIntent)
-            .addAction(0, "+5分钟", extendIntent)
+            .addAction(0, getString(R.string.btn_end_class), stopIntent)
+            .addAction(0, getString(R.string.btn_extend_5min), extendIntent)
             .setPriority(NotificationCompat.PRIORITY_MAX)
+            .addExtras(extras)
             .build()
+
+        notification.extras.putAll(extras)
+        return notification
     }
 
     override fun onDestroy() {

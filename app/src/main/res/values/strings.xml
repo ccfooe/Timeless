@@ -97,15 +97,15 @@
     <string name="dialog_accent_color_title">选择主题强调色</string>
 
     <string name="alarm_settings">提醒与通知设置</string>
-    <string name="lockscreen_cloud_title">锁屏卡片与流体云权限 (ColorOS 16)</string>
-    <string name="lockscreen_cloud_sub">排查勿扰模式拦截与锁屏通知显示设置</string>
-    <string name="dialog_lockscreen_title">锁屏显示与流体云诊断</string>
-    <string name="dialog_lockscreen_content">若锁屏时未显示倒计时卡片，通常由以下两项系统原因引起：\n\n1. 🌙 勿扰模式拦截（常见）：\n若手机状态栏显示月亮图标（勿扰/睡眠模式），ColorOS 会默认拦截锁屏显示。请在系统「设置 → 声音与振动 → 勿扰模式」中关闭，或在「允许的应用」中将 Timeless 加入白名单。\n\n2. 锁屏通知未开启：\n部分系统对直接安装的软件默认关闭锁屏显示。请点击下方按钮进入系统设置，确保开启「锁屏通知（显示全部内容）」并开启「流体云」开关。</string>
-    <string name="btn_open_system_notification">前往系统通知设置</string>
+    <string name="lockscreen_cloud_title">锁屏卡片与流体云权限 (ColorOS 16/17)</string>
+    <string name="lockscreen_cloud_sub">直达通道设置流体云灵动胶囊与锁屏显示全部内容</string>
+    <string name="dialog_lockscreen_title">锁屏显示与流体云 (灵动胶囊) 设置</string>
+    <string name="dialog_lockscreen_content">ColorOS 16 / 17 系统对于非应用商店直接安装的应用，默认会限制锁屏与流体云胶囊展示。请按以下指引开启：\n\n1. 💧 开启「流体云」开关：\n点击下方按钮将直接进入 Timeless 的「上课状态实时卡片」通道，请确保开启「流体云 / 灵动胶囊」开关，上课时前置摄像头药丸位置即可显示胶囊并支持轻触展开。\n\n2. 📱 开启「在锁屏上显示」：\n在同一设置页中，点击「锁屏」，勾选为「显示所有通知内容」（若为“隐藏敏感内容”则锁屏可能不展开卡片）。\n\n3. 🌙 检查勿扰模式：\n若状态栏有月亮图标，请在系统「声音与振动 → 勿扰模式」中允许 Timeless 或临时关闭勿扰。</string>
+    <string name="btn_open_system_notification">前往系统通道设置 (开启流体云)</string>
     <string name="warn_minutes_title">下课前提醒时间</string>
     <string name="warn_minutes_sub">提前 %d 分钟发送震动与横幅提醒</string>
     <string name="survival_guide">后台保活与提醒指南</string>
-    <string name="survival_guide_sub">ColorOS 16 流体云、电池优化与多任务锁定设置</string>
+    <string name="survival_guide_sub">ColorOS 16/17 流体云、电池优化与多任务锁定设置</string>
     <string name="user_guide_title">新手使用指南与双轨录入说明</string>
     <string name="user_guide_sub">了解 AI 识别录入与无 API 纯本地手动排课说明</string>
     <string name="backup_and_restore">数据备份与导出</string>
@@ -114,7 +114,7 @@
     <string name="import_backup_title">导入数据备份 (JSON)</string>
     <string name="import_backup_sub">从 JSON 文件中恢复全部课程、学期与日程</string>
     <string name="about_timeless">关于 Timeless</string>
-    <string name="about_timeless_sub">v2.1.7 · 专为高校教师打造的课堂节拍掌控伴侣</string>
+    <string name="about_timeless_sub">v2.1.8 · 专为高校教师打造的课堂节拍掌控伴侣</string>
     <string name="clear_all_data">清除全部本地数据</string>
     <string name="clear_all_data_sub">重置数据库至初始状态</string>
 
@@ -129,7 +129,7 @@
     <string name="dialog_clear_content">确定要清除所有课程、校历与日程数据吗？此操作无法撤销。清除后将恢复内置的初始学期与作息时间表。</string>
     <string name="dialog_warn_minutes_title">设置下课前提醒</string>
     <string name="dialog_warn_minutes_content">在下课前 %d 分钟通过强力震动与锁屏横幅提醒防拖堂。</string>
-    <string name="dialog_about_body">版本：v2.1.7\n核心特性：\n• 苹果/Smartisan 极简纯净美学重构\n• 底部导航栏紧凑优雅压缩（释放屏幕纵向空间）\n• 课表全天10节课同屏完美尽显（上移空白间隙+第9/10节完整呈现）\n• 5 组包豪斯大师级强调色自由切换\n• 外观模式自由切换（跟随系统/白天浅色/夜间深色）\n• 瑞士机械表盘式超大等宽数字倒计时\n• 锁屏常驻教学进度卡片与 ColorOS 16 流体云适配\n• 多模态 AI 智能截图录入 + 离线手动双轨排课\n• 纯本地离线运行，严密保障教学隐私</string>
+    <string name="dialog_about_body">版本：v2.1.8\n核心特性：\n• 苹果/Smartisan 极简纯净美学重构\n• 底部导航栏紧凑优雅压缩（释放屏幕纵向空间）\n• 课表全天10节课同屏完美尽显（上移空白间隙+第9/10节完整呈现）\n• 5 组包豪斯大师级强调色自由切换\n• 外观模式自由切换（跟随系统/白天浅色/夜间深色）\n• 瑞士机械表盘式超大等宽数字倒计时\n• ColorOS 16 / 17.0.10 流体云灵动胶囊与锁屏倒计时卡片深度适配\n• 多模态 AI 智能截图录入 + 离线手动双轨排课\n• 纯本地离线运行，严密保障教学隐私</string>
 
     <!-- Hero Card & Today Screen -->
     <string name="hero_start_class_title">开始新的一节课</string>

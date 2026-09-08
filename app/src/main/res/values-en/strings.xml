@@ -97,15 +97,15 @@
     <string name="dialog_accent_color_title">Select Theme Accent Color</string>
 
     <string name="alarm_settings">Reminders &amp; Alarms</string>
-    <string name="lockscreen_cloud_title">Lock Screen Card &amp; Fluid Cloud (ColorOS 16)</string>
-    <string name="lockscreen_cloud_sub">Diagnose Do Not Disturb interception &amp; lockscreen display</string>
-    <string name="dialog_lockscreen_title">Lock Screen &amp; Fluid Cloud Diagnostics</string>
-    <string name="dialog_lockscreen_content">If the countdown card does not show up on your lock screen, it is typically caused by two system settings:\n\n1. 🌙 Do Not Disturb (DND) Interception:\nIf a moon icon is shown in your status bar, ColorOS suppresses lockscreen alerts by default. Please turn off DND in System Settings → Sound &amp; Vibration → Do Not Disturb, or add Timeless to Allowed Apps.\n\n2. Lock Screen Permission Disabled:\nFor side-loaded apps, lock screen display is often restricted. Tap the button below to open system settings, make sure \"Lock Screen (Show All Content)\" and \"Fluid Cloud\" capsule are turned ON.</string>
-    <string name="btn_open_system_notification">Open System Notification Settings</string>
+    <string name="lockscreen_cloud_title">Lock Screen Card &amp; Fluid Cloud (ColorOS 16/17)</string>
+    <string name="lockscreen_cloud_sub">Direct access to channel settings for Fluid Cloud capsule &amp; lockscreen</string>
+    <string name="dialog_lockscreen_title">Lock Screen &amp; Fluid Cloud Setup</string>
+    <string name="dialog_lockscreen_content">ColorOS 16 / 17 restricts lock screen cards and Fluid Cloud capsules by default for sideloaded apps. Please configure as follows:\n\n1. 💧 Enable "Fluid Cloud" Capsule:\nTap the button below to directly open the "In-Class Live Card" channel. Turn ON the "Fluid Cloud" switch to show the dynamic pill around the camera cutout.\n\n2. 📱 Enable "Show on Lock Screen":\nOn the same settings screen, tap "Lock screen" and select "Show all notification content".\n\n3. 🌙 Check Do Not Disturb (DND):\nIf DND (moon icon) is active, ColorOS suppresses alerts. Please whitelist Timeless or turn off DND.</string>
+    <string name="btn_open_system_notification">Open Channel Settings (Enable Fluid Cloud)</string>
     <string name="warn_minutes_title">Class Ending Reminder</string>
     <string name="warn_minutes_sub">Alert %d min before class ends via vibration &amp; banner</string>
     <string name="survival_guide">Background Survival Guide</string>
-    <string name="survival_guide_sub">ColorOS 16 Fluid Cloud, battery &amp; task locking</string>
+    <string name="survival_guide_sub">ColorOS 16/17 Fluid Cloud, battery &amp; task locking</string>
     <string name="user_guide_title">Beginner\'s Guide &amp; Manual Entry</string>
     <string name="user_guide_sub">Learn AI auto-import vs 100% offline manual scheduling</string>
     <string name="backup_and_restore">Data Backup &amp; Export</string>
@@ -114,7 +114,7 @@
     <string name="import_backup_title">Import Data Backup (JSON)</string>
     <string name="import_backup_sub">Restore all courses, semesters &amp; schedule from JSON</string>
     <string name="about_timeless">About Timeless</string>
-    <string name="about_timeless_sub">v2.1.7 · University teaching rhythm &amp; countdown companion</string>
+    <string name="about_timeless_sub">v2.1.8 · University teaching rhythm &amp; countdown companion</string>
     <string name="clear_all_data">Clear All Local Data</string>
     <string name="clear_all_data_sub">Reset database to initial state</string>
 
@@ -129,7 +129,7 @@
     <string name="dialog_clear_content">Are you sure you want to delete all courses, semesters, and affairs? This action cannot be undone.</string>
     <string name="dialog_warn_minutes_title">Class End Warning</string>
     <string name="dialog_warn_minutes_content">Vibrate and show notification %d minutes before class ends.</string>
-    <string name="dialog_about_body">Version: v2.1.7\nCore Features:\n• Apple/Smartisan minimalist pure surface aesthetics\n• Compact &amp; elegant bottom navigation bar (vertical screen space saved)\n• 10 daily class periods fully visible on single screen (tightened headers + periods 9 &amp; 10 fully in view)\n• 5 curated Bauhaus &amp; designer accent color palettes\n• Appearance mode (Follow System / Always Light / Always Dark)\n• Swiss mechanical watch giant monospace countdown\n• Lock screen progress card &amp; ColorOS 16 Fluid Cloud\n• Multimodal AI import + 100% offline manual scheduling\n• Pure local storage with complete privacy</string>
+    <string name="dialog_about_body">Version: v2.1.8\nCore Features:\n• Apple/Smartisan minimalist pure surface aesthetics\n• Compact &amp; elegant bottom navigation bar (vertical screen space saved)\n• 10 daily class periods fully visible on single screen (tightened headers + periods 9 &amp; 10 fully in view)\n• 5 curated Bauhaus &amp; designer accent color palettes\n• Appearance mode (Follow System / Always Light / Always Dark)\n• Swiss mechanical watch giant monospace countdown\n• ColorOS 16 / 17.0.10 Fluid Cloud capsule &amp; lockscreen countdown card deep adaptation\n• Multimodal AI import + 100% offline manual scheduling\n• Pure local storage with complete privacy</string>
 
     <!-- Hero Card & Today Screen -->
     <string name="hero_start_class_title">Start a New Class</string>

@@ -3,6 +3,7 @@ package com.classbell.app.ui.settings
 import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
+import com.classbell.app.ClassBellApp
 import androidx.activity.compose.LocalActivityResultRegistryOwner
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -450,16 +451,24 @@ fun SettingsScreen(
                 Button(
                     onClick = {
                         viewModel.closeLockscreenDialog()
-                        val intent = Intent(android.provider.Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
+                        val channelIntent = Intent(android.provider.Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS).apply {
                             putExtra(android.provider.Settings.EXTRA_APP_PACKAGE, context.packageName)
+                            putExtra(android.provider.Settings.EXTRA_CHANNEL_ID, ClassBellApp.CHANNEL_IN_CLASS_ID)
                         }
                         runCatching {
-                            context.startActivity(intent)
+                            context.startActivity(channelIntent)
                         }.onFailure {
-                            val fallback = Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                                data = Uri.parse("package:${context.packageName}")
+                            val appIntent = Intent(android.provider.Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
+                                putExtra(android.provider.Settings.EXTRA_APP_PACKAGE, context.packageName)
                             }
-                            context.startActivity(fallback)
+                            runCatching {
+                                context.startActivity(appIntent)
+                            }.onFailure {
+                                val fallback = Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                                    data = Uri.parse("package:${context.packageName}")
+                                }
+                                context.startActivity(fallback)
+                            }
                         }
                     },
                     colors = androidx.compose.material3.ButtonDefaults.buttonColors(containerColor = accentColor)

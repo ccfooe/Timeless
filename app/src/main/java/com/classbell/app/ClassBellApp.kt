@@ -18,7 +18,7 @@ import com.classbell.app.service.AlarmScheduler
 class ClassBellApp : Application() {
 
     companion object {
-        const val CHANNEL_IN_CLASS_ID = "classbell_in_class_v2"
+        const val CHANNEL_IN_CLASS_ID = "classbell_in_class_v3"
         const val CHANNEL_WARNING_ID = "classbell_warning"
         const val CHANNEL_AFFAIRS_ID = "classbell_affairs"
     }
@@ -69,6 +69,12 @@ class ClassBellApp : Application() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
+            // Purge obsolete channels to force recreation with optimal ColorOS Fluid Cloud & lockscreen settings
+            runCatching {
+                manager.deleteNotificationChannel("classbell_in_class")
+                manager.deleteNotificationChannel("classbell_in_class_v2")
+            }
+
             // 1. In-Class Progress Channel (High importance for lock-screen card & ColorOS Fluid Cloud display)
             val inClassChannel = NotificationChannel(
                 CHANNEL_IN_CLASS_ID,
@@ -78,6 +84,8 @@ class ClassBellApp : Application() {
                 description = getString(R.string.notification_channel_in_class_desc)
                 setShowBadge(true)
                 lockscreenVisibility = android.app.Notification.VISIBILITY_PUBLIC
+                enableLights(true)
+                runCatching { setBypassDnd(true) }
             }
 
             // 2. Class End Warning Channel (High importance for vibration and heads-up)
