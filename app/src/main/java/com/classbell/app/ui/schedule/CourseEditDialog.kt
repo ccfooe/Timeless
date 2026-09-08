@@ -34,11 +34,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.classbell.app.R
 import com.classbell.app.core.TimeUtils
 import com.classbell.app.data.model.Course
 import com.classbell.app.data.model.WeekPattern
+import com.classbell.app.ui.theme.AccentOrange
 import com.classbell.app.ui.theme.CourseColors
 import com.classbell.app.ui.theme.PinkPrimary
 
@@ -53,23 +57,25 @@ fun CourseEditDialog(
     var code by remember { mutableStateOf(initialCourse?.code ?: "") }
     var dayOfWeek by remember { mutableIntStateOf(initialCourse?.dayOfWeek ?: 3) }
     var periodStart by remember { mutableIntStateOf(initialCourse?.periodStart ?: 1) }
-    var periodEnd by remember { mutableIntStateOf(initialCourse?.periodEnd ?: 4) }
-    var weekFrom by remember { mutableIntStateOf(initialCourse?.weekFrom ?: 2) }
-    var weekTo by remember { mutableIntStateOf(initialCourse?.weekTo ?: 17) }
+    var periodEnd by remember { mutableIntStateOf(initialCourse?.periodEnd ?: 2) }
+    var weekFrom by remember { mutableIntStateOf(initialCourse?.weekFrom ?: 1) }
+    var weekTo by remember { mutableIntStateOf(initialCourse?.weekTo ?: 16) }
     var weekPattern by remember { mutableStateOf(initialCourse?.weekPattern ?: WeekPattern.ALL) }
-    var campus by remember { mutableStateOf(initialCourse?.campus ?: "金牛校区") }
-    var room by remember { mutableStateOf(initialCourse?.room ?: "贡院401") }
+    var campus by remember { mutableStateOf(initialCourse?.campus ?: "") }
+    var room by remember { mutableStateOf(initialCourse?.room ?: "") }
     var className by remember { mutableStateOf(initialCourse?.className ?: "") }
     var studentCountStr by remember { mutableStateOf(initialCourse?.studentCount?.toString() ?: "45") }
     var nature by remember { mutableStateOf(initialCourse?.nature ?: "必修") }
     var examType by remember { mutableStateOf(initialCourse?.examType ?: "考试") }
     var selectedColor by remember { mutableStateOf(initialCourse?.color ?: CourseColors[0]) }
 
+    val isEn = LocalContext.current.resources.configuration.locales[0].language == "en"
+
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
-                text = if (initialCourse == null) "新增课程" else "编辑课程",
+                text = if (initialCourse == null) stringResource(R.string.add_course) else stringResource(R.string.edit_course),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
@@ -84,7 +90,7 @@ fun CourseEditDialog(
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
-                    label = { Text("课程名称 *") },
+                    label = { Text(stringResource(R.string.course_name_label)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -96,7 +102,7 @@ fun CourseEditDialog(
                     OutlinedTextField(
                         value = className,
                         onValueChange = { className = it },
-                        label = { Text("授课班级 *") },
+                        label = { Text(stringResource(R.string.course_class_label)) },
                         singleLine = true,
                         modifier = Modifier.weight(1.5f)
                     )
@@ -104,7 +110,7 @@ fun CourseEditDialog(
                     OutlinedTextField(
                         value = studentCountStr,
                         onValueChange = { studentCountStr = it.filter { ch -> ch.isDigit() } },
-                        label = { Text("人数") },
+                        label = { Text(stringResource(R.string.course_students_label)) },
                         singleLine = true,
                         modifier = Modifier.weight(1f)
                     )
@@ -117,7 +123,7 @@ fun CourseEditDialog(
                     OutlinedTextField(
                         value = campus,
                         onValueChange = { campus = it },
-                        label = { Text("校区") },
+                        label = { Text(stringResource(R.string.course_campus_label)) },
                         singleLine = true,
                         modifier = Modifier.weight(1f)
                     )
@@ -125,14 +131,15 @@ fun CourseEditDialog(
                     OutlinedTextField(
                         value = room,
                         onValueChange = { room = it },
-                        label = { Text("教室 *") },
+                        label = { Text(stringResource(R.string.course_room_label)) },
                         singleLine = true,
                         modifier = Modifier.weight(1f)
                     )
                 }
 
                 // Day of Week Selector
-                Text("星期: ${TimeUtils.getWeekdayShortName(dayOfWeek)}", style = MaterialTheme.typography.labelMedium)
+                val dayName = if (isEn) listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")[dayOfWeek - 1] else TimeUtils.getWeekdayShortName(dayOfWeek)
+                Text(stringResource(R.string.course_weekday_label, dayName), style = MaterialTheme.typography.labelMedium)
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
@@ -154,13 +161,13 @@ fun CourseEditDialog(
                     OutlinedTextField(
                         value = periodStart.toString(),
                         onValueChange = { periodStart = it.toIntOrNull()?.coerceIn(1, 10) ?: periodStart },
-                        label = { Text("起始节次 (1-10)") },
+                        label = { Text(stringResource(R.string.course_period_start_label)) },
                         modifier = Modifier.weight(1f)
                     )
                     OutlinedTextField(
                         value = periodEnd.toString(),
                         onValueChange = { periodEnd = it.toIntOrNull()?.coerceIn(1, 10) ?: periodEnd },
-                        label = { Text("结束节次 (1-10)") },
+                        label = { Text(stringResource(R.string.course_period_end_label)) },
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -173,13 +180,13 @@ fun CourseEditDialog(
                     OutlinedTextField(
                         value = weekFrom.toString(),
                         onValueChange = { weekFrom = it.toIntOrNull()?.coerceAtLeast(1) ?: weekFrom },
-                        label = { Text("起始周") },
+                        label = { Text(stringResource(R.string.course_week_start_label)) },
                         modifier = Modifier.weight(1f)
                     )
                     OutlinedTextField(
                         value = weekTo.toString(),
                         onValueChange = { weekTo = it.toIntOrNull()?.coerceAtLeast(1) ?: weekTo },
-                        label = { Text("结束周") },
+                        label = { Text(stringResource(R.string.course_week_end_label)) },
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -192,22 +199,22 @@ fun CourseEditDialog(
                     FilterChip(
                         selected = weekPattern == WeekPattern.ALL,
                         onClick = { weekPattern = WeekPattern.ALL },
-                        label = { Text("每周") }
+                        label = { Text(stringResource(R.string.week_pattern_all)) }
                     )
                     FilterChip(
                         selected = weekPattern == WeekPattern.ODD,
                         onClick = { weekPattern = WeekPattern.ODD },
-                        label = { Text("单周") }
+                        label = { Text(stringResource(R.string.week_pattern_odd)) }
                     )
                     FilterChip(
                         selected = weekPattern == WeekPattern.EVEN,
                         onClick = { weekPattern = WeekPattern.EVEN },
-                        label = { Text("双周") }
+                        label = { Text(stringResource(R.string.week_pattern_even)) }
                     )
                 }
 
                 // Color Palette Selection
-                Text("课程颜色", style = MaterialTheme.typography.labelMedium)
+                Text(stringResource(R.string.course_color_label), style = MaterialTheme.typography.labelMedium)
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
@@ -256,14 +263,14 @@ fun CourseEditDialog(
                         onSave(updatedCourse)
                     }
                 },
-                colors = ButtonDefaults.buttonColors(containerColor = PinkPrimary)
+                colors = ButtonDefaults.buttonColors(containerColor = AccentOrange)
             ) {
-                Text("保存")
+                Text(stringResource(R.string.save))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("取消")
+                Text(stringResource(R.string.cancel))
             }
         }
     )

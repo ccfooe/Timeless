@@ -185,7 +185,7 @@ fun TodayScreen(
 
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    text = "开始新的一节课",
+                                    text = stringResource(R.string.hero_start_class_title),
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.onSurface,
@@ -193,7 +193,7 @@ fun TodayScreen(
                                 )
                                 Spacer(modifier = Modifier.height(2.dp))
                                 Text(
-                                    text = "专注课堂节拍 · 灵动倒计时",
+                                    text = stringResource(R.string.hero_start_class_subtitle),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = AccentOrange.copy(alpha = 0.9f),
                                     fontWeight = FontWeight.Medium
@@ -337,6 +337,14 @@ fun TodayHeader(
                 )
             }
 
+            val displayPhase = when (phase) {
+                "教学周" -> stringResource(R.string.phase_teaching)
+                "考试周" -> stringResource(R.string.phase_exam)
+                "实践周" -> stringResource(R.string.phase_practice)
+                "假期/非教学周" -> stringResource(R.string.phase_break)
+                else -> phase
+            }
+
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(8.dp))
@@ -344,7 +352,7 @@ fun TodayHeader(
                     .padding(horizontal = 8.dp, vertical = 3.dp)
             ) {
                 Text(
-                    text = phase,
+                    text = displayPhase,
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontWeight = FontWeight.Medium
@@ -359,7 +367,7 @@ fun TodayHeader(
                         .padding(horizontal = 8.dp, vertical = 3.dp)
                 ) {
                     Text(
-                        text = "$holidayName 放假",
+                        text = stringResource(R.string.holiday_tag_format, holidayName),
                         style = MaterialTheme.typography.labelMedium,
                         color = Color(0xFFBA1A1A),
                         fontWeight = FontWeight.Bold
@@ -397,7 +405,13 @@ fun TodayMeetingCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "第 ${meeting.periodStart}–${meeting.periodEnd} 节  (${TimeUtils.formatTime(meeting.startTime)}–${TimeUtils.formatTime(meeting.endTime)})",
+                    text = stringResource(
+                        R.string.meeting_periods_time,
+                        meeting.periodStart,
+                        meeting.periodEnd,
+                        TimeUtils.formatTime(meeting.startTime),
+                        TimeUtils.formatTime(meeting.endTime)
+                    ),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontWeight = FontWeight.Medium
@@ -463,7 +477,7 @@ fun TodayMeetingCard(
             ) {
                 Icon(Icons.Default.PlayArrow, contentDescription = null, modifier = Modifier.size(16.dp))
                 Spacer(modifier = Modifier.width(6.dp))
-                Text("开始这节课 (立即启动倒计时与锁屏)")
+                Text(stringResource(R.string.start_this_class_btn))
             }
         }
     }
@@ -514,7 +528,7 @@ fun StartClassDialog(
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(
-                    text = "选择要教授的课程：",
+                    text = stringResource(R.string.select_course_prompt),
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.SemiBold
                 )
@@ -551,12 +565,12 @@ fun StartClassDialog(
                         }
                     }
                 } else {
-                    Text("暂无课程，将以临时课程开启", style = MaterialTheme.typography.bodySmall)
+                    Text(stringResource(R.string.no_course_temp), style = MaterialTheme.typography.bodySmall)
                 }
 
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "选择授课时长：",
+                    text = stringResource(R.string.select_duration_prompt),
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.SemiBold
                 )
@@ -565,7 +579,13 @@ fun StartClassDialog(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    listOf(2 to "测试2分", 45 to "单节45分", 90 to "两节90分", 180 to "四节大课").forEach { (mins, label) ->
+                    val durationOptions = listOf(
+                        2 to stringResource(R.string.duration_test),
+                        45 to stringResource(R.string.duration_single),
+                        90 to stringResource(R.string.duration_double),
+                        180 to stringResource(R.string.duration_quad)
+                    )
+                    durationOptions.forEach { (mins, label) ->
                         FilterChip(
                             selected = selectedDuration == mins,
                             onClick = { selectedDuration = mins },
@@ -581,21 +601,21 @@ fun StartClassDialog(
                     val courseToStart = selectedCourse ?: Course(
                         id = 9999L,
                         semesterId = 1L,
-                        name = "影视创作实训课",
+                        name = "Class Meeting",
                         dayOfWeek = 1,
                         periodStart = 1,
                         periodEnd = 2,
                         weekFrom = 1,
                         weekTo = 18,
-                        room = "贡院401",
-                        className = "影视专业班",
+                        room = "Room 101",
+                        className = "Batch 01",
                         studentCount = 45
                     )
                     onStart(courseToStart, selectedDuration)
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = AccentOrange)
             ) {
-                Text("立即开始授课")
+                Text(stringResource(R.string.start_class_now))
             }
         },
         dismissButton = {

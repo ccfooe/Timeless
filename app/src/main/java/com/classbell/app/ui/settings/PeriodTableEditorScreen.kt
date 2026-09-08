@@ -41,13 +41,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.classbell.app.R
 import com.classbell.app.core.TimeUtils
 import com.classbell.app.data.model.PeriodSlot
 import com.classbell.app.data.repository.PeriodRepository
-import com.classbell.app.ui.theme.PinkPrimary
+import com.classbell.app.ui.theme.AccentOrange
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -68,10 +70,10 @@ fun PeriodTableEditorScreen(
         modifier = modifier.fillMaxSize(),
         topBar = {
             TopAppBar(
-                title = { Text("作息时间表设置", fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.period_editor_title), fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "返回")
+                        Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 }
             )
@@ -79,10 +81,10 @@ fun PeriodTableEditorScreen(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { isAddingSlot = true },
-                containerColor = PinkPrimary,
+                containerColor = AccentOrange,
                 contentColor = Color.White
             ) {
-                Icon(Icons.Default.Add, contentDescription = "新增节次")
+                Icon(Icons.Default.Add, contentDescription = stringResource(R.string.add_period_slot))
             }
         }
     ) { paddingValues ->
@@ -96,7 +98,7 @@ fun PeriodTableEditorScreen(
         ) {
             item {
                 Text(
-                    text = "每所大学的上课节次与作息时间各有不同。默认已为您预置四川电影电视学院权威作息（10节课），您可按需增减或修改时间。",
+                    text = stringResource(R.string.period_editor_desc),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -125,20 +127,20 @@ fun PeriodTableEditorScreen(
                             Text(
                                 text = "${TimeUtils.formatTime(slot.startTime)} — ${TimeUtils.formatTime(slot.endTime)}",
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = PinkPrimary
+                                color = AccentOrange
                             )
                         }
 
                         Row {
                             IconButton(onClick = { editingSlot = slot }) {
-                                Icon(Icons.Default.Edit, contentDescription = "编辑")
+                                Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.edit))
                             }
                             IconButton(onClick = {
                                 CoroutineScope(Dispatchers.IO).launch {
                                     periodRepository.deletePeriodSlot(slot)
                                 }
                             }) {
-                                Icon(Icons.Default.Delete, contentDescription = "删除", tint = Color.Red)
+                                Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.delete), tint = Color.Red)
                             }
                         }
                     }
@@ -180,37 +182,38 @@ fun PeriodEditDialog(
     onSave: (PeriodSlot) -> Unit
 ) {
     var order by remember { mutableIntStateOf(initialSlot?.order ?: nextOrder) }
-    var label by remember { mutableStateOf(initialSlot?.label ?: "第${order}节") }
+    val defaultLabel = stringResource(R.string.period_default_label, order)
+    var label by remember { mutableStateOf(initialSlot?.label ?: defaultLabel) }
     var startTimeStr by remember { mutableStateOf(initialSlot?.startTime?.toString() ?: "08:30") }
     var endTimeStr by remember { mutableStateOf(initialSlot?.endTime?.toString() ?: "09:15") }
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(if (initialSlot == null) "新增节次" else "编辑节次", fontWeight = FontWeight.Bold) },
+        title = { Text(if (initialSlot == null) stringResource(R.string.add_period_slot) else stringResource(R.string.edit_period_slot), fontWeight = FontWeight.Bold) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 OutlinedTextField(
                     value = order.toString(),
                     onValueChange = { order = it.toIntOrNull() ?: order },
-                    label = { Text("节次序号 (例如 1, 2, 3...)") },
+                    label = { Text(stringResource(R.string.period_slot_order)) },
                     singleLine = true
                 )
                 OutlinedTextField(
                     value = label,
                     onValueChange = { label = it },
-                    label = { Text("显示名称 (例如 第1节)") },
+                    label = { Text(stringResource(R.string.period_slot_name)) },
                     singleLine = true
                 )
                 OutlinedTextField(
                     value = startTimeStr,
                     onValueChange = { startTimeStr = it },
-                    label = { Text("上课时间 (HH:MM)") },
+                    label = { Text(stringResource(R.string.period_start_time)) },
                     singleLine = true
                 )
                 OutlinedTextField(
                     value = endTimeStr,
                     onValueChange = { endTimeStr = it },
-                    label = { Text("下课时间 (HH:MM)") },
+                    label = { Text(stringResource(R.string.period_end_time)) },
                     singleLine = true
                 )
             }
@@ -229,13 +232,13 @@ fun PeriodEditDialog(
                     )
                     onSave(slot)
                 },
-                colors = ButtonDefaults.buttonColors(containerColor = PinkPrimary)
+                colors = ButtonDefaults.buttonColors(containerColor = AccentOrange)
             ) {
-                Text("保存")
+                Text(stringResource(R.string.save))
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("取消") }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) }
         }
     )
 }

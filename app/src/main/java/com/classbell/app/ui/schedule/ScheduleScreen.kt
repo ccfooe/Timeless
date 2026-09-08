@@ -45,18 +45,21 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.classbell.app.R
 import com.classbell.app.core.TimeUtils
 import com.classbell.app.data.model.Course
 import com.classbell.app.data.model.MeetingOccurrence
 import com.classbell.app.data.model.PeriodSlot
 import com.classbell.app.ui.glass.GlassCard
-import com.classbell.app.ui.theme.PinkPrimary
+import com.classbell.app.ui.theme.AccentOrange
 
 private val WeekdayNames = listOf("一", "二", "三", "四", "五", "六", "日")
 private val SlotRowHeight = 64.dp
@@ -77,11 +80,11 @@ fun ScheduleScreen(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { viewModel.openAddCourse() },
-                containerColor = PinkPrimary,
+                containerColor = AccentOrange,
                 contentColor = Color.White,
                 shape = CircleShape
             ) {
-                Icon(Icons.Default.Add, contentDescription = "新增课程")
+                Icon(Icons.Default.Add, contentDescription = stringResource(R.string.add_course))
             }
         }
     ) { paddingValues ->
@@ -152,6 +155,14 @@ fun WeekSwitcherBar(
     onResetCurrent: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val localizedPhase = when (phaseLabel) {
+        "教学周" -> stringResource(R.string.phase_teaching)
+        "考试周" -> stringResource(R.string.phase_exam)
+        "实践周" -> stringResource(R.string.phase_practice)
+        "假期/非教学周" -> stringResource(R.string.phase_break)
+        else -> phaseLabel
+    }
+
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -161,13 +172,13 @@ fun WeekSwitcherBar(
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             IconButton(onClick = onPrevious) {
-                Icon(Icons.Default.ChevronLeft, contentDescription = "上一周")
+                Icon(Icons.Default.ChevronLeft, contentDescription = stringResource(R.string.prev_week))
             }
 
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = "第 $selectedWeek 周",
+                        text = stringResource(R.string.week_number_format, selectedWeek),
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold
                     )
@@ -175,13 +186,13 @@ fun WeekSwitcherBar(
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(6.dp))
-                            .background(PinkPrimary.copy(alpha = 0.15f))
+                            .background(AccentOrange.copy(alpha = 0.15f))
                             .padding(horizontal = 6.dp, vertical = 2.dp)
                     ) {
                         Text(
-                            text = phaseLabel,
+                            text = localizedPhase,
                             style = MaterialTheme.typography.labelSmall,
-                            color = PinkPrimary,
+                            color = AccentOrange,
                             fontWeight = FontWeight.SemiBold
                         )
                     }
@@ -196,13 +207,13 @@ fun WeekSwitcherBar(
             }
 
             IconButton(onClick = onNext) {
-                Icon(Icons.Default.ChevronRight, contentDescription = "下一周")
+                Icon(Icons.Default.ChevronRight, contentDescription = stringResource(R.string.next_week))
             }
         }
 
         if (selectedWeek != currentWeek) {
             TextButton(onClick = onResetCurrent) {
-                Text("本周", color = PinkPrimary, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.this_week), color = AccentOrange, fontWeight = FontWeight.Bold)
             }
         }
     }
@@ -210,6 +221,14 @@ fun WeekSwitcherBar(
 
 @Composable
 fun PhaseBanner(phaseLabel: String, weekNumber: Int) {
+    val localizedPhase = when (phaseLabel) {
+        "教学周" -> stringResource(R.string.phase_teaching)
+        "考试周" -> stringResource(R.string.phase_exam)
+        "实践周" -> stringResource(R.string.phase_practice)
+        "假期/非教学周" -> stringResource(R.string.phase_break)
+        else -> phaseLabel
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -229,13 +248,13 @@ fun PhaseBanner(phaseLabel: String, weekNumber: Int) {
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
-                    text = "第 $weekNumber 周 · $phaseLabel",
+                    text = stringResource(R.string.phase_banner_title, weekNumber, localizedPhase),
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "本周不进行常规理论课程教学，安排集中 $phaseLabel",
+                    text = stringResource(R.string.phase_banner_desc, localizedPhase),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center
@@ -267,6 +286,7 @@ fun ScheduleGrid(
                 .padding(start = TimeColWidth)
                 .horizontalScroll(hScrollState)
         ) {
+            val isEn = LocalContext.current.resources.configuration.locales[0].language == "en"
             (1..7).forEach { day ->
                 Box(
                     modifier = Modifier
@@ -274,8 +294,9 @@ fun ScheduleGrid(
                         .padding(vertical = 8.dp),
                     contentAlignment = Alignment.Center
                 ) {
+                    val label = if (isEn) listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")[day - 1] else "周${WeekdayNames[day - 1]}"
                     Text(
-                        text = "周${WeekdayNames[day - 1]}",
+                        text = label,
                         style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
@@ -355,7 +376,7 @@ fun ScheduleGrid(
 
                             val blockColor = runCatching {
                                 Color(android.graphics.Color.parseColor(meeting.course.color))
-                            }.getOrDefault(PinkPrimary)
+                            }.getOrDefault(AccentOrange)
 
                             Box(
                                 modifier = Modifier
@@ -425,27 +446,37 @@ fun CourseDetailSheetContent(
 
             Row {
                 IconButton(onClick = onEdit) {
-                    Icon(Icons.Default.Edit, contentDescription = "编辑")
+                    Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.edit))
                 }
                 IconButton(onClick = onDelete) {
-                    Icon(Icons.Default.Delete, contentDescription = "删除", tint = Color.Red)
+                    Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.delete), tint = Color.Red)
                 }
             }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        DetailRow(label = "授课班级", value = meeting.course.className)
-        DetailRow(label = "上课人数", value = "${meeting.course.studentCount} 人")
-        DetailRow(label = "节次时间", value = "第 ${meeting.periodStart}–${meeting.periodEnd} 节 (${TimeUtils.formatTime(meeting.startTime)}–${TimeUtils.formatTime(meeting.endTime)})")
-        DetailRow(label = "上课地点", value = "${meeting.course.campus ?: ""} · ${meeting.course.room}")
-        DetailRow(label = "周次安排", value = "${meeting.course.weekFrom}–${meeting.course.weekTo} 周 (${when (meeting.course.weekPattern) {
-            com.classbell.app.data.model.WeekPattern.ALL -> "每周"
-            com.classbell.app.data.model.WeekPattern.ODD -> "单周"
-            com.classbell.app.data.model.WeekPattern.EVEN -> "双周"
-        }})")
-        meeting.course.nature?.let { DetailRow(label = "课程性质", value = it) }
-        meeting.course.examType?.let { DetailRow(label = "考核方式", value = it) }
+        DetailRow(label = stringResource(R.string.course_detail_class), value = meeting.course.className)
+        DetailRow(label = stringResource(R.string.course_detail_students), value = stringResource(R.string.course_detail_students_count, meeting.course.studentCount))
+        DetailRow(
+            label = stringResource(R.string.course_detail_period),
+            value = stringResource(
+                R.string.meeting_periods_time,
+                meeting.periodStart,
+                meeting.periodEnd,
+                TimeUtils.formatTime(meeting.startTime),
+                TimeUtils.formatTime(meeting.endTime)
+            )
+        )
+        DetailRow(label = stringResource(R.string.course_detail_location), value = "${meeting.course.campus ?: ""} · ${meeting.course.room}")
+        val patternStr = when (meeting.course.weekPattern) {
+            com.classbell.app.data.model.WeekPattern.ALL -> stringResource(R.string.week_pattern_all)
+            com.classbell.app.data.model.WeekPattern.ODD -> stringResource(R.string.week_pattern_odd)
+            com.classbell.app.data.model.WeekPattern.EVEN -> stringResource(R.string.week_pattern_even)
+        }
+        DetailRow(label = stringResource(R.string.course_detail_weeks), value = "${meeting.course.weekFrom}–${meeting.course.weekTo} ($patternStr)")
+        meeting.course.nature?.let { DetailRow(label = stringResource(R.string.course_detail_nature), value = it) }
+        meeting.course.examType?.let { DetailRow(label = stringResource(R.string.course_detail_exam), value = it) }
 
         Spacer(modifier = Modifier.height(24.dp))
     }

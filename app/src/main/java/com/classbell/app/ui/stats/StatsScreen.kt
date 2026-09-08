@@ -35,7 +35,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.classbell.app.R
 import com.classbell.app.data.repository.CourseStats
 import com.classbell.app.ui.glass.GlassCard
 import com.classbell.app.ui.theme.PinkDark
@@ -58,7 +60,7 @@ fun StatsScreen(
         item {
             Column {
                 Text(
-                    text = "教学统计",
+                    text = stringResource(R.string.stats_title),
                     style = MaterialTheme.typography.headlineLarge,
                     fontWeight = FontWeight.ExtraBold
                 )
@@ -74,7 +76,7 @@ fun StatsScreen(
 
         if (stats == null) {
             item {
-                Text("暂无统计数据", style = MaterialTheme.typography.bodyMedium)
+                Text(stringResource(R.string.stats_empty), style = MaterialTheme.typography.bodyMedium)
             }
         } else {
             val s = stats!!
@@ -86,17 +88,17 @@ fun StatsScreen(
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     MetricCard(
-                        title = "累计学时",
+                        title = stringResource(R.string.stats_total_hours),
                         value = "${s.totalAccumulatedHours}",
-                        unit = "学时",
+                        unit = stringResource(R.string.unit_hours),
                         icon = Icons.Default.HourglassBottom,
                         iconColor = PinkPrimary,
                         modifier = Modifier.weight(1f)
                     )
                     MetricCard(
-                        title = "授课次数",
+                        title = stringResource(R.string.stats_total_meetings),
                         value = "${s.totalMeetingsHeld}",
-                        unit = "次",
+                        unit = stringResource(R.string.unit_times),
                         icon = Icons.Default.AutoGraph,
                         iconColor = Color(0xFF7209B7),
                         modifier = Modifier.weight(1f)
@@ -110,17 +112,17 @@ fun StatsScreen(
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     MetricCard(
-                        title = "本周上课",
-                        value = "${s.thisWeekMeetingsCount}次 · ${s.thisWeekHours}",
-                        unit = "学时",
+                        title = stringResource(R.string.stats_this_week),
+                        value = stringResource(R.string.stats_this_week_val, s.thisWeekMeetingsCount, s.thisWeekHours),
+                        unit = stringResource(R.string.unit_hours),
                         icon = Icons.Default.School,
                         iconColor = Color(0xFF4361EE),
                         modifier = Modifier.weight(1f)
                     )
                     MetricCard(
-                        title = "覆盖学生",
+                        title = stringResource(R.string.stats_total_students),
                         value = "${s.totalStudentsReached}",
-                        unit = "人",
+                        unit = stringResource(R.string.unit_people),
                         icon = Icons.Default.Group,
                         iconColor = Color(0xFF2EC4B6),
                         modifier = Modifier.weight(1f)
@@ -131,7 +133,7 @@ fun StatsScreen(
             // Per-course detail bars
             item {
                 Text(
-                    text = "课程教学进度",
+                    text = stringResource(R.string.stats_progress_header),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(top = 12.dp)
@@ -234,7 +236,7 @@ fun CourseProgressCard(stats: CourseStats) {
                 )
 
                 Text(
-                    text = "${stats.accumulatedHours} 学时",
+                    text = stringResource(R.string.stats_accumulated_hours_format, stats.accumulatedHours),
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.Bold,
                     color = courseColor
@@ -244,7 +246,7 @@ fun CourseProgressCard(stats: CourseStats) {
             Spacer(modifier = Modifier.height(4.dp))
 
             Text(
-                text = "${stats.course.className} · ${stats.totalStudents} 人",
+                text = "${stats.course.className} · ${stats.totalStudents} " + stringResource(R.string.unit_people),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -268,7 +270,7 @@ fun CourseProgressCard(stats: CourseStats) {
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = "已上 ${stats.meetingsHeld} 次 / 共计划 ${stats.totalPlannedMeetings} 次",
+                    text = stringResource(R.string.stats_meetings_progress_format, stats.meetingsHeld, stats.totalPlannedMeetings),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

@@ -24,9 +24,11 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.classbell.app.ui.theme.PinkPrimary
+import com.classbell.app.R
+import com.classbell.app.ui.theme.AccentOrange
 
 @Composable
 fun SurvivalGuideDialog(
@@ -38,7 +40,7 @@ fun SurvivalGuideDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
-                text = "ColorOS / Android 后台保活指南",
+                text = stringResource(R.string.survival_title),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
@@ -51,7 +53,7 @@ fun SurvivalGuideDialog(
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 Text(
-                    text = "为确保下课倒计时常驻卡片与提前5分钟提醒在手机锁屏或灭屏时准时触发，请完成以下设置：",
+                    text = stringResource(R.string.survival_desc),
                     style = MaterialTheme.typography.bodyMedium
                 )
 
@@ -59,26 +61,26 @@ fun SurvivalGuideDialog(
 
                 GuideStep(
                     step = "1",
-                    title = "允许通知、锁屏显示与 ColorOS 流体云",
-                    desc = "点击下方按钮进入通知设置，务必开启「允许通知」、「锁屏通知（显示全部内容）」及「流体云」实时胶囊开关。"
+                    title = stringResource(R.string.guide_step1_title),
+                    desc = stringResource(R.string.guide_step1_desc)
                 )
 
                 GuideStep(
                     step = "2",
-                    title = "忽略电池优化 (无限制)",
-                    desc = "点击下方按钮，将本应用电池策略设置为「无限制/不优化」，避免系统休眠时冻结倒计时与闹钟。"
+                    title = stringResource(R.string.guide_step2_title),
+                    desc = stringResource(R.string.guide_step2_desc)
                 )
 
                 GuideStep(
                     step = "3",
-                    title = "ColorOS 允许自启动与关联启动",
-                    desc = "进入系统设置 → 应用管理 → 自启动管理，将 Timeless 设为「允许自启动」。"
+                    title = stringResource(R.string.guide_step3_title),
+                    desc = stringResource(R.string.guide_step3_desc)
                 )
 
                 GuideStep(
                     step = "4",
-                    title = "多任务后台锁定",
-                    desc = "上划进入多任务卡片页面，点击 Timeless 卡片右上角菜单，选择「锁定」，防止一键清理误杀。"
+                    title = stringResource(R.string.guide_step4_title),
+                    desc = stringResource(R.string.guide_step4_desc)
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -89,7 +91,7 @@ fun SurvivalGuideDialog(
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("前往设置：通知、锁屏与流体云权限")
+                    Text(stringResource(R.string.btn_goto_notifications))
                 }
 
                 OutlinedButton(
@@ -98,7 +100,7 @@ fun SurvivalGuideDialog(
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("前往设置：忽略电池优化")
+                    Text(stringResource(R.string.btn_goto_battery))
                 }
 
                 OutlinedButton(
@@ -107,21 +109,21 @@ fun SurvivalGuideDialog(
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("前往设置：应用权限详情")
+                    Text(stringResource(R.string.btn_goto_permissions))
                 }
             }
         },
         confirmButton = {
             Button(
                 onClick = onDismiss,
-                colors = ButtonDefaults.buttonColors(containerColor = PinkPrimary)
+                colors = ButtonDefaults.buttonColors(containerColor = AccentOrange)
             ) {
-                Text("我已了解并配置")
+                Text(stringResource(R.string.btn_understood_configured))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("暂不配置")
+                Text(stringResource(R.string.btn_skip_for_now))
             }
         }
     )
@@ -134,7 +136,7 @@ private fun GuideStep(step: String, title: String, desc: String) {
             text = "$step. $title",
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
-            color = PinkPrimary
+            color = AccentOrange
         )
         Text(
             text = desc,

@@ -5,6 +5,7 @@ import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.classbell.app.R
 import com.classbell.app.data.model.Course
 import com.classbell.app.data.model.Holiday
 import com.classbell.app.data.model.HolidayType
@@ -52,7 +53,7 @@ class ImportViewModel(
             val model = settingsRepository.modelFlow.firstOrNull() ?: ""
 
             if (apiKey.isBlank()) {
-                _importStage.value = ImportStage.Error("请先在「我的」->「大模型 API 设置」中配置 API Key (BYOK)")
+                _importStage.value = ImportStage.Error(context.getString(R.string.error_no_api_key))
                 return@launch
             }
 
@@ -61,7 +62,7 @@ class ImportViewModel(
             try {
                 val stream: InputStream? = context.contentResolver.openInputStream(imageUri)
                 if (stream == null) {
-                    _importStage.value = ImportStage.Error("无法打开选取的图片文件")
+                    _importStage.value = ImportStage.Error(context.getString(R.string.error_cannot_open_image))
                     return@launch
                 }
 
@@ -100,10 +101,14 @@ class ImportViewModel(
 
                     _importStage.value = ImportStage.ConfirmTimetable(converted)
                 } else {
-                    _importStage.value = ImportStage.Error(result.exceptionOrNull()?.message ?: "解析失败，请检查图片或 API 设置")
+                    _importStage.value = ImportStage.Error(
+                        result.exceptionOrNull()?.message ?: context.getString(R.string.error_parse_failed)
+                    )
                 }
             } catch (e: Exception) {
-                _importStage.value = ImportStage.Error("解析异常: ${e.message}")
+                _importStage.value = ImportStage.Error(
+                    context.getString(R.string.error_parse_exception, e.message ?: "")
+                )
             }
         }
     }
@@ -115,7 +120,7 @@ class ImportViewModel(
             val model = settingsRepository.modelFlow.firstOrNull() ?: ""
 
             if (apiKey.isBlank()) {
-                _importStage.value = ImportStage.Error("请先在「我的」->「大模型 API 设置」中配置 API Key (BYOK)")
+                _importStage.value = ImportStage.Error(context.getString(R.string.error_no_api_key))
                 return@launch
             }
 
@@ -124,7 +129,7 @@ class ImportViewModel(
             try {
                 val stream: InputStream? = context.contentResolver.openInputStream(imageUri)
                 if (stream == null) {
-                    _importStage.value = ImportStage.Error("无法打开选取的图片文件")
+                    _importStage.value = ImportStage.Error(context.getString(R.string.error_cannot_open_image))
                     return@launch
                 }
 
@@ -137,7 +142,7 @@ class ImportViewModel(
 
                     val semester = Semester(
                         id = 0L,
-                        name = parsed.semesterName.ifEmpty { "导入学期校历" },
+                        name = parsed.semesterName.ifEmpty { context.getString(R.string.default_imported_calendar_name) },
                         week1Monday = week1Mon,
                         teachingFrom = parsed.teachingWeeks.from,
                         teachingTo = parsed.teachingWeeks.to,
@@ -162,10 +167,14 @@ class ImportViewModel(
 
                     _importStage.value = ImportStage.ConfirmCalendar(semester, holidays)
                 } else {
-                    _importStage.value = ImportStage.Error(result.exceptionOrNull()?.message ?: "校历解析失败")
+                    _importStage.value = ImportStage.Error(
+                        result.exceptionOrNull()?.message ?: context.getString(R.string.error_calendar_parse_failed)
+                    )
                 }
             } catch (e: Exception) {
-                _importStage.value = ImportStage.Error("校历解析异常: ${e.message}")
+                _importStage.value = ImportStage.Error(
+                    context.getString(R.string.error_calendar_parse_exception, e.message ?: "")
+                )
             }
         }
     }

@@ -43,6 +43,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
@@ -69,7 +70,8 @@ import com.classbell.app.ui.theme.SystemRed
 import java.time.LocalDate
 import java.time.YearMonth
 
-private val WeekdayHeaders = listOf("周", "一", "二", "三", "四", "五", "六", "日")
+private val WeekdayHeadersZh = listOf("周", "一", "二", "三", "四", "五", "六", "日")
+private val WeekdayHeadersEn = listOf("Wk", "M", "T", "W", "T", "F", "S", "S")
 
 @Composable
 fun CalendarScreen(
@@ -148,7 +150,7 @@ fun CalendarScreen(
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            text = "授课时间线",
+                            text = stringResource(R.string.timeline_classes),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
@@ -174,7 +176,7 @@ fun CalendarScreen(
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = "校务与日程待办",
+                        text = stringResource(R.string.timeline_affairs),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
@@ -241,7 +243,7 @@ fun ColorOSMonthHeader(
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
-                text = "${yearMonth.year}年${yearMonth.monthValue}月",
+                text = stringResource(R.string.calendar_month_format, yearMonth.year, yearMonth.monthValue),
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Black
             )
@@ -257,7 +259,7 @@ fun ColorOSMonthHeader(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = stringResource(R.string.btn_today),
+                    text = stringResource(R.string.calendar_today_btn),
                     style = MaterialTheme.typography.labelSmall,
                     fontWeight = FontWeight.Bold,
                     color = if (isCurrentMonth) AccentOrange else MaterialTheme.colorScheme.onSurfaceVariant
@@ -267,10 +269,10 @@ fun ColorOSMonthHeader(
 
         Row {
             IconButton(onClick = onPrevious) {
-                Icon(Icons.Default.ChevronLeft, contentDescription = "上个月")
+                Icon(Icons.Default.ChevronLeft, contentDescription = stringResource(R.string.prev_month))
             }
             IconButton(onClick = onNext) {
-                Icon(Icons.Default.ChevronRight, contentDescription = "下个月")
+                Icon(Icons.Default.ChevronRight, contentDescription = stringResource(R.string.next_month))
             }
         }
     }
@@ -291,6 +293,9 @@ fun ColorOSCalendarGrid(
 
     val affairDates = affairsInMonth.map { it.date }.toSet()
 
+    val isEn = LocalContext.current.resources.configuration.locales[0].language == "en"
+    val weekdayHeaders = if (isEn) WeekdayHeadersEn else WeekdayHeadersZh
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
@@ -300,7 +305,7 @@ fun ColorOSCalendarGrid(
         Column(modifier = Modifier.padding(12.dp)) {
             // Header Row: Week | 一 | 二 | 三 | 四 | 五 | 六 | 日
             Row(modifier = Modifier.fillMaxWidth()) {
-                WeekdayHeaders.forEachIndexed { index, header ->
+                weekdayHeaders.forEachIndexed { index, header ->
                     Text(
                         text = header,
                         modifier = Modifier.weight(if (index == 0) 0.8f else 1f),
@@ -393,14 +398,14 @@ fun ColorOSCalendarGrid(
                                     ) {
                                         if (isRestHoliday) {
                                             Text(
-                                                text = "休",
+                                                text = stringResource(R.string.marker_holiday),
                                                 fontSize = 8.sp,
                                                 fontWeight = FontWeight.Bold,
                                                 color = if (isSelected) Color.White else SystemRed
                                             )
                                         } else if (isMakeupWorkday) {
                                             Text(
-                                                text = "班",
+                                                text = stringResource(R.string.marker_workday),
                                                 fontSize = 8.sp,
                                                 fontWeight = FontWeight.Bold,
                                                 color = if (isSelected) Color.White else SystemBlue
@@ -503,7 +508,7 @@ fun ColorOSMeetingCard(meeting: MeetingOccurrence) {
                     color = AccentOrange
                 )
                 Text(
-                    text = "第 ${meeting.periodStart}–${meeting.periodEnd} 节",
+                    text = stringResource(R.string.course_period_format, meeting.periodStart, meeting.periodEnd),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

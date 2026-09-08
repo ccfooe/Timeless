@@ -112,12 +112,12 @@ fun SettingsScreen(
                     context.contentResolver.openInputStream(it)?.bufferedReader()?.use { reader ->
                         val jsonContent = reader.readText()
                         viewModel.importBackup(jsonContent) { success ->
-                            val msg = if (success) "备份恢复成功" else "备份文件解析失败"
+                            val msg = if (success) context.getString(R.string.backup_success) else context.getString(R.string.backup_failed)
                             Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
                         }
                     }
                 }.onFailure {
-                    Toast.makeText(context, "读取文件失败: ${it.message}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, context.getString(R.string.file_read_error, it.message ?: ""), Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -125,6 +125,7 @@ fun SettingsScreen(
 
     var showWarnMinutesDialog by remember { mutableStateOf(false) }
     var showAboutDialog by remember { mutableStateOf(false) }
+    var showUserGuideDialog by remember { mutableStateOf(false) }
 
     LazyColumn(
         modifier = modifier
@@ -143,7 +144,7 @@ fun SettingsScreen(
 
         // Section 0: 通用 / General (Language Switcher)
         item {
-            SectionHeader(title = "通用设置 / General")
+            SectionHeader(title = stringResource(R.string.settings_section_general))
         }
 
         item {
@@ -160,7 +161,7 @@ fun SettingsScreen(
 
         // Section 1: 智能识别导入 (LLM)
         item {
-            SectionHeader(title = "智能识别录入 (LLM)")
+            SectionHeader(title = stringResource(R.string.settings_section_import_ai))
         }
 
         item {
@@ -169,10 +170,10 @@ fun SettingsScreen(
                     icon = Icons.Default.Edit,
                     iconColor = AccentOrange,
                     title = stringResource(R.string.import_schedule_screenshot),
-                    subtitle = "拍照或相册选取作息课程表图片，AI 自动提取",
+                    subtitle = stringResource(R.string.import_schedule_screenshot_sub),
                     onClick = {
                         timetablePickerLauncher?.launch("image/*")
-                            ?: Toast.makeText(context, "存储访问不可用", Toast.LENGTH_SHORT).show()
+                            ?: Toast.makeText(context, context.getString(R.string.storage_unavailable), Toast.LENGTH_SHORT).show()
                     }
                 )
                 SettingsDivider()
@@ -180,10 +181,10 @@ fun SettingsScreen(
                     icon = Icons.Default.DateRange,
                     iconColor = Color(0xFF7209B7),
                     title = stringResource(R.string.import_calendar_screenshot),
-                    subtitle = "提取第一周开学日期、教学周与节假日安排",
+                    subtitle = stringResource(R.string.import_calendar_screenshot_sub),
                     onClick = {
                         calendarPickerLauncher?.launch("image/*")
-                            ?: Toast.makeText(context, "存储访问不可用", Toast.LENGTH_SHORT).show()
+                            ?: Toast.makeText(context, context.getString(R.string.storage_unavailable), Toast.LENGTH_SHORT).show()
                     }
                 )
             }
@@ -191,7 +192,7 @@ fun SettingsScreen(
 
         // Section 2: 课表与提醒设置
         item {
-            SectionHeader(title = "课表与提醒")
+            SectionHeader(title = stringResource(R.string.settings_section_schedule))
         }
 
         item {
@@ -200,15 +201,15 @@ fun SettingsScreen(
                     icon = Icons.Default.DateRange,
                     iconColor = Color(0xFF4361EE),
                     title = stringResource(R.string.period_table_manager),
-                    subtitle = "当前为10节课作息（含晚课），可自定义各节起止时间",
+                    subtitle = stringResource(R.string.period_table_manager_sub),
                     onClick = onNavigateToPeriodEditor
                 )
                 SettingsDivider()
                 SettingsItem(
                     icon = Icons.Default.Notifications,
                     iconColor = AccentAmber,
-                    title = "下课前提醒时间",
-                    subtitle = "提前 ${state.endWarnMinutes} 分钟发送震动与横幅提醒",
+                    title = stringResource(R.string.warn_minutes_title),
+                    subtitle = stringResource(R.string.warn_minutes_sub, state.endWarnMinutes),
                     onClick = { showWarnMinutesDialog = true }
                 )
                 SettingsDivider()
@@ -216,15 +217,32 @@ fun SettingsScreen(
                     icon = Icons.Default.Build,
                     iconColor = Color(0xFF2EC4B6),
                     title = stringResource(R.string.survival_guide),
-                    subtitle = "ColorOS 16 流体云、电池优化与多任务锁定设置",
+                    subtitle = stringResource(R.string.survival_guide_sub),
                     onClick = { viewModel.openSurvivalGuide() }
                 )
             }
         }
 
-        // Section 3: API 与数据管理
+        // Section 3: 指南与帮助
         item {
-            SectionHeader(title = "API 与备份")
+            SectionHeader(title = stringResource(R.string.settings_section_guide))
+        }
+
+        item {
+            SettingsCard {
+                SettingsItem(
+                    icon = Icons.Default.Info,
+                    iconColor = AccentOrange,
+                    title = stringResource(R.string.user_guide_title),
+                    subtitle = stringResource(R.string.user_guide_sub),
+                    onClick = { showUserGuideDialog = true }
+                )
+            }
+        }
+
+        // Section 4: API 与备份
+        item {
+            SectionHeader(title = stringResource(R.string.settings_section_data))
         }
 
         item {
@@ -233,15 +251,15 @@ fun SettingsScreen(
                     icon = Icons.Default.Lock,
                     iconColor = AccentOrange,
                     title = stringResource(R.string.llm_settings),
-                    subtitle = if (state.apiKey.isBlank()) "未配置密钥 (点击添加)" else "已配置: ${state.model}",
+                    subtitle = if (state.apiKey.isBlank()) stringResource(R.string.llm_settings_sub_unconfigured) else stringResource(R.string.llm_settings_sub_configured, state.model),
                     onClick = { viewModel.openLlmDialog() }
                 )
                 SettingsDivider()
                 SettingsItem(
                     icon = Icons.Default.Share,
                     iconColor = Color(0xFF3F51B5),
-                    title = "导出本地数据备份 (JSON)",
-                    subtitle = "包含学期、课程、作息与事务（不含 API Key）",
+                    title = stringResource(R.string.export_backup_title),
+                    subtitle = stringResource(R.string.export_backup_sub),
                     onClick = {
                         viewModel.exportBackup { jsonStr ->
                             val sendIntent = Intent().apply {
@@ -249,7 +267,7 @@ fun SettingsScreen(
                                 putExtra(Intent.EXTRA_TEXT, jsonStr)
                                 type = "application/json"
                             }
-                            context.startActivity(Intent.createChooser(sendIntent, "分享备份文件"))
+                            context.startActivity(Intent.createChooser(sendIntent, context.getString(R.string.share_backup_chooser)))
                         }
                     }
                 )
@@ -257,11 +275,11 @@ fun SettingsScreen(
                 SettingsItem(
                     icon = Icons.AutoMirrored.Filled.Send,
                     iconColor = Color(0xFF00897B),
-                    title = "导入数据备份 (JSON)",
-                    subtitle = "从 JSON 文件中恢复全部课程、学期与日程",
+                    title = stringResource(R.string.import_backup_title),
+                    subtitle = stringResource(R.string.import_backup_sub),
                     onClick = {
                         jsonPickerLauncher?.launch("application/json")
-                            ?: Toast.makeText(context, "存储访问不可用", Toast.LENGTH_SHORT).show()
+                            ?: Toast.makeText(context, context.getString(R.string.storage_unavailable), Toast.LENGTH_SHORT).show()
                     }
                 )
                 SettingsDivider()
@@ -269,15 +287,15 @@ fun SettingsScreen(
                     icon = Icons.Default.Delete,
                     iconColor = Color.Red,
                     title = stringResource(R.string.clear_all_data),
-                    subtitle = "重置数据库至初始状态",
+                    subtitle = stringResource(R.string.clear_all_data_sub),
                     onClick = { viewModel.openClearConfirmDialog() }
                 )
             }
         }
 
-        // Section 4: 关于
+        // Section 5: 关于
         item {
-            SectionHeader(title = "关于")
+            SectionHeader(title = stringResource(R.string.settings_section_about))
         }
 
         item {
@@ -286,7 +304,7 @@ fun SettingsScreen(
                     icon = Icons.Default.Info,
                     iconColor = MaterialTheme.colorScheme.onSurfaceVariant,
                     title = stringResource(R.string.about_timeless),
-                    subtitle = "v2.1.2 · 专为高校教师打造的课堂节拍掌控伴侣",
+                    subtitle = stringResource(R.string.about_timeless_sub),
                     onClick = { showAboutDialog = true }
                 )
             }
@@ -360,16 +378,23 @@ fun SettingsScreen(
         )
     }
 
+    // Beginner User Guide Dialog
+    if (showUserGuideDialog) {
+        UserGuideDialog(
+            onDismiss = { showUserGuideDialog = false }
+        )
+    }
+
     // Clear Data Confirmation Dialog
     if (state.showClearConfirmDialog) {
         AlertDialog(
             onDismissRequest = { viewModel.closeClearConfirmDialog() },
-            title = { Text("重置本地数据") },
-            text = { Text("确定要清除所有课程、校历与日程数据吗？此操作无法撤销。清除后将恢复内置的初始学期与作息时间表。") },
+            title = { Text(stringResource(R.string.dialog_clear_title)) },
+            text = { Text(stringResource(R.string.dialog_clear_content)) },
             confirmButton = {
                 TextButton(onClick = {
                     viewModel.clearAllData {
-                        Toast.makeText(context, "数据已重置", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, context.getString(R.string.data_reset_success), Toast.LENGTH_SHORT).show()
                     }
                 }) {
                     Text(stringResource(R.string.confirm), color = Color.Red)
@@ -388,10 +413,10 @@ fun SettingsScreen(
         var sliderValue by remember { mutableFloatStateOf(state.endWarnMinutes.toFloat()) }
         AlertDialog(
             onDismissRequest = { showWarnMinutesDialog = false },
-            title = { Text("设置下课前提醒") },
+            title = { Text(stringResource(R.string.dialog_warn_minutes_title)) },
             text = {
                 Column {
-                    Text("在下课前 ${sliderValue.toInt()} 分钟通过强力震动与锁屏横幅提醒防拖堂。")
+                    Text(stringResource(R.string.dialog_warn_minutes_content, sliderValue.toInt()))
                     Spacer(modifier = Modifier.height(16.dp))
                     Slider(
                         value = sliderValue,
@@ -431,13 +456,7 @@ fun SettingsScreen(
                         color = AccentOrange
                     )
                     Text(
-                        text = "版本：v2.1.2\n" +
-                                "核心特性：\n" +
-                                "• 苹果级灵动倒计时与防拖堂震动提醒\n" +
-                                "• 锁屏常驻教学进度卡片，息屏实时掌控\n" +
-                                "• ColorOS 16 风格教学日历与 10 节作息网格\n" +
-                                "• 多模态 AI 大模型 (BYOK) 课表校历智能录入\n" +
-                                "• 纯本地离线运行，严密保障教学隐私",
+                        text = stringResource(R.string.dialog_about_body),
                         style = MaterialTheme.typography.bodyMedium,
                         lineHeight = 22.sp
                     )

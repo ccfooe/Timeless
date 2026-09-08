@@ -15,11 +15,14 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.CubicBezierEasing
+import androidx.compose.animation.core.FastOutLinearInEasing
+import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -53,6 +56,19 @@ import com.classbell.app.ui.theme.AccentOrange
 import com.classbell.app.ui.theme.AccentOrangeSubtle
 import com.classbell.app.ui.today.TodayScreen
 import com.classbell.app.ui.today.TodayViewModel
+
+private val TabOrder = listOf(
+    Screen.Today.route,
+    Screen.Schedule.route,
+    Screen.Calendar.route,
+    Screen.Stats.route,
+    Screen.Settings.route
+)
+
+private fun getTabOrder(route: String?): Int {
+    val idx = TabOrder.indexOf(route)
+    return if (idx >= 0) idx else 0
+}
 
 @Composable
 fun ClassBellNavHost(modifier: Modifier = Modifier) {
@@ -186,18 +202,52 @@ fun ClassBellNavHost(modifier: Modifier = Modifier) {
             startDestination = Screen.Today.route,
             modifier = Modifier.padding(innerPadding),
             enterTransition = {
-                fadeIn(animationSpec = tween(280, easing = FastOutSlowInEasing)) +
-                        scaleIn(initialScale = 0.98f, animationSpec = tween(280, easing = FastOutSlowInEasing))
+                val initialIdx = getTabOrder(initialState.destination.route)
+                val targetIdx = getTabOrder(targetState.destination.route)
+                val sign = if (targetIdx >= initialIdx) 1 else -1
+
+                slideInHorizontally(
+                    animationSpec = tween(340, easing = CubicBezierEasing(0.16f, 1.0f, 0.3f, 1.0f)),
+                    initialOffsetX = { fullWidth -> (fullWidth * 0.35f * sign).toInt() }
+                ) + fadeIn(
+                    animationSpec = tween(280, easing = LinearOutSlowInEasing)
+                )
             },
             exitTransition = {
-                fadeOut(animationSpec = tween(200, easing = FastOutSlowInEasing))
+                val initialIdx = getTabOrder(initialState.destination.route)
+                val targetIdx = getTabOrder(targetState.destination.route)
+                val sign = if (targetIdx >= initialIdx) -1 else 1
+
+                slideOutHorizontally(
+                    animationSpec = tween(340, easing = CubicBezierEasing(0.16f, 1.0f, 0.3f, 1.0f)),
+                    targetOffsetX = { fullWidth -> (fullWidth * 0.35f * sign).toInt() }
+                ) + fadeOut(
+                    animationSpec = tween(220, easing = FastOutLinearInEasing)
+                )
             },
             popEnterTransition = {
-                fadeIn(animationSpec = tween(280, easing = FastOutSlowInEasing)) +
-                        scaleIn(initialScale = 0.98f, animationSpec = tween(280, easing = FastOutSlowInEasing))
+                val initialIdx = getTabOrder(initialState.destination.route)
+                val targetIdx = getTabOrder(targetState.destination.route)
+                val sign = if (targetIdx >= initialIdx) 1 else -1
+
+                slideInHorizontally(
+                    animationSpec = tween(340, easing = CubicBezierEasing(0.16f, 1.0f, 0.3f, 1.0f)),
+                    initialOffsetX = { fullWidth -> (fullWidth * 0.35f * sign).toInt() }
+                ) + fadeIn(
+                    animationSpec = tween(280, easing = LinearOutSlowInEasing)
+                )
             },
             popExitTransition = {
-                fadeOut(animationSpec = tween(200, easing = FastOutSlowInEasing))
+                val initialIdx = getTabOrder(initialState.destination.route)
+                val targetIdx = getTabOrder(targetState.destination.route)
+                val sign = if (targetIdx >= initialIdx) -1 else 1
+
+                slideOutHorizontally(
+                    animationSpec = tween(340, easing = CubicBezierEasing(0.16f, 1.0f, 0.3f, 1.0f)),
+                    targetOffsetX = { fullWidth -> (fullWidth * 0.35f * sign).toInt() }
+                ) + fadeOut(
+                    animationSpec = tween(220, easing = FastOutLinearInEasing)
+                )
             }
         ) {
             composable(Screen.Today.route) {

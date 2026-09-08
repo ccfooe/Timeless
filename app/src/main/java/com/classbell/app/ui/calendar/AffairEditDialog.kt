@@ -54,6 +54,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
@@ -160,7 +161,7 @@ fun AffairEditDialog(
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("选择提醒时间", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
+                    Text(stringResource(R.string.affair_time_select), fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
                 }
             },
             text = {
@@ -222,12 +223,12 @@ fun AffairEditDialog(
                         Spacer(modifier = Modifier.width(10.dp))
                         Column {
                             Text(
-                                text = if (initialAffair == null) "新增日程事项" else "编辑日程事项",
+                                text = if (initialAffair == null) stringResource(R.string.affair_add_title) else stringResource(R.string.affair_edit_title),
                                 style = MaterialTheme.typography.titleLarge,
                                 fontWeight = FontWeight.Bold
                             )
                             Text(
-                                text = "设定待办、研讨或监考提醒",
+                                text = stringResource(R.string.affair_dialog_subtitle),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -243,7 +244,7 @@ fun AffairEditDialog(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Close,
-                            contentDescription = "关闭",
+                            contentDescription = stringResource(R.string.close),
                             modifier = Modifier.size(16.dp)
                         )
                     }
@@ -253,8 +254,8 @@ fun AffairEditDialog(
                 OutlinedTextField(
                     value = title,
                     onValueChange = { title = it },
-                    label = { Text("事项标题 *") },
-                    placeholder = { Text("例如：教研室集中备课、期末监考") },
+                    label = { Text(stringResource(R.string.affair_title_label)) },
+                    placeholder = { Text(stringResource(R.string.affair_title_placeholder)) },
                     singleLine = true,
                     shape = RoundedCornerShape(14.dp),
                     colors = OutlinedTextFieldDefaults.colors(
@@ -270,15 +271,26 @@ fun AffairEditDialog(
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     // Date Picker Tile
-                    val weekdayZh = when (selectedDate.dayOfWeek.value) {
-                        1 -> "周一"
-                        2 -> "周二"
-                        3 -> "周三"
-                        4 -> "周四"
-                        5 -> "周五"
-                        6 -> "周六"
-                        else -> "周日"
+                    val isEn = LocalContext.current.resources.configuration.locales[0].language == "en"
+                    val weekdayDisplay = if (isEn) {
+                        selectedDate.dayOfWeek.name.take(3)
+                    } else {
+                        when (selectedDate.dayOfWeek.value) {
+                            1 -> "周一"
+                            2 -> "周二"
+                            3 -> "周三"
+                            4 -> "周四"
+                            5 -> "周五"
+                            6 -> "周六"
+                            else -> "周日"
+                        }
                     }
+                    val dateFormatted = if (isEn) {
+                        "${selectedDate.month.name.take(3)} ${selectedDate.dayOfMonth}, ${selectedDate.year}"
+                    } else {
+                        "${selectedDate.year}年${selectedDate.monthValue}月${selectedDate.dayOfMonth}日"
+                    }
+
                     Box(
                         modifier = Modifier
                             .weight(1.2f)
@@ -303,7 +315,7 @@ fun AffairEditDialog(
                                     )
                                     Spacer(modifier = Modifier.width(4.dp))
                                     Text(
-                                        text = "日期选择",
+                                        text = stringResource(R.string.affair_date_select),
                                         style = MaterialTheme.typography.labelSmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
@@ -315,7 +327,7 @@ fun AffairEditDialog(
                                         .padding(horizontal = 6.dp, vertical = 2.dp)
                                 ) {
                                     Text(
-                                        text = weekdayZh,
+                                        text = weekdayDisplay,
                                         style = MaterialTheme.typography.labelSmall,
                                         fontWeight = FontWeight.Bold,
                                         color = AccentOrange
@@ -324,7 +336,7 @@ fun AffairEditDialog(
                             }
                             Spacer(modifier = Modifier.height(6.dp))
                             Text(
-                                text = "${selectedDate.year}年${selectedDate.monthValue}月${selectedDate.dayOfMonth}日",
+                                text = dateFormatted,
                                 style = MaterialTheme.typography.bodyLarge,
                                 fontWeight = FontWeight.SemiBold
                             )
@@ -333,7 +345,11 @@ fun AffairEditDialog(
 
                     // Time Picker Tile
                     val timeFormatted = String.format("%02d:%02d", selectedTime.hour, selectedTime.minute)
-                    val periodLabel = if (selectedTime.hour < 12) "上午" else if (selectedTime.hour < 18) "下午" else "晚上"
+                    val periodLabel = if (isEn) {
+                        if (selectedTime.hour < 12) "AM" else "PM"
+                    } else {
+                        if (selectedTime.hour < 12) "上午" else if (selectedTime.hour < 18) "下午" else "晚上"
+                    }
                     Box(
                         modifier = Modifier
                             .weight(1f)
@@ -358,7 +374,7 @@ fun AffairEditDialog(
                                     )
                                     Spacer(modifier = Modifier.width(4.dp))
                                     Text(
-                                        text = "开始时间",
+                                        text = stringResource(R.string.affair_time_select),
                                         style = MaterialTheme.typography.labelSmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
@@ -384,8 +400,8 @@ fun AffairEditDialog(
                 OutlinedTextField(
                     value = place,
                     onValueChange = { place = it },
-                    label = { Text("地点 (可选)") },
-                    placeholder = { Text("例如：教学楼A203、会议室") },
+                    label = { Text(stringResource(R.string.affair_location_label)) },
+                    placeholder = { Text(stringResource(R.string.affair_location_placeholder)) },
                     leadingIcon = {
                         Icon(
                             imageVector = Icons.Default.LocationOn,
@@ -413,7 +429,7 @@ fun AffairEditDialog(
                             modifier = Modifier.size(16.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("分类标签", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.affair_category_label), style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
                     }
 
                     Row(
@@ -421,10 +437,10 @@ fun AffairEditDialog(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         listOf(
-                            Triple(AffairCategory.MEETING, "会议", Color(0xFF3A86FF)),
-                            Triple(AffairCategory.EXAM, "考试", Color(0xFFE63946)),
-                            Triple(AffairCategory.AFFAIR, "事务", AccentOrange),
-                            Triple(AffairCategory.OTHER, "其他", Color(0xFF8338EC))
+                            Triple(AffairCategory.MEETING, stringResource(R.string.category_meeting), Color(0xFF3A86FF)),
+                            Triple(AffairCategory.EXAM, stringResource(R.string.category_exam), Color(0xFFE63946)),
+                            Triple(AffairCategory.AFFAIR, stringResource(R.string.category_affair), AccentOrange),
+                            Triple(AffairCategory.OTHER, stringResource(R.string.category_other), Color(0xFF8338EC))
                         ).forEach { (cat, label, color) ->
                             val isSelected = category == cat
                             Box(
@@ -474,7 +490,7 @@ fun AffairEditDialog(
                             modifier = Modifier.size(16.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("通知提醒时间", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.affair_reminder_label), style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
                     }
 
                     FlowRow(
@@ -483,11 +499,11 @@ fun AffairEditDialog(
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         listOf(
-                            ReminderChoice.NONE to "不提醒",
-                            ReminderChoice.AT_TIME to "准时提醒",
-                            ReminderChoice.MIN10 to "提前10分钟",
-                            ReminderChoice.HOUR1 to "提前1小时",
-                            ReminderChoice.DAY1 to "提前1天"
+                            ReminderChoice.NONE to stringResource(R.string.reminder_none),
+                            ReminderChoice.AT_TIME to stringResource(R.string.reminder_at_time),
+                            ReminderChoice.MIN10 to stringResource(R.string.reminder_min10),
+                            ReminderChoice.HOUR1 to stringResource(R.string.reminder_hour1),
+                            ReminderChoice.DAY1 to stringResource(R.string.reminder_day1)
                         ).forEach { (rem, label) ->
                             val isSelected = reminder == rem
                             FilterChip(
@@ -513,8 +529,8 @@ fun AffairEditDialog(
                 OutlinedTextField(
                     value = note,
                     onValueChange = { note = it },
-                    label = { Text("备注说明 (可选)") },
-                    placeholder = { Text("记录需要提前准备的事项细节...") },
+                    label = { Text(stringResource(R.string.affair_notes_label)) },
+                    placeholder = { Text(stringResource(R.string.affair_notes_placeholder)) },
                     leadingIcon = {
                         Icon(
                             imageVector = Icons.Default.Notes,
@@ -581,7 +597,7 @@ fun AffairEditDialog(
                         )
                     ) {
                         Text(
-                            text = if (initialAffair == null) "立即保存" else "确认修改",
+                            text = if (initialAffair == null) stringResource(R.string.affair_save_btn) else stringResource(R.string.affair_update_btn),
                             style = MaterialTheme.typography.bodyLarge,
                             fontWeight = FontWeight.Bold
                         )

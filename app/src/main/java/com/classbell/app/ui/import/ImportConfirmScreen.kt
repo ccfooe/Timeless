@@ -43,13 +43,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.classbell.app.R
 import com.classbell.app.core.TimeUtils
 import com.classbell.app.data.model.Course
 import com.classbell.app.ui.schedule.CourseEditDialog
-import com.classbell.app.ui.theme.PinkPrimary
+import com.classbell.app.ui.theme.AccentOrange
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -64,10 +66,10 @@ fun ImportConfirmScreen(
         modifier = modifier.fillMaxSize(),
         topBar = {
             TopAppBar(
-                title = { Text("智能截图解析与确认", fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.import_confirm_title), fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "返回")
+                        Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 }
             )
@@ -88,13 +90,13 @@ fun ImportConfirmScreen(
                         verticalArrangement = Arrangement.Center
                     ) {
                         Text(
-                            text = "请从上一页选择或拍摄截图进行解析",
+                            text = stringResource(R.string.import_idle_prompt),
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         Button(onClick = onNavigateBack) {
-                            Text("返回")
+                            Text(stringResource(R.string.back))
                         }
                     }
                 }
@@ -105,16 +107,16 @@ fun ImportConfirmScreen(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center
                     ) {
-                        CircularProgressIndicator(color = PinkPrimary)
+                        CircularProgressIndicator(color = AccentOrange)
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
-                            text = "正在使用多模态大模型智能解析截图...",
+                            text = stringResource(R.string.import_parsing_title),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
                         Spacer(modifier = Modifier.height(6.dp))
                         Text(
-                            text = "正在自动提取课程名称、班级、节次、周次与教室信息",
+                            text = stringResource(R.string.import_parsing_desc),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -136,21 +138,21 @@ fun ImportConfirmScreen(
                             .padding(16.dp)
                     ) {
                         Text(
-                            text = "已提取学期校历：${currentStage.semester.name}",
+                            text = stringResource(R.string.import_calendar_extracted, currentStage.semester.name),
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold
                         )
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text("第一周周一：${currentStage.semester.week1Monday}")
-                        Text("教学周区间：第 ${currentStage.semester.teachingFrom}–${currentStage.semester.teachingTo} 周")
-                        Text("节假日天数：${currentStage.holidays.size} 个")
+                        Text(stringResource(R.string.import_calendar_w1, currentStage.semester.week1Monday))
+                        Text(stringResource(R.string.import_calendar_teaching_weeks, currentStage.semester.teachingFrom, currentStage.semester.teachingTo))
+                        Text(stringResource(R.string.import_calendar_holidays_count, currentStage.holidays.size))
                         Spacer(modifier = Modifier.height(24.dp))
                         Button(
                             onClick = { viewModel.saveConfirmedCalendar(currentStage.semester, currentStage.holidays) },
                             modifier = Modifier.fillMaxWidth(),
-                            colors = ButtonDefaults.buttonColors(containerColor = PinkPrimary)
+                            colors = ButtonDefaults.buttonColors(containerColor = AccentOrange)
                         ) {
-                            Text("确认保存该校历设置")
+                            Text(stringResource(R.string.import_calendar_save_btn))
                         }
                     }
                 }
@@ -171,7 +173,7 @@ fun ImportConfirmScreen(
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
-                            text = "解析出现问题",
+                            text = stringResource(R.string.import_error_title),
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold
                         )
@@ -184,7 +186,7 @@ fun ImportConfirmScreen(
                         )
                         Spacer(modifier = Modifier.height(24.dp))
                         Button(onClick = { viewModel.resetStage(); onNavigateBack() }) {
-                            Text("返回重试")
+                            Text(stringResource(R.string.import_retry_btn))
                         }
                     }
                 }
@@ -205,13 +207,13 @@ fun ImportConfirmScreen(
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
-                            text = "导入成功！",
+                            text = stringResource(R.string.import_success_title),
                             style = MaterialTheme.typography.headlineMedium,
                             fontWeight = FontWeight.Bold
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "数据已成功保存至您的本地数据库",
+                            text = stringResource(R.string.import_success_desc),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -221,9 +223,9 @@ fun ImportConfirmScreen(
                                 viewModel.resetStage()
                                 onNavigateBack()
                             },
-                            colors = ButtonDefaults.buttonColors(containerColor = PinkPrimary)
+                            colors = ButtonDefaults.buttonColors(containerColor = AccentOrange)
                         ) {
-                            Text("完成")
+                            Text(stringResource(R.string.import_done_btn))
                         }
                     }
                 }
@@ -251,7 +253,7 @@ fun ConfirmTimetableContent(
         ) {
             item {
                 Text(
-                    text = "AI 识别到以下 ${courseList.size} 门课程。请核对信息，支持逐项编辑或删除，确认无误后点击下方保存：",
+                    text = stringResource(R.string.import_courses_detected_format, courseList.size),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -279,17 +281,19 @@ fun ConfirmTimetableContent(
                             )
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
-                                text = "${course.className} · ${course.studentCount}人",
+                                text = "${course.className} · ${course.studentCount} " + stringResource(R.string.unit_people),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             Text(
-                                text = "${TimeUtils.getWeekdayShortName(course.dayOfWeek)} 第 ${course.periodStart}–${course.periodEnd} 节 · ${course.room}",
+                                text = "${TimeUtils.getWeekdayShortName(course.dayOfWeek)} " +
+                                    stringResource(R.string.course_period_format, course.periodStart, course.periodEnd) +
+                                    " · ${course.room}",
                                 style = MaterialTheme.typography.bodySmall,
-                                color = PinkPrimary
+                                color = AccentOrange
                             )
                             Text(
-                                text = "周次: ${course.weekFrom}–${course.weekTo} 周",
+                                text = stringResource(R.string.course_detail_weeks) + ": ${course.weekFrom}–${course.weekTo}",
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -297,10 +301,10 @@ fun ConfirmTimetableContent(
 
                         Row {
                             IconButton(onClick = { editingCourseIndex = index }) {
-                                Icon(Icons.Default.Edit, contentDescription = "编辑")
+                                Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.edit))
                             }
                             IconButton(onClick = { courseList.removeAt(index) }) {
-                                Icon(Icons.Default.Delete, contentDescription = "删除", tint = Color.Red)
+                                Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.delete), tint = Color.Red)
                             }
                         }
                     }
@@ -319,16 +323,16 @@ fun ConfirmTimetableContent(
                 onClick = onCancel,
                 modifier = Modifier.weight(1f)
             ) {
-                Text("放弃")
+                Text(stringResource(R.string.import_discard_btn))
             }
 
             Button(
                 onClick = { onConfirm(courseList) },
                 modifier = Modifier.weight(2f),
-                colors = ButtonDefaults.buttonColors(containerColor = PinkPrimary),
+                colors = ButtonDefaults.buttonColors(containerColor = AccentOrange),
                 enabled = courseList.isNotEmpty()
             ) {
-                Text("确认并导入 (${courseList.size}门课程)")
+                Text(stringResource(R.string.import_confirm_btn_format, courseList.size))
             }
         }
     }

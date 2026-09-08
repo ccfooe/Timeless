@@ -57,38 +57,113 @@
     <string name="affair_category_exam">考试</string>
     <string name="affair_category_affair">事务</string>
     <string name="affair_category_other">其他</string>
-    <string name="reminder_none">不提醒</string>
-    <string name="reminder_at_time">准时提醒</string>
-    <string name="reminder_min10">提前10分钟</string>
-    <string name="reminder_hour1">提前1小时</string>
-    <string name="reminder_day1">提前1天</string>
 
-    <!-- Stats Screen -->
-    <string name="stats_title">教学统计</string>
-    <string name="stats_this_week">本周授课</string>
-    <string name="stats_total_hours">累计学时</string>
-    <string name="stats_total_meetings">授课次数</string>
-    <string name="stats_total_students">覆盖学生</string>
-    <string name="stats_hours_unit">学时</string>
-    <string name="stats_times_unit">次</string>
-    <string name="stats_people_unit">人</string>
-    <string name="stats_progress">教学进度</string>
-
-    <!-- Settings Screen -->
+    <!-- Settings Screen Sections & Items -->
     <string name="settings_title">我的与设置</string>
+    <string name="settings_section_general">通用设置</string>
+    <string name="settings_section_import_ai">智能识别录入 (LLM)</string>
+    <string name="settings_section_schedule">课表与提醒</string>
+    <string name="settings_section_data">API 与备份</string>
+    <string name="settings_section_guide">指南与帮助</string>
+    <string name="settings_section_about">关于</string>
+
     <string name="language_setting">语言 / Language</string>
     <string name="language_zh">简体中文</string>
     <string name="language_en">English</string>
     <string name="semester_manager">学期管理</string>
     <string name="period_table_manager">作息时间表</string>
+    <string name="period_table_manager_sub">当前为10节课作息（含晚课），可自定义各节起止时间</string>
     <string name="import_schedule_screenshot">导入课程表截图 (LLM)</string>
+    <string name="import_schedule_screenshot_sub">拍照或相册选取作息课程表图片，AI 自动提取</string>
     <string name="import_calendar_screenshot">导入校历截图 (LLM)</string>
+    <string name="import_calendar_screenshot_sub">提取第一周开学日期、教学周与节假日安排</string>
     <string name="llm_settings">大模型 API 设置 (BYOK)</string>
+    <string name="llm_settings_sub_unconfigured">未配置密钥 (点击添加)</string>
+    <string name="llm_settings_sub_configured">已配置: %s</string>
     <string name="alarm_settings">提醒与通知设置</string>
+    <string name="warn_minutes_title">下课前提醒时间</string>
+    <string name="warn_minutes_sub">提前 %d 分钟发送震动与横幅提醒</string>
     <string name="survival_guide">后台保活与提醒指南</string>
+    <string name="survival_guide_sub">ColorOS 16 流体云、电池优化与多任务锁定设置</string>
+    <string name="user_guide_title">新手使用指南与双轨录入说明</string>
+    <string name="user_guide_sub">了解 AI 识别录入与无 API 纯本地手动排课说明</string>
     <string name="backup_and_restore">数据备份与导出</string>
+    <string name="export_backup_title">导出本地数据备份 (JSON)</string>
+    <string name="export_backup_sub">包含学期、课程、作息与事务（不含 API Key）</string>
+    <string name="import_backup_title">导入数据备份 (JSON)</string>
+    <string name="import_backup_sub">从 JSON 文件中恢复全部课程、学期与日程</string>
     <string name="about_timeless">关于 Timeless</string>
+    <string name="about_timeless_sub">v2.1.3 · 专为高校教师打造的课堂节拍掌控伴侣</string>
     <string name="clear_all_data">清除全部本地数据</string>
+    <string name="clear_all_data_sub">重置数据库至初始状态</string>
+
+    <!-- Dialogs & Feedback -->
+    <string name="backup_success">备份恢复成功</string>
+    <string name="backup_failed">备份文件解析失败</string>
+    <string name="file_read_error">读取文件失败: %s</string>
+    <string name="storage_unavailable">存储访问不可用</string>
+    <string name="share_backup_chooser">分享备份文件</string>
+    <string name="data_reset_success">数据已重置</string>
+    <string name="dialog_clear_title">重置本地数据</string>
+    <string name="dialog_clear_content">确定要清除所有课程、校历与日程数据吗？此操作无法撤销。清除后将恢复内置的初始学期与作息时间表。</string>
+    <string name="dialog_warn_minutes_title">设置下课前提醒</string>
+    <string name="dialog_warn_minutes_content">在下课前 %d 分钟通过强力震动与锁屏横幅提醒防拖堂。</string>
+    <string name="dialog_about_body">版本：v2.1.3\n核心特性：\n• 苹果级灵动倒计时与防拖堂震动提醒\n• 锁屏常驻教学进度卡片，息屏实时掌控\n• ColorOS 16 流体云实时胶囊深度适配\n• 多模态 AI 智能截图录入 + 离线手动双轨排课\n• 纯本地离线运行，严密保障教学隐私</string>
+
+    <!-- Hero Card & Today Screen -->
+    <string name="hero_start_class_title">开始新的一节课</string>
+    <string name="hero_start_class_subtitle">专注课堂节拍 · 灵动倒计时</string>
+    <string name="hero_enter_class">进入课堂</string>
+
+    <!-- Survival Guide Dialog -->
+    <string name="survival_title">ColorOS / Android 后台保活指南</string>
+    <string name="survival_desc">为确保下课倒计时常驻卡片与提前5分钟提醒在手机锁屏或灭屏时准时触发，请完成以下设置：</string>
+    <string name="guide_step1_title">允许通知、锁屏显示与 ColorOS 流体云</string>
+    <string name="guide_step1_desc">点击下方按钮进入通知设置，务必开启「允许通知」、「锁屏通知（显示全部内容）」及「流体云」实时胶囊开关。</string>
+    <string name="guide_step2_title">忽略电池优化 (无限制)</string>
+    <string name="guide_step2_desc">点击下方按钮，将本应用电池策略设置为「无限制/不优化」，避免系统休眠时冻结倒计时与闹钟。</string>
+    <string name="guide_step3_title">ColorOS 允许自启动与关联启动</string>
+    <string name="guide_step3_desc">进入系统设置 → 应用管理 → 自启动管理，将 Timeless 设为「允许自启动」。</string>
+    <string name="guide_step4_title">多任务后台锁定</string>
+    <string name="guide_step4_desc">上划进入多任务卡片页面，点击 Timeless 卡片右上角菜单，选择「锁定」，防止一键清理误杀。</string>
+    <string name="btn_goto_notifications">前往设置：通知、锁屏与流体云权限</string>
+    <string name="btn_goto_battery">前往设置：忽略电池优化</string>
+    <string name="btn_goto_permissions">前往设置：应用权限详情</string>
+    <string name="btn_understood_configured">我已了解并配置</string>
+    <string name="btn_skip_for_now">暂不配置</string>
+
+    <!-- LLM Dialog -->
+    <string name="llm_dialog_title">大模型 API 设置 (BYOK)</string>
+    <string name="llm_dialog_intro">支持任意兼容 OpenAI 接口规范的多模态大模型服务（如智谱 GLM-4.5v、阿里 Qwen-VL、OpenAI GPT-4o 等）。密钥保存在本机 DataStore，绝不上报。</string>
+    <string name="llm_test_connection">测试连接</string>
+
+    <!-- Period Editor Screen -->
+    <string name="period_editor_title">作息时间表设置</string>
+    <string name="period_editor_desc">每所大学的上课节次与作息时间各有不同。默认已为您预置标准作息（10节课），您可按需增减或修改时间。</string>
+    <string name="add_period_slot">新增节次</string>
+    <string name="edit_period_slot">编辑节次</string>
+    <string name="period_slot_order">节次序号 (如 1, 2, 3...)</string>
+    <string name="period_slot_name">节次名称 (如 第1节)</string>
+    <string name="period_default_label">第%d节</string>
+    <string name="period_start_time">上课时间 (HH:MM)</string>
+    <string name="period_end_time">下课时间 (HH:MM)</string>
+    <string name="back">返回</string>
+
+    <!-- User Guide Dialog -->
+    <string name="user_guide_header">Timeless 新手使用指南</string>
+    <string name="guide_tab_scheduling">排课与录入</string>
+    <string name="guide_tab_features">课堂与锁屏</string>
+    <string name="mode_ai_title">方案 A：AI 智能识别录入（推荐，极速高效）</string>
+    <string name="mode_ai_desc">如果您拥有大模型 API Key（在「设置 -> API 设置」中配置），直接在「设置」中上传学校教务处课表或校历截图，AI 将自动提取全学期课程名、节次、教室、单双周及开学日期，3秒即可完成录入！</string>
+    <string name="mode_manual_title">方案 B：无 API 离线手动排课（自主可控，无需网络）</string>
+    <string name="mode_manual_desc">没有大模型 API？完全不用担心，Timeless 同样提供完善的离线手动排课支持：\n\n1. 【作息时间表】：在「设置 -> 作息时间表」中，根据您所在高校的真实作息微调每小节上下课时间（默认已预置 10 节课标准作息）。\n2. 【手动添加课程】：切换至底部「课表」标签页，点击右下角「+」按钮，手动填写课程名称、教室、周次范围（如 1-16 周）、单双周及小节（如 1-2 节）。\n3. 【校历与待办】：在「日历」标签页点击「+」添加会议、监考或校务日程。</string>
+    <string name="feature_lockscreen_title">锁屏大卡片与 ColorOS 16 流体云</string>
+    <string name="feature_lockscreen_desc">点击首页「开始新的一节课」或任意待上课程，即可进入授课倒计时。锁屏状态下自动常驻大卡片教学进度，ColorOS 16 状态栏与 AOD 息屏自动浮现动态倒计时胶囊，随时抬手掌握节拍。</string>
+    <string name="feature_warn_title">下课前 5 分钟强力提醒，绝不拖堂</string>
+    <string name="feature_warn_desc">距离下课前 5 分钟（时间可在设置中自由调整），手机将触发强力震动与横幅提醒，协助您从容收尾课堂教学。</string>
+    <string name="feature_privacy_title">纯本地离线隐私与数据备份</string>
+    <string name="feature_privacy_desc">您的全部排课与日程数据 100% 保存在手机本地 SQLite 数据库中，绝不上传任何云端服务器。支持在设置中一键导出 JSON 备份，换机迁移无忧。</string>
+    <string name="btn_got_it">我知道了</string>
 
     <!-- Notification & Alarms -->
     <string name="notification_channel_in_class">课堂实时进度</string>
@@ -106,7 +181,135 @@
     <string name="save">保存</string>
     <string name="cancel">取消</string>
     <string name="delete">删除</string>
+    <string name="edit">编辑</string>
     <string name="confirm">确认</string>
     <string name="close">关闭</string>
     <string name="success">操作成功</string>
+
+    <!-- Today Screen Additional -->
+    <string name="meeting_periods_time">第 %1$d–%2$d 节  (%3$s–%4$s)</string>
+    <string name="start_this_class_btn">开始这节课 (立即启动倒计时与锁屏)</string>
+    <string name="select_course_prompt">选择要教授的课程：</string>
+    <string name="no_course_temp">暂无课程，将以临时课程开启</string>
+    <string name="select_duration_prompt">选择授课时长：</string>
+    <string name="duration_test">测试2分</string>
+    <string name="duration_single">单节45分</string>
+    <string name="duration_double">两节90分</string>
+    <string name="duration_quad">四节大课</string>
+    <string name="start_class_now">立即开始授课</string>
+    <string name="holiday_tag_format">%s 放假</string>
+
+    <!-- Calendar & Affairs -->
+    <string name="timeline_classes">授课时间线</string>
+    <string name="timeline_affairs">校务与日程待办</string>
+    <string name="course_period_format">第 %1$d–%2$d 节</string>
+    <string name="calendar_month_format">%1$d年%2$d月</string>
+    <string name="calendar_today_btn">今</string>
+    <string name="prev_month">上个月</string>
+    <string name="next_month">下个月</string>
+    <string name="marker_holiday">休</string>
+    <string name="marker_workday">班</string>
+    <string name="affair_add_title">新增日程事项</string>
+    <string name="affair_edit_title">编辑日程事项</string>
+    <string name="affair_dialog_subtitle">设定待办、研讨或监考提醒</string>
+    <string name="affair_title_label">事项标题 *</string>
+    <string name="affair_title_placeholder">例如：教研室集中备课、期末监考</string>
+    <string name="affair_date_select">日期选择</string>
+    <string name="affair_time_select">开始时间</string>
+    <string name="affair_location_label">地点 (可选)</string>
+    <string name="affair_location_placeholder">例如：教学楼A203、会议室</string>
+    <string name="affair_category_label">分类标签</string>
+    <string name="category_meeting">会议</string>
+    <string name="category_exam">考试</string>
+    <string name="category_affair">事务</string>
+    <string name="category_other">其他</string>
+    <string name="affair_reminder_label">通知提醒时间</string>
+    <string name="reminder_none">不提醒</string>
+    <string name="reminder_at_time">准时提醒</string>
+    <string name="reminder_min10">提前10分钟</string>
+    <string name="reminder_hour1">提前1小时</string>
+    <string name="reminder_day1">提前1天</string>
+    <string name="affair_notes_label">备注说明 (可选)</string>
+    <string name="affair_notes_placeholder">记录需要提前准备的事项细节...</string>
+    <string name="affair_save_btn">立即保存</string>
+    <string name="affair_update_btn">确认修改</string>
+
+    <!-- Schedule & Course -->
+    <string name="prev_week">上一周</string>
+    <string name="next_week">下一周</string>
+    <string name="this_week">本周</string>
+    <string name="week_number_format">第 %d 周</string>
+    <string name="course_name_label">课程名称 *</string>
+    <string name="course_class_label">授课班级 *</string>
+    <string name="course_students_label">人数</string>
+    <string name="course_campus_label">校区</string>
+    <string name="course_room_label">教室 *</string>
+    <string name="course_weekday_label">星期: %s</string>
+    <string name="course_period_start_label">起始节次 (1-10)</string>
+    <string name="course_period_end_label">结束节次 (1-10)</string>
+    <string name="course_week_start_label">起始周</string>
+    <string name="course_week_end_label">结束周</string>
+    <string name="week_pattern_all">每周</string>
+    <string name="week_pattern_odd">单周</string>
+    <string name="week_pattern_even">双周</string>
+    <string name="course_color_label">课程颜色</string>
+    <string name="course_detail_class">授课班级</string>
+    <string name="course_detail_students">上课人数</string>
+    <string name="course_detail_students_count">%d 人</string>
+    <string name="course_detail_period">节次时间</string>
+    <string name="course_detail_location">上课地点</string>
+    <string name="course_detail_weeks">周次安排</string>
+    <string name="course_detail_nature">课程性质</string>
+    <string name="course_detail_exam">考核方式</string>
+    <string name="phase_banner_title">第 %1$d 周 · %2$s</string>
+    <string name="phase_banner_desc">本周不进行常规理论课程教学，安排集中 %s</string>
+
+    <!-- Stats & Card Strings -->
+    <string name="stats_title">教学统计</string>
+    <string name="stats_empty">暂无统计数据</string>
+    <string name="stats_total_hours">累计学时</string>
+    <string name="unit_hours">学时</string>
+    <string name="stats_total_meetings">授课次数</string>
+    <string name="unit_times">次</string>
+    <string name="stats_this_week">本周上课</string>
+    <string name="stats_this_week_val">%1$d次 · %2$d</string>
+    <string name="stats_total_students">覆盖学生</string>
+    <string name="unit_people">人</string>
+    <string name="stats_progress_header">课程教学进度</string>
+    <string name="stats_accumulated_hours_format">%d 学时</string>
+    <string name="stats_meetings_progress_format">已上 %1$d 次 / 共计划 %2$d 次</string>
+    <string name="next_class_time_room">%1$s 开始 · %2$s</string>
+    <string name="period_range_format">第 %1$d–%2$d 节</string>
+    <string name="today_no_affairs_hint">今日暂无日程事项 · 点击快速添加</string>
+    <string name="affair_all_day">全天</string>
+
+    <!-- Import Confirm Screen -->
+    <string name="import_confirm_title">智能截图解析与确认</string>
+    <string name="import_idle_prompt">请从上一页选择或拍摄截图进行解析</string>
+    <string name="import_parsing_title">正在使用多模态大模型智能解析截图...</string>
+    <string name="import_parsing_desc">正在自动提取课程名称、班级、节次、周次与教室信息</string>
+    <string name="import_calendar_extracted">已提取学期校历：%s</string>
+    <string name="import_calendar_w1">第一周周一：%s</string>
+    <string name="import_calendar_teaching_weeks">教学周区间：第 %1$d–%2$d 周</string>
+    <string name="import_calendar_holidays_count">节假日天数：%d 个</string>
+    <string name="import_calendar_save_btn">确认保存该校历设置</string>
+    <string name="import_error_title">解析出现问题</string>
+    <string name="import_retry_btn">返回重试</string>
+    <string name="import_success_title">导入成功！</string>
+    <string name="import_success_desc">数据已成功保存至您的本地数据库</string>
+    <string name="import_done_btn">完成</string>
+    <string name="import_courses_detected_format">AI 识别到以下 %d 门课程。请核对信息，支持逐项编辑或删除，确认无误后点击下方保存：</string>
+    <string name="import_discard_btn">放弃</string>
+    <string name="import_confirm_btn_format">确认并导入 (%d门课程)</string>
+    <string name="error_no_api_key">请先在「我的」->「大模型 API 设置」中配置 API Key (BYOK)</string>
+    <string name="error_cannot_open_image">无法打开选取的图片文件</string>
+    <string name="error_parse_failed">解析失败，请检查图片或 API 设置</string>
+    <string name="error_parse_exception">解析异常: %s</string>
+    <string name="error_calendar_parse_failed">校历解析失败</string>
+    <string name="error_calendar_parse_exception">校历解析异常: %s</string>
+    <string name="default_imported_calendar_name">导入学期校历</string>
+    <string name="phase_teaching">教学周</string>
+    <string name="phase_exam">考试周</string>
+    <string name="phase_practice">实践周</string>
+    <string name="phase_break">假期/非教学周</string>
 </resources>

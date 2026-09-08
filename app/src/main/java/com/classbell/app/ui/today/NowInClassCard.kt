@@ -305,7 +305,11 @@ fun NowInClassCard(
                         }
                         Spacer(modifier = Modifier.height(2.dp))
                         Text(
-                            text = "${TimeUtils.formatTime(nextMeeting.startTime)} 开始 · ${nextMeeting.course.room}",
+                            text = stringResource(
+                                R.string.next_class_time_room,
+                                TimeUtils.formatTime(nextMeeting.startTime),
+                                nextMeeting.course.room
+                            ),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -318,7 +322,11 @@ fun NowInClassCard(
                             .padding(horizontal = 8.dp, vertical = 4.dp)
                     ) {
                         Text(
-                            text = "第 ${nextMeeting.periodStart}–${nextMeeting.periodEnd} 节",
+                            text = stringResource(
+                                R.string.period_range_format,
+                                nextMeeting.periodStart,
+                                nextMeeting.periodEnd
+                            ),
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.Medium
                         )
@@ -401,7 +409,7 @@ fun TodayTasksCard(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Add,
-                            contentDescription = "添加待办",
+                            contentDescription = stringResource(R.string.affair_add_title),
                             tint = AccentOrange,
                             modifier = Modifier.size(15.dp)
                         )
@@ -429,12 +437,13 @@ fun TodayTasksCard(
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = "今日暂无日程事项 · 点击快速添加",
+                        text = stringResource(R.string.today_no_affairs_hint),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             } else {
+                val allDayStr = stringResource(R.string.affair_all_day)
                 affairs.forEach { affair ->
                     val categoryColor = when (affair.category) {
                         AffairCategory.MEETING -> Color(0xFF3A86FF)
@@ -511,7 +520,7 @@ fun TodayTasksCard(
                             }
                         }
 
-                        val timeStr = affair.time?.let { TimeUtils.formatTime(it) } ?: "全天"
+                        val timeStr = affair.time?.let { TimeUtils.formatTime(it) } ?: allDayStr
                         Text(
                             text = timeStr,
                             style = MaterialTheme.typography.labelSmall,

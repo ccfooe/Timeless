@@ -25,10 +25,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
-import com.classbell.app.ui.theme.PinkPrimary
+import com.classbell.app.R
+import com.classbell.app.ui.theme.AccentOrange
 
 @Composable
 fun LlmSettingsDialog(
@@ -49,7 +51,7 @@ fun LlmSettingsDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
-                text = "大模型 API 设置 (BYOK)",
+                text = stringResource(R.string.llm_dialog_title),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
@@ -62,7 +64,7 @@ fun LlmSettingsDialog(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Text(
-                    text = "支持任意兼容 OpenAI 接口规范的多模态大模型服务（如智谱 GLM-4.5v、阿里 Qwen-VL、OpenAI GPT-4o 等）。密钥保存在本机 DataStore，绝不上报。",
+                    text = stringResource(R.string.llm_dialog_intro),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -111,7 +113,7 @@ fun LlmSettingsDialog(
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                         }
-                        Text("测试连接")
+                        Text(stringResource(R.string.llm_test_connection))
                     }
 
                     testMessage?.let {
@@ -119,7 +121,7 @@ fun LlmSettingsDialog(
                             text = it,
                             style = MaterialTheme.typography.bodySmall,
                             fontWeight = FontWeight.SemiBold,
-                            color = if (it.contains("成功")) PinkPrimary else MaterialTheme.colorScheme.error
+                            color = if (it.contains("成功") || it.contains("Success", ignoreCase = true)) AccentOrange else MaterialTheme.colorScheme.error
                         )
                     }
                 }
@@ -128,14 +130,14 @@ fun LlmSettingsDialog(
         confirmButton = {
             Button(
                 onClick = { onSave(apiKey, baseUrl, model) },
-                colors = ButtonDefaults.buttonColors(containerColor = PinkPrimary)
+                colors = ButtonDefaults.buttonColors(containerColor = AccentOrange)
             ) {
-                Text("保存")
+                Text(stringResource(R.string.save))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("取消")
+                Text(stringResource(R.string.cancel))
             }
         }
     )
