@@ -7,6 +7,7 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -52,6 +53,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.classbell.app.R
 import com.classbell.app.core.TimeUtils
@@ -60,9 +62,10 @@ import com.classbell.app.data.model.MeetingOccurrence
 import com.classbell.app.data.model.PeriodSlot
 import com.classbell.app.ui.glass.GlassCard
 import com.classbell.app.ui.theme.AccentOrange
+import com.classbell.app.ui.theme.LocalAccentColor
 
 private val WeekdayNames = listOf("一", "二", "三", "四", "五", "六", "日")
-private val SlotRowHeight = 64.dp
+private val SlotRowHeight = 56.dp
 private val TimeColWidth = 44.dp
 private val DayColWidth = 82.dp
 
@@ -74,13 +77,15 @@ fun ScheduleScreen(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val sheetState = rememberModalBottomSheetState()
+    val accentColor = LocalAccentColor.current
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { viewModel.openAddCourse() },
-                containerColor = AccentOrange,
+                containerColor = accentColor,
                 contentColor = Color.White,
                 shape = CircleShape
             ) {
@@ -155,6 +160,7 @@ fun WeekSwitcherBar(
     onResetCurrent: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val accentColor = LocalAccentColor.current
     val localizedPhase = when (phaseLabel) {
         "教学周" -> stringResource(R.string.phase_teaching)
         "考试周" -> stringResource(R.string.phase_exam)
@@ -166,33 +172,43 @@ fun WeekSwitcherBar(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(horizontal = 14.dp, vertical = 2.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = onPrevious) {
-                Icon(Icons.Default.ChevronLeft, contentDescription = stringResource(R.string.prev_week))
+            IconButton(
+                onClick = onPrevious,
+                modifier = Modifier.size(32.dp)
+            ) {
+                Icon(
+                    Icons.Default.ChevronLeft,
+                    contentDescription = stringResource(R.string.prev_week),
+                    modifier = Modifier.size(20.dp)
+                )
             }
 
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.padding(horizontal = 6.dp)
+            ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         text = stringResource(R.string.week_number_format, selectedWeek),
-                        style = MaterialTheme.typography.titleLarge,
+                        style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(6.dp))
-                            .background(AccentOrange.copy(alpha = 0.15f))
+                            .background(accentColor.copy(alpha = 0.15f))
                             .padding(horizontal = 6.dp, vertical = 2.dp)
                     ) {
                         Text(
                             text = localizedPhase,
                             style = MaterialTheme.typography.labelSmall,
-                            color = AccentOrange,
+                            color = accentColor,
                             fontWeight = FontWeight.SemiBold
                         )
                     }
@@ -201,19 +217,30 @@ fun WeekSwitcherBar(
                     Text(
                         text = dateRange,
                         style = MaterialTheme.typography.labelSmall,
+                        fontSize = 10.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
 
-            IconButton(onClick = onNext) {
-                Icon(Icons.Default.ChevronRight, contentDescription = stringResource(R.string.next_week))
+            IconButton(
+                onClick = onNext,
+                modifier = Modifier.size(32.dp)
+            ) {
+                Icon(
+                    Icons.Default.ChevronRight,
+                    contentDescription = stringResource(R.string.next_week),
+                    modifier = Modifier.size(20.dp)
+                )
             }
         }
 
         if (selectedWeek != currentWeek) {
-            TextButton(onClick = onResetCurrent) {
-                Text(stringResource(R.string.this_week), color = AccentOrange, fontWeight = FontWeight.Bold)
+            TextButton(
+                onClick = onResetCurrent,
+                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp)
+            ) {
+                Text(stringResource(R.string.this_week), color = accentColor, fontWeight = FontWeight.Bold)
             }
         }
     }
@@ -291,13 +318,13 @@ fun ScheduleGrid(
                 Box(
                     modifier = Modifier
                         .width(DayColWidth)
-                        .padding(vertical = 8.dp),
+                        .padding(vertical = 4.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     val label = if (isEn) listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")[day - 1] else "周${WeekdayNames[day - 1]}"
                     Text(
                         text = label,
-                        style = MaterialTheme.typography.labelMedium,
+                        style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
@@ -324,13 +351,13 @@ fun ScheduleGrid(
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(
                                 text = slot.order.toString(),
-                                style = MaterialTheme.typography.labelLarge,
+                                style = MaterialTheme.typography.labelMedium,
                                 fontWeight = FontWeight.Bold
                             )
                             Text(
                                 text = "${slot.startTime.hour}:${slot.startTime.minute.toString().padStart(2, '0')}",
                                 style = MaterialTheme.typography.labelSmall,
-                                fontSize = 9.sp,
+                                fontSize = 8.5.sp,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
