@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -14,7 +15,9 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.animation.core.LinearOutSlowInEasing
@@ -137,21 +140,17 @@ fun ClassBellNavHost(modifier: Modifier = Modifier) {
         modifier = modifier.fillMaxSize(),
         bottomBar = {
             if (isTopLevelDestination) {
-                // Floating iOS/ColorOS 16 Frosted Glass Dock Bar
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .navigationBarsPadding()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    contentAlignment = Alignment.Center
+                // Native Apple/Smartisan flush-to-bottom TabBar with ultra-fine hairline divider
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.96f),
+                    border = BorderStroke(0.5.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.12f))
                 ) {
                     NavigationBar(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .shadow(12.dp, RoundedCornerShape(26.dp))
-                            .clip(RoundedCornerShape(26.dp))
-                            .border(1.dp, Color.White.copy(alpha = 0.6f), RoundedCornerShape(26.dp)),
-                        containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.92f),
+                            .navigationBarsPadding(),
+                        containerColor = Color.Transparent,
                         contentColor = MaterialTheme.colorScheme.onSurface,
                         tonalElevation = 0.dp
                     ) {
@@ -169,10 +168,19 @@ fun ClassBellNavHost(modifier: Modifier = Modifier) {
                             NavigationBarItem(
                                 icon = {
                                     screen.icon?.let {
-                                        Icon(imageVector = it, contentDescription = localizedTitle)
+                                        Icon(
+                                            imageVector = it,
+                                            contentDescription = localizedTitle
+                                        )
                                     }
                                 },
-                                label = { Text(localizedTitle, style = MaterialTheme.typography.labelSmall) },
+                                label = {
+                                    Text(
+                                        text = localizedTitle,
+                                        style = MaterialTheme.typography.labelSmall,
+                                        fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal
+                                    )
+                                },
                                 selected = selected,
                                 onClick = {
                                     navController.navigate(screen.route) {
@@ -186,9 +194,9 @@ fun ClassBellNavHost(modifier: Modifier = Modifier) {
                                 colors = NavigationBarItemDefaults.colors(
                                     selectedIconColor = AccentOrange,
                                     selectedTextColor = AccentOrange,
-                                    indicatorColor = AccentOrangeSubtle,
-                                    unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
+                                    indicatorColor = Color.Transparent,
+                                    unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.55f),
+                                    unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.55f)
                                 )
                             )
                         }
