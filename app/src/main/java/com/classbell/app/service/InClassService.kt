@@ -40,6 +40,7 @@ class InClassService : Service() {
 
         const val ACTION_START_IN_CLASS = "com.classbell.app.START_IN_CLASS"
         const val ACTION_STOP_IN_CLASS = "com.classbell.app.STOP_IN_CLASS"
+        const val ACTION_EXTEND_IN_CLASS = "com.classbell.app.EXTEND_IN_CLASS"
 
         fun start(
             context: Context,
@@ -70,6 +71,14 @@ class InClassService : Service() {
             }
             context.startService(intent)
         }
+
+        fun extend(context: Context, extraMinutes: Int = 5) {
+            val intent = Intent(context, InClassService::class.java).apply {
+                action = ACTION_EXTEND_IN_CLASS
+                putExtra("extra_extend_minutes", extraMinutes)
+            }
+            context.startService(intent)
+        }
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
@@ -80,6 +89,14 @@ class InClassService : Service() {
                 stopForeground(STOP_FOREGROUND_REMOVE)
                 stopSelf()
                 return START_NOT_STICKY
+            }
+            ACTION_EXTEND_IN_CLASS -> {
+                val mins = intent.getIntExtra("extra_extend_minutes", 5)
+                endTime = endTime.plusMinutes(mins.toLong())
+                val notification = buildProgressNotification()
+                val manager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+                manager.notify(NOTIFICATION_ID, notification)
+                return START_STICKY
             }
             ACTION_START_IN_CLASS -> {
                 courseName = intent.getStringExtra(AlarmScheduler.EXTRA_COURSE_NAME) ?: ""
@@ -135,6 +152,23 @@ class InClassService : Service() {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
+        val stopIntent = PendingIntent.getService(
+            this,
+            1,
+            Intent(this, InClassService::class.java).apply { action = ACTION_STOP_IN_CLASS },
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val extendIntent = PendingIntent.getService(
+            this,
+            2,
+            Intent(this, InClassService::class.java).apply {
+                action = ACTION_EXTEND_IN_CLASS
+                putExtra("extra_extend_minutes", 5)
+            },
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setContentTitle(title)
@@ -145,6 +179,8 @@ class InClassService : Service() {
             .setOnlyAlertOnce(true)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setContentIntent(contentIntent)
+            .addAction(0, "提前下课", stopIntent)
+            .addAction(0, "+5分钟", extendIntent)
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .build()
     }

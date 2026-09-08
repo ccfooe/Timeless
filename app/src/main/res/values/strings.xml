@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">ClassBell</string>
+    <string name="app_name">Tempo</string>
+    <string name="app_tagline">教师伴侣 · 专注课堂掌控</string>
 
     <!-- Navigation Tabs -->
     <string name="tab_today">今日</string>
@@ -9,18 +10,29 @@
     <string name="tab_stats">统计</string>
     <string name="tab_settings">我的</string>
 
-    <!-- Today Screen -->
-    <string name="today_title">今日课程</string>
-    <string name="status_in_progress">进行中</string>
+    <!-- Today Screen & Live Activity -->
+    <string name="today_title">今日教学</string>
+    <string name="status_in_progress">上课中</string>
     <string name="status_upcoming">未开始</string>
     <string name="status_finished">已结束</string>
     <string name="status_holiday">放假停课</string>
     <string name="next_class_prefix">下一节</string>
-    <string name="no_classes_today">今天没有课程安排，好好享受休息时光吧！</string>
-    <string name="no_affairs_today">暂无事务待办</string>
-    <string name="today_affairs_title">今日事务</string>
+    <string name="no_classes_today">今天没有课程安排，享受充实的一天吧！</string>
+    <string name="no_affairs_today">暂无日程待办</string>
+    <string name="today_affairs_title">今日待办</string>
     <string name="class_end_label">下课</string>
     <string name="time_remaining_format">剩余 %d 分钟</string>
+    <string name="elapsed_format">已进行 %1$s · %2$d%%</string>
+
+    <!-- Class Controls -->
+    <string name="btn_start_class">开始上课</string>
+    <string name="btn_quick_class">即时上课</string>
+    <string name="btn_end_class">提前下课</string>
+    <string name="btn_extend_5min">+5 分钟</string>
+    <string name="start_class_sheet_title">开启课堂授课</string>
+    <string name="start_class_sheet_subtitle">启动全屏倒计时与锁屏常驻通知卡片</string>
+    <string name="quick_class_duration">授课时长 (分钟)</string>
+    <string name="custom_class_title">临时/实践课程</string>
 
     <!-- Schedule Screen -->
     <string name="schedule_title">学期课表</string>
@@ -37,6 +49,7 @@
 
     <!-- Calendar Screen -->
     <string name="calendar_title">校务日历</string>
+    <string name="btn_today">今</string>
     <string name="add_affair">新增事务</string>
     <string name="edit_affair">编辑事务</string>
     <string name="delete_affair">删除事务</string>
@@ -52,17 +65,20 @@
 
     <!-- Stats Screen -->
     <string name="stats_title">教学统计</string>
-    <string name="stats_this_week">本周上课</string>
+    <string name="stats_this_week">本周授课</string>
     <string name="stats_total_hours">累计学时</string>
     <string name="stats_total_meetings">授课次数</string>
     <string name="stats_total_students">覆盖学生</string>
     <string name="stats_hours_unit">学时</string>
     <string name="stats_times_unit">次</string>
     <string name="stats_people_unit">人</string>
-    <string name="stats_progress">完成进度</string>
+    <string name="stats_progress">教学进度</string>
 
-    <!-- Settings & Mine Screen -->
+    <!-- Settings Screen -->
     <string name="settings_title">我的与设置</string>
+    <string name="language_setting">语言 / Language</string>
+    <string name="language_zh">简体中文</string>
+    <string name="language_en">English</string>
     <string name="semester_manager">学期管理</string>
     <string name="period_table_manager">作息时间表</string>
     <string name="import_schedule_screenshot">导入课程表截图 (LLM)</string>
@@ -71,7 +87,7 @@
     <string name="alarm_settings">提醒与通知设置</string>
     <string name="survival_guide">后台保活与提醒指南</string>
     <string name="backup_and_restore">数据备份与导出</string>
-    <string name="about_classbell">关于 ClassBell</string>
+    <string name="about_tempo">关于 Tempo</string>
     <string name="clear_all_data">清除全部本地数据</string>
 
     <!-- Notification & Alarms -->
@@ -82,7 +98,7 @@
     <string name="notification_channel_affairs">事务日程提醒</string>
     <string name="notification_channel_affairs_desc">校务日程闹钟与通知</string>
     <string name="class_end_warning_title">下课倒计时提醒</string>
-    <string name="class_end_warning_body">还有 %d 分钟下课（%s 下课）</string>
+    <string name="class_end_warning_body">还有 %1$d 分钟下课（%2$s 下课）</string>
     <string name="class_end_dismiss_title">下课时间到</string>
     <string name="class_end_dismiss_body">%s 课程已结束</string>
 

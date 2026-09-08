@@ -1,7 +1,13 @@
 package com.classbell.app.ui.navigation
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -11,8 +17,14 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
@@ -20,6 +32,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.classbell.app.ClassBellApp
+import com.classbell.app.R
 import com.classbell.app.ui.calendar.CalendarScreen
 import com.classbell.app.ui.calendar.CalendarViewModel
 import com.classbell.app.ui.import.ImportConfirmScreen
@@ -31,7 +44,8 @@ import com.classbell.app.ui.settings.SettingsScreen
 import com.classbell.app.ui.settings.SettingsViewModel
 import com.classbell.app.ui.stats.StatsScreen
 import com.classbell.app.ui.stats.StatsViewModel
-import com.classbell.app.ui.theme.PinkPrimary
+import com.classbell.app.ui.theme.AccentOrange
+import com.classbell.app.ui.theme.AccentOrangeSubtle
 import com.classbell.app.ui.today.TodayScreen
 import com.classbell.app.ui.today.TodayViewModel
 
@@ -44,10 +58,12 @@ fun ClassBellNavHost(modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val app = context.applicationContext as ClassBellApp
 
-    // ViewModels with dependency injection factories
+    // ViewModels with updated factories
     val todayViewModel: TodayViewModel = viewModel(
         factory = TodayViewModel.Factory(
+            context,
             app.scheduleRepository,
+            app.courseRepository,
             app.affairRepository,
             app.settingsRepository,
             app.alarmScheduler
@@ -100,35 +116,61 @@ fun ClassBellNavHost(modifier: Modifier = Modifier) {
         modifier = modifier.fillMaxSize(),
         bottomBar = {
             if (isTopLevelDestination) {
-                NavigationBar(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    contentColor = MaterialTheme.colorScheme.onSurface
+                // Floating iOS/ColorOS 16 Frosted Glass Dock Bar
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .navigationBarsPadding()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    contentAlignment = Alignment.Center
                 ) {
-                    BottomNavItems.forEach { screen ->
-                        val selected = currentRoute == screen.route
-                        NavigationBarItem(
-                            icon = {
-                                screen.icon?.let {
-                                    Icon(imageVector = it, contentDescription = screen.title)
-                                }
-                            },
-                            label = { Text(screen.title) },
-                            selected = selected,
-                            onClick = {
-                                navController.navigate(screen.route) {
-                                    popUpTo(navController.graph.findStartDestination().id) {
-                                        saveState = true
+                    NavigationBar(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .shadow(12.dp, RoundedCornerShape(26.dp))
+                            .clip(RoundedCornerShape(26.dp))
+                            .border(1.dp, Color.White.copy(alpha = 0.6f), RoundedCornerShape(26.dp)),
+                        containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.92f),
+                        contentColor = MaterialTheme.colorScheme.onSurface,
+                        tonalElevation = 0.dp
+                    ) {
+                        BottomNavItems.forEach { screen ->
+                            val selected = currentRoute == screen.route
+                            val localizedTitle = when (screen) {
+                                Screen.Today -> stringResource(R.string.tab_today)
+                                Screen.Schedule -> stringResource(R.string.tab_schedule)
+                                Screen.Calendar -> stringResource(R.string.tab_calendar)
+                                Screen.Stats -> stringResource(R.string.tab_stats)
+                                Screen.Settings -> stringResource(R.string.tab_settings)
+                                else -> screen.title
+                            }
+
+                            NavigationBarItem(
+                                icon = {
+                                    screen.icon?.let {
+                                        Icon(imageVector = it, contentDescription = localizedTitle)
                                     }
-                                    launchSingleTop = true
-                                    restoreState = true
-                                }
-                            },
-                            colors = NavigationBarItemDefaults.colors(
-                                selectedIconColor = PinkPrimary,
-                                selectedTextColor = PinkPrimary,
-                                indicatorColor = PinkPrimary.copy(alpha = 0.15f)
+                                },
+                                label = { Text(localizedTitle, style = MaterialTheme.typography.labelSmall) },
+                                selected = selected,
+                                onClick = {
+                                    navController.navigate(screen.route) {
+                                        popUpTo(navController.graph.findStartDestination().id) {
+                                            saveState = true
+                                        }
+                                        launchSingleTop = true
+                                        restoreState = true
+                                    }
+                                },
+                                colors = NavigationBarItemDefaults.colors(
+                                    selectedIconColor = AccentOrange,
+                                    selectedTextColor = AccentOrange,
+                                    indicatorColor = AccentOrangeSubtle,
+                                    unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
                             )
-                        )
+                        }
                     }
                 }
             }

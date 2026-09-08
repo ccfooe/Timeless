@@ -15,6 +15,9 @@ import com.classbell.app.data.model.Override
 import com.classbell.app.data.model.PeriodSlot
 import com.classbell.app.data.model.Semester
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
@@ -49,6 +52,45 @@ class ScheduleRepository(
 
     val activeSemester: Flow<Semester?> = semesterDao.getActiveSemester()
     val periodSlots: Flow<List<PeriodSlot>> = periodSlotDao.getAllPeriodSlots()
+
+    private val _manualSession = MutableStateFlow<MeetingOccurrence?>(null)
+    val manualSession: StateFlow<MeetingOccurrence?> = _manualSession.asStateFlow()
+
+    fun startManualSession(
+        course: Course,
+        durationMinutes: Int = 45,
+        startTime: LocalTime = LocalTime.now(),
+        todayDate: LocalDate = LocalDate.now()
+    ): MeetingOccurrence {
+        val endTime = startTime.plusMinutes(durationMinutes.toLong())
+        val meeting = MeetingOccurrence(
+            course = course,
+            date = todayDate,
+            periodStart = course.periodStart,
+            periodEnd = course.periodEnd,
+            startTime = startTime,
+            endTime = endTime,
+            status = MeetingStatus.IN_PROGRESS,
+            progress = 0f,
+            remainingMinutes = durationMinutes.toLong()
+        )
+        _manualSession.value = meeting
+        return meeting
+    }
+
+    fun endManualSession() {
+        _manualSession.value = null
+    }
+
+    fun extendManualSession(extraMinutes: Int = 5) {
+        val current = _manualSession.value ?: return
+        val newEndTime = current.endTime.plusMinutes(extraMinutes.toLong())
+        val newRemaining = java.time.temporal.ChronoUnit.MINUTES.between(LocalTime.now(), newEndTime).coerceAtLeast(0)
+        _manualSession.value = current.copy(
+            endTime = newEndTime,
+            remainingMinutes = newRemaining
+        )
+    }
 
     fun getMeetingsOnDate(
         targetDate: LocalDate,

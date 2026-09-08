@@ -2,38 +2,47 @@ package com.classbell.app.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val PinkPrimary = Color(0xFFFF4D6D)
-val PinkDark = Color(0xFFC9184A)
-val PinkLight = Color(0xFFFF758F)
-val PinkBg = Color(0xFFFFF0F3)
-val PinkSurface = Color(0xFFFFF5F7)
+// Apple-Grade Sunset Coral / Amber Palette (Inspired by Reference Screenshot)
+val AccentOrange = Color(0xFFFF6B35)
+val AccentAmber = Color(0xFFFF8A00)
+val AccentOrangeLight = Color(0xFFFFA94D)
+val AccentOrangeSubtle = Color(0x24FF6B35)
 
-val GlassWhite = Color(0xFFFFFFFF).copy(alpha = 0.72f)
-val GlassWhiteStroke = Color(0xFFFFFFFF).copy(alpha = 0.85f)
-val GlassDark = Color(0xFF1E1E2E).copy(alpha = 0.75f)
-val GlassDarkStroke = Color(0xFFFFFFFF).copy(alpha = 0.15f)
+// Compatibility aliases
+val PinkPrimary = AccentOrange
+val PinkDark = AccentAmber
+val CreamBackground = Color(0xFFF7F8FA)
 
-val TextPrimaryLight = Color(0xFF1A1A1A)
-val TextSecondaryLight = Color(0xFF666666)
-val TextTertiaryLight = Color(0xFF999999)
+// Glassmorphism Surfaces & Specular Highlights
+val GlassWhite = Color(0xCCFFFFFF)           // ~80% frosted translucent white
+val GlassWhiteStroke = Color(0x99FFFFFF)     // Crisp specular rim
+val GlassDark = Color(0xD91C1C24)            // Ultra-dark obsidian frosted glass
+val GlassDarkStroke = Color(0x33FFFFFF)      // Subtle specular rim for dark mode
 
-val TextPrimaryDark = Color(0xFFF0F0F0)
-val TextSecondaryDark = Color(0xFFAAAAAA)
-val TextTertiaryDark = Color(0xFF777777)
+// Premium Typography
+val TextPrimaryLight = Color(0xFF1C1C1E)
+val TextSecondaryLight = Color(0xFF8E8E93)
+val TextTertiaryLight = Color(0xFFAEB5BC)
 
-val AccentPurple = Color(0xFF7209B7)
-val AccentBlue = Color(0xFF4361EE)
-val AccentGreen = Color(0xFF2EC4B6)
-val AccentOrange = Color(0xFFFF9F1C)
-val AccentCyan = Color(0xFF4CC9F0)
+val TextPrimaryDark = Color(0xFFF2F2F7)
+val TextSecondaryDark = Color(0xFF98989D)
+val TextTertiaryDark = Color(0xFF636366)
 
+// Functional System Colors
+val SystemGreen = Color(0xFF34C759)
+val SystemBlue = Color(0xFF007AFF)
+val SystemPurple = Color(0xFFAF52DE)
+val SystemRed = Color(0xFFFF3B30)
+val SystemTeal = Color(0xFF30B0C7)
+
+// Course Color Palette (Rich iOS-style tints)
 val CourseColors = listOf(
-    "#FF4D6D", // Pink
-    "#7209B7", // Purple
-    "#4361EE", // Blue
-    "#2EC4B6", // Teal
-    "#FF9F1C", // Orange
-    "#4CC9F0", // Cyan
-    "#E71D36", // Crimson
-    "#3A0CA3"  // Deep Purple
+    "#FF6B35", // Sunset Coral
+    "#007AFF", // Cobalt Blue
+    "#AF52DE", // Electric Violet
+    "#34C759", // Emerald Green
+    "#FF9500", // Warm Amber
+    "#30B0C7", // Cyan Teal
+    "#FF2D55", // Neon Pink
+    "#5856D6"  // Deep Indigo
 )

@@ -1,11 +1,9 @@
 package com.classbell.app.ui.settings
 
-import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.classbell.app.data.backup.BackupManager
-import com.classbell.app.data.backup.ImportMode
 import com.classbell.app.data.repository.PeriodRepository
 import com.classbell.app.data.repository.SemesterRepository
 import com.classbell.app.data.repository.SettingsRepository
@@ -13,7 +11,6 @@ import com.classbell.app.llm.LlmClient
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -23,10 +20,12 @@ data class SettingsUiState(
     val baseUrl: String = "",
     val model: String = "",
     val endWarnMinutes: Int = 5,
+    val appLanguage: String = "zh",
     val isTestingConnection: Boolean = false,
     val testConnectionMessage: String? = null,
     val showLlmDialog: Boolean = false,
     val showSurvivalDialog: Boolean = false,
+    val showLanguageDialog: Boolean = false,
     val showClearConfirmDialog: Boolean = false,
     val backupJsonString: String? = null
 )
@@ -42,6 +41,7 @@ class SettingsViewModel(
     private val _testMessage = MutableStateFlow<String?>(null)
     private val _showLlmDialog = MutableStateFlow(false)
     private val _showSurvivalDialog = MutableStateFlow(false)
+    private val _showLanguageDialog = MutableStateFlow(false)
     private val _showClearConfirmDialog = MutableStateFlow(false)
     private val _backupJson = MutableStateFlow<String?>(null)
 
@@ -50,24 +50,28 @@ class SettingsViewModel(
         settingsRepository.baseUrlFlow,
         settingsRepository.modelFlow,
         settingsRepository.endWarnMinutesFlow,
+        settingsRepository.appLanguageFlow,
         _isTesting,
         _testMessage,
         _showLlmDialog,
         _showSurvivalDialog,
+        _showLanguageDialog,
         _showClearConfirmDialog,
         _backupJson
-    ) { params ->
+    ) { params: Array<Any?> ->
         SettingsUiState(
             apiKey = params[0] as String,
             baseUrl = params[1] as String,
             model = params[2] as String,
             endWarnMinutes = params[3] as Int,
-            isTestingConnection = params[4] as Boolean,
-            testConnectionMessage = params[5] as String?,
-            showLlmDialog = params[6] as Boolean,
-            showSurvivalDialog = params[7] as Boolean,
-            showClearConfirmDialog = params[8] as Boolean,
-            backupJsonString = params[9] as String?
+            appLanguage = params[4] as String,
+            isTestingConnection = params[5] as Boolean,
+            testConnectionMessage = params[6] as String?,
+            showLlmDialog = params[7] as Boolean,
+            showSurvivalDialog = params[8] as Boolean,
+            showLanguageDialog = params[9] as Boolean,
+            showClearConfirmDialog = params[10] as Boolean,
+            backupJsonString = params[11] as String?
         )
     }.stateIn(
         scope = viewModelScope,
@@ -82,6 +86,21 @@ class SettingsViewModel(
 
     fun closeLlmDialog() {
         _showLlmDialog.value = false
+    }
+
+    fun openLanguageDialog() {
+        _showLanguageDialog.value = true
+    }
+
+    fun closeLanguageDialog() {
+        _showLanguageDialog.value = false
+    }
+
+    fun setAppLanguage(lang: String) {
+        viewModelScope.launch {
+            settingsRepository.updateAppLanguage(lang)
+            _showLanguageDialog.value = false
+        }
     }
 
     fun saveLlmSettings(apiKey: String, baseUrl: String, model: String) {
@@ -110,44 +129,42 @@ class SettingsViewModel(
         }
     }
 
-    fun openSurvivalGuide() {
+    fun openSurvivalDialog() {
         _showSurvivalDialog.value = true
     }
 
-    fun closeSurvivalGuide() {
+    fun closeSurvivalDialog() {
         _showSurvivalDialog.value = false
     }
 
-    fun openClearConfirm() {
+    fun openClearConfirmDialog() {
         _showClearConfirmDialog.value = true
     }
 
-    fun closeClearConfirm() {
+    fun closeClearConfirmDialog() {
         _showClearConfirmDialog.value = false
     }
 
-    fun clearAllData() {
+    fun clearAllData(onDone: () -> Unit) {
         viewModelScope.launch {
             backupManager.clearAllData()
-            closeClearConfirm()
+            _showClearConfirmDialog.value = false
+            onDone()
         }
     }
 
-    fun exportBackup(onReady: (String) -> Unit) {
+    fun exportBackup(onResult: (String) -> Unit) {
         viewModelScope.launch {
             val json = backupManager.exportToJson()
-            onReady(json)
+            _backupJson.value = json
+            onResult(json)
         }
     }
 
-    fun importBackup(jsonString: String, mode: ImportMode, onResult: (Boolean, String) -> Unit) {
+    fun importBackup(jsonString: String, onComplete: (Boolean) -> Unit) {
         viewModelScope.launch {
-            val res = backupManager.importFromJson(jsonString, mode)
-            if (res.isSuccess) {
-                onResult(true, "导入成功")
-            } else {
-                onResult(false, res.exceptionOrNull()?.message ?: "导入失败")
-            }
+            val result = backupManager.importFromJson(jsonString, com.classbell.app.data.backup.ImportMode.REPLACE)
+            onComplete(result.isSuccess)
         }
     }
 

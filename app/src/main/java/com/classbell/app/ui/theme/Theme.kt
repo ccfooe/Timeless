@@ -1,7 +1,6 @@
 package com.classbell.app.ui.theme
 
 import android.app.Activity
-import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
@@ -14,32 +13,32 @@ import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
 private val LightColorScheme = lightColorScheme(
-    primary = PinkPrimary,
+    primary = AccentOrange,
     onPrimary = Color.White,
-    primaryContainer = PinkSurface,
-    onPrimaryContainer = PinkDark,
-    secondary = PinkLight,
+    primaryContainer = AccentOrangeSubtle,
+    onPrimaryContainer = AccentAmber,
+    secondary = AccentAmber,
     onSecondary = Color.White,
-    background = PinkBg,
+    background = Color(0xFFF7F8FA),
     onBackground = TextPrimaryLight,
     surface = Color.White,
     onSurface = TextPrimaryLight,
-    surfaceVariant = Color(0xFFFDECEF),
+    surfaceVariant = Color(0xFFF0F2F5),
     onSurfaceVariant = TextSecondaryLight
 )
 
 private val DarkColorScheme = darkColorScheme(
-    primary = PinkLight,
-    onPrimary = Color(0xFF59001A),
-    primaryContainer = Color(0xFF8F002E),
-    onPrimaryContainer = Color(0xFFFFD9E2),
-    secondary = PinkPrimary,
+    primary = AccentOrangeLight,
+    onPrimary = Color(0xFF4D1C05),
+    primaryContainer = Color(0xFF7A2E0A),
+    onPrimaryContainer = Color(0xFFFFD9C7),
+    secondary = AccentOrange,
     onSecondary = Color.White,
-    background = Color(0xFF141218),
+    background = Color(0xFF0F0F13),
     onBackground = TextPrimaryDark,
-    surface = Color(0xFF1E1E2E),
+    surface = Color(0xFF1A1A22),
     onSurface = TextPrimaryDark,
-    surfaceVariant = Color(0xFF2B2830),
+    surfaceVariant = Color(0xFF262630),
     onSurfaceVariant = TextSecondaryDark
 )
 

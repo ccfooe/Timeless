@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Tempo</string>
+    <string name="app_tagline">Teacher Companion · Time Mastery</string>
+
+    <!-- Navigation Tabs -->
+    <string name="tab_today">Today</string>
+    <string name="tab_schedule">Schedule</string>
+    <string name="tab_calendar">Calendar</string>
+    <string name="tab_stats">Stats</string>
+    <string name="tab_settings">Mine</string>
+
+    <!-- Today Screen & Live Activity -->
+    <string name="today_title">Today</string>
+    <string name="status_in_progress">In Class</string>
+    <string name="status_upcoming">Upcoming</string>
+    <string name="status_finished">Finished</string>
+    <string name="status_holiday">Holiday</string>
+    <string name="next_class_prefix">Next</string>
+    <string name="no_classes_today">No classes scheduled for today. Enjoy your day!</string>
+    <string name="no_affairs_today">No pending affairs today</string>
+    <string name="today_affairs_title">Today\'s Tasks</string>
+    <string name="class_end_label">Ends at</string>
+    <string name="time_remaining_format">%d min left</string>
+    <string name="elapsed_format">%1$s elapsed · %2$d%%</string>
+
+    <!-- Class Controls -->
+    <string name="btn_start_class">Start Class</string>
+    <string name="btn_quick_class">Quick Session</string>
+    <string name="btn_end_class">End Class</string>
+    <string name="btn_extend_5min">+5 min</string>
+    <string name="start_class_sheet_title">Start Teaching Session</string>
+    <string name="start_class_sheet_subtitle">Activate live countdown &amp; lockscreen notification</string>
+    <string name="quick_class_duration">Duration (minutes)</string>
+    <string name="custom_class_title">Custom / Practical Session</string>
+
+    <!-- Schedule Screen -->
+    <string name="schedule_title">Timetable</string>
+    <string name="week_format">Week %d</string>
+    <string name="current_week_badge">Current</string>
+    <string name="teaching_week">Teaching</string>
+    <string name="exam_week">Exam Week</string>
+    <string name="practice_week">Practice Week</string>
+    <string name="vacation_week">Vacation</string>
+    <string name="registration_week">Orientation</string>
+    <string name="add_course">New Course</string>
+    <string name="edit_course">Edit Course</string>
+    <string name="delete_course">Delete Course</string>
+
+    <!-- Calendar Screen -->
+    <string name="calendar_title">Calendar</string>
+    <string name="btn_today">Today</string>
+    <string name="add_affair">New Task/Affair</string>
+    <string name="edit_affair">Edit Affair</string>
+    <string name="delete_affair">Delete Affair</string>
+    <string name="affair_category_meeting">Meeting</string>
+    <string name="affair_category_exam">Exam</string>
+    <string name="affair_category_affair">Affair</string>
+    <string name="affair_category_other">Other</string>
+    <string name="reminder_none">None</string>
+    <string name="reminder_at_time">On Time</string>
+    <string name="reminder_min10">10 min before</string>
+    <string name="reminder_hour1">1 hr before</string>
+    <string name="reminder_day1">1 day before</string>
+
+    <!-- Stats Screen -->
+    <string name="stats_title">Teaching Stats</string>
+    <string name="stats_this_week">This Week</string>
+    <string name="stats_total_hours">Total Hours</string>
+    <string name="stats_total_meetings">Classes Held</string>
+    <string name="stats_total_students">Students</string>
+    <string name="stats_hours_unit">hrs</string>
+    <string name="stats_times_unit">times</string>
+    <string name="stats_people_unit">students</string>
+    <string name="stats_progress">Progress</string>
+
+    <!-- Settings Screen -->
+    <string name="settings_title">Settings</string>
+    <string name="language_setting">Language / 语言</string>
+    <string name="language_zh">简体中文</string>
+    <string name="language_en">English</string>
+    <string name="semester_manager">Semester Management</string>
+    <string name="period_table_manager">Period Times Table</string>
+    <string name="import_schedule_screenshot">Import Timetable Image (LLM)</string>
+    <string name="import_calendar_screenshot">Import Calendar Image (LLM)</string>
+    <string name="llm_settings">LLM API Settings (BYOK)</string>
+    <string name="alarm_settings">Reminders &amp; Alarms</string>
+    <string name="survival_guide">Background Survival Guide</string>
+    <string name="backup_and_restore">Data Backup &amp; Export</string>
+    <string name="about_tempo">About Tempo</string>
+    <string name="clear_all_data">Clear All Local Data</string>
+
+    <!-- Notification & Alarms -->
+    <string name="notification_channel_in_class">Class Progress</string>
+    <string name="notification_channel_in_class_desc">Lockscreen progress card during active class</string>
+    <string name="notification_channel_warning">Class End Reminder</string>
+    <string name="notification_channel_warning_desc">Vibration and heads-up before class ends</string>
+    <string name="notification_channel_affairs">Affairs Reminder</string>
+    <string name="notification_channel_affairs_desc">Alarms for school events and deadlines</string>
+    <string name="class_end_warning_title">Class Ending Reminder</string>
+    <string name="class_end_warning_body">%1$d minutes remaining until class ends (%2$s)</string>
+    <string name="class_end_dismiss_title">Class Ended</string>
+    <string name="class_end_dismiss_body">%s has ended</string>
+
+    <!-- Common UI -->
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="delete">Delete</string>
+    <string name="confirm">Confirm</string>
+    <string name="close">Close</string>
+    <string name="success">Success</string>
+</resources>
