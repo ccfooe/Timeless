@@ -244,9 +244,9 @@ class InClassService : Service() {
                 putBoolean("oplus.fluid_cloud", true)
                 putBoolean("oplus_capsule", true)
                 putInt("oplus_notification_type", 1)
-                putInt("oplus_view_type", 1)
+                putInt("oplus_view_type", 0) // 0: Capsule only in status bar; NO heads-up popup banner over app!
                 putInt("coloros_notification_type", 1)
-                putInt("coloros_view_type", 1)
+                putInt("coloros_view_type", 0)
                 putInt("coloros_progress", progressPercent)
                 putInt("oplus_progress", progressPercent)
                 putInt("coloros_progress_max", 100)
@@ -273,8 +273,8 @@ class InClassService : Service() {
             val nextPeriod = subPeriod.nextPeriodLabel ?: ""
             val progressBar = makeProgressBar(progressPercent)
 
-            // Compact title for the camera punch-hole capsule (ColorOS Aqua Dynamics guideline: <= 4-6 chars)
-            val capsuleTitle = breakTitle
+            // Ultra-compact title for punch-hole capsule (2/3 width: e.g. "课间" or "Rest")
+            val capsuleTitle = getString(R.string.capsule_recess)
             // Rich expanded title for floating card & notifications
             val bigTitle = "☕ $breakTitle"
             // High-visibility progress bar in subText directly below the chronometer
@@ -314,6 +314,7 @@ class InClassService : Service() {
                 )
                 .setOngoing(true)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                .setPriority(NotificationCompat.PRIORITY_LOW)
                 .setCategory(NotificationCompat.CATEGORY_STOPWATCH)
                 .setContentIntent(contentIntent)
                 .addAction(0, getString(R.string.btn_start_next_period_now), stopIntent)
@@ -346,7 +347,7 @@ class InClassService : Service() {
                 .setContentIntent(contentIntent)
                 .addAction(0, getString(R.string.btn_start_next_period_now), stopIntent)
                 .addAction(0, getString(R.string.btn_extend_break_5min), extendIntent)
-                .setPriority(NotificationCompat.PRIORITY_MAX)
+                .setPriority(NotificationCompat.PRIORITY_LOW)
                 .addExtras(extras)
                 .build()
 
@@ -361,8 +362,8 @@ class InClassService : Service() {
             val statusLabel = getString(R.string.status_in_progress)
             val progressBar = makeProgressBar(progressPercent)
 
-            // Compact title for the camera punch-hole capsule (ColorOS Aqua Dynamics guideline: <= 4-6 chars)
-            val capsuleTitle = subPeriod.periodLabel
+            // Ultra-compact title for punch-hole capsule (2/3 width: e.g. "1节" or "P1")
+            val capsuleTitle = getString(R.string.capsule_period_format, subPeriod.periodOrder)
             // Rich expanded title for floating card & notifications
             val bigTitle = "📕 $courseName · $className"
             // High-visibility progress bar in subText directly below the chronometer
@@ -399,6 +400,7 @@ class InClassService : Service() {
                 )
                 .setOngoing(true)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                .setPriority(NotificationCompat.PRIORITY_LOW)
                 .setCategory(NotificationCompat.CATEGORY_STOPWATCH)
                 .setContentIntent(contentIntent)
                 .addAction(0, getString(R.string.btn_end_class), stopIntent)
@@ -431,7 +433,7 @@ class InClassService : Service() {
                 .setContentIntent(contentIntent)
                 .addAction(0, getString(R.string.btn_end_class), stopIntent)
                 .addAction(0, getString(R.string.btn_extend_5min), extendIntent)
-                .setPriority(NotificationCompat.PRIORITY_MAX)
+                .setPriority(NotificationCompat.PRIORITY_LOW)
                 .addExtras(extras)
                 .build()
 
@@ -449,8 +451,12 @@ class InClassService : Service() {
             val statusLabel = getString(R.string.status_in_progress)
             val progressBar = makeProgressBar(progressPercent)
 
-            // Compact title for the camera punch-hole capsule (ColorOS Aqua Dynamics guideline: <= 4-6 chars)
-            val capsuleTitle = statusLabel
+            // Ultra-compact title for punch-hole capsule (2/3 width: e.g. "1节" / "P1" or "上课" / "Class")
+            val capsuleTitle = if (periodStart > 0) {
+                getString(R.string.capsule_period_format, periodStart)
+            } else {
+                getString(R.string.capsule_in_class)
+            }
             // Rich expanded title for floating card & notifications
             val bigTitle = "📕 $courseName · $className"
             // High-visibility progress bar in subText directly below the chronometer
@@ -484,6 +490,7 @@ class InClassService : Service() {
                 )
                 .setOngoing(true)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                .setPriority(NotificationCompat.PRIORITY_LOW)
                 .setCategory(NotificationCompat.CATEGORY_STOPWATCH)
                 .setContentIntent(contentIntent)
                 .addAction(0, getString(R.string.btn_end_class), stopIntent)
@@ -516,7 +523,7 @@ class InClassService : Service() {
                 .setContentIntent(contentIntent)
                 .addAction(0, getString(R.string.btn_end_class), stopIntent)
                 .addAction(0, getString(R.string.btn_extend_5min), extendIntent)
-                .setPriority(NotificationCompat.PRIORITY_MAX)
+                .setPriority(NotificationCompat.PRIORITY_LOW)
                 .addExtras(extras)
                 .build()
 

@@ -123,7 +123,7 @@
     <string name="import_backup_title">导入数据备份 (JSON)</string>
     <string name="import_backup_sub">从 JSON 文件中恢复全部课程、学期与日程</string>
     <string name="about_timeless">关于 Timeless</string>
-    <string name="about_timeless_sub">v2.2.1 · 专为高校教师打造的课堂节拍掌控伴侣</string>
+    <string name="about_timeless_sub">v2.2.2 · 专为高校教师打造的课堂节拍掌控伴侣</string>
     <string name="clear_all_data">清除全部本地数据</string>
     <string name="clear_all_data_sub">重置数据库至初始状态</string>
 
@@ -138,7 +138,7 @@
     <string name="dialog_clear_content">确定要清除所有课程、校历与日程数据吗？此操作无法撤销。清除后将恢复内置的初始学期与作息时间表。</string>
     <string name="dialog_warn_minutes_title">设置下课前提醒</string>
     <string name="dialog_warn_minutes_content">在下课前 %d 分钟通过强力震动与锁屏横幅提醒防拖堂。</string>
-    <string name="dialog_about_body">版本：v2.2.1\n核心特性：\n• ColorOS 16/17 流体云微感知极简胶囊设计（紧凑吸附前摄挖孔屏，不撑大状态栏）\n• 流体云展开卡片高精度进度条可视化（▰▰▰▰▱▱▱▱▱▱ 步进进度动态渲染）\n• 状态栏与主页毫秒级时间绝对对齐（消除时钟抖动与偏差）\n• 锁屏常驻卡片与动态倒计时通知深度适配\n• Smartisan 拟物级高阻尼弹簧平滑过渡动效与导航触感微动效\n• 全自动高校作息节拍（自动识别上课 45 分钟与课间休息/大课间，精准分段倒计时）\n• 苹果/Smartisan 极简纯净美学重构\n• 底部导航栏紧凑优雅压缩（释放屏幕纵向空间）\n• 课表全天10节课同屏完美尽显（上移空白间隙+第9/10节完整呈现）\n• 5 组包豪斯大师级强调色自由切换\n• 外观模式自由切换（跟随系统/白天浅色/夜间深色）\n• 瑞士机械表盘式超大等宽数字倒计时\n• 多模态 AI 智能截图录入 + 离线手动双轨排课\n• 纯本地离线运行，严密保障教学隐私</string>
+    <string name="dialog_about_body">版本：v2.2.2\n核心特性：\n• 流体云开启体验全面升级：点击上课静默吸附至状态栏，彻底消除应用内遮挡弹窗\n• ColorOS 16/17 前摄胶囊极致轻量化（长度压缩至 2/3，对称包裹摄像头挖孔）\n• 流体云展开卡片高精度进度条可视化（▰▰▰▰▱▱▱▱▱▱ 步进进度动态渲染）\n• 状态栏与主页毫秒级时间绝对对齐（消除时钟抖动与偏差）\n• 锁屏常驻卡片与动态倒计时通知深度适配\n• Smartisan 拟物级高阻尼弹簧平滑过渡动效与导航触感微动效\n• 全自动高校作息节拍（自动识别上课 45 分钟与课间休息/大课间，精准分段倒计时）\n• 苹果/Smartisan 极简纯净美学重构\n• 底部导航栏紧凑优雅压缩（释放屏幕纵向空间）\n• 课表全天10节课同屏完美尽显（上移空白间隙+第9/10节完整呈现）\n• 5 组包豪斯大师级强调色自由切换\n• 外观模式自由切换（跟随系统/白天浅色/夜间深色）\n• 瑞士机械表盘式超大等宽数字倒计时\n• 多模态 AI 智能截图录入 + 离线手动双轨排课\n• 纯本地离线运行，严密保障教学隐私</string>
 
     <!-- Hero Card & Today Screen -->
     <string name="hero_start_class_title">开始新的一节课</string>
@@ -348,4 +348,9 @@
     <string name="notification_recess_bigtext_format">☕ %1$s\n📍 教室: %2$s\n⏰ 下节预告: %3$s 将于 %4$s 开始 (%5$s)\n⏳ 课间进度: %6$d%% %7$s</string>
     <string name="notification_inclass_bigtext_format">📍 教室: %1$s\n⏰ %2$s 下课时间: %3$s (%4$s)\n⏳ 本节进度: %5$d%% %6$s · 第 %7$d/%8$d 节</string>
     <string name="notification_fallback_bigtext_format">📍 教室: %1$s\n⏰ 下课时间: %2$s (%3$s)\n⏳ 课堂进度: %4$d%% %5$s</string>
+
+    <!-- Ultra-compact Capsule Labels (ColorOS Fluid Cloud, ~2/3 width) -->
+    <string name="capsule_period_format">%d节</string>
+    <string name="capsule_in_class">上课</string>
+    <string name="capsule_recess">课间</string>
 </resources>

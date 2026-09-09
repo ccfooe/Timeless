@@ -22,7 +22,7 @@ import kotlinx.coroutines.launch
 class ClassBellApp : Application() {
 
     companion object {
-        const val CHANNEL_IN_CLASS_ID = "classbell_in_class_v3"
+        const val CHANNEL_IN_CLASS_ID = "classbell_in_class_v4"
         const val CHANNEL_WARNING_ID = "classbell_warning"
         const val CHANNEL_AFFAIRS_ID = "classbell_affairs"
 
@@ -87,18 +87,21 @@ class ClassBellApp : Application() {
             runCatching {
                 manager.deleteNotificationChannel("classbell_in_class")
                 manager.deleteNotificationChannel("classbell_in_class_v2")
+                manager.deleteNotificationChannel("classbell_in_class_v3")
             }
 
-            // 1. In-Class Progress Channel (High importance for lock-screen card & ColorOS Fluid Cloud display)
+            // 1. In-Class Progress Channel (Low importance prevents heads-up popup over app, while preserving Fluid Cloud capsule & lockscreen card)
             val inClassChannel = NotificationChannel(
                 CHANNEL_IN_CLASS_ID,
                 getString(R.string.notification_channel_in_class),
-                NotificationManager.IMPORTANCE_HIGH
+                NotificationManager.IMPORTANCE_LOW
             ).apply {
                 description = getString(R.string.notification_channel_in_class_desc)
-                setShowBadge(true)
+                setShowBadge(false)
                 lockscreenVisibility = android.app.Notification.VISIBILITY_PUBLIC
-                enableLights(true)
+                enableLights(false)
+                setSound(null, null)
+                enableVibration(false)
                 runCatching { setBypassDnd(true) }
             }
 
