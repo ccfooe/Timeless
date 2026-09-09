@@ -217,7 +217,9 @@ class TodayViewModel(
             className = session.course.className,
             room = session.course.room,
             startTime = session.startTime.toString(),
-            endTime = session.endTime.toString()
+            endTime = session.endTime.toString(),
+            periodStart = session.course.periodStart,
+            periodEnd = session.course.periodEnd
         )
     }
 

@@ -26,14 +26,19 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -175,7 +180,20 @@ fun ClassBellNavHost(modifier: Modifier = Modifier) {
                             }
 
                             val accentColor = LocalAccentColor.current
-                            val itemColor = if (selected) accentColor else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.55f)
+                            val targetColor = if (selected) accentColor else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.55f)
+                            val animatedItemColor by animateColorAsState(
+                                targetValue = targetColor,
+                                animationSpec = tween(200, easing = LinearOutSlowInEasing),
+                                label = "tabItemColor"
+                            )
+                            val iconScale by animateFloatAsState(
+                                targetValue = if (selected) 1.08f else 1.0f,
+                                animationSpec = spring(
+                                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                                    stiffness = Spring.StiffnessLow
+                                ),
+                                label = "tabIconScale"
+                            )
 
                             Column(
                                 modifier = Modifier
@@ -200,8 +218,13 @@ fun ClassBellNavHost(modifier: Modifier = Modifier) {
                                     Icon(
                                         imageVector = it,
                                         contentDescription = localizedTitle,
-                                        tint = itemColor,
-                                        modifier = Modifier.size(22.dp)
+                                        tint = animatedItemColor,
+                                        modifier = Modifier
+                                            .size(22.dp)
+                                            .graphicsLayer {
+                                                scaleX = iconScale
+                                                scaleY = iconScale
+                                            }
                                     )
                                 }
                                 Spacer(modifier = Modifier.height(3.dp))
@@ -209,7 +232,7 @@ fun ClassBellNavHost(modifier: Modifier = Modifier) {
                                     text = localizedTitle,
                                     fontSize = 10.5.sp,
                                     fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
-                                    color = itemColor,
+                                    color = animatedItemColor,
                                     maxLines = 1
                                 )
                             }
@@ -229,10 +252,10 @@ fun ClassBellNavHost(modifier: Modifier = Modifier) {
                 val sign = if (targetIdx >= initialIdx) 1 else -1
 
                 slideInHorizontally(
-                    animationSpec = tween(340, easing = CubicBezierEasing(0.16f, 1.0f, 0.3f, 1.0f)),
-                    initialOffsetX = { fullWidth -> (fullWidth * 0.35f * sign).toInt() }
+                    animationSpec = spring(dampingRatio = 0.88f, stiffness = 420f),
+                    initialOffsetX = { fullWidth -> (fullWidth * 0.08f * sign).toInt() }
                 ) + fadeIn(
-                    animationSpec = tween(280, easing = LinearOutSlowInEasing)
+                    animationSpec = tween(220, easing = LinearOutSlowInEasing)
                 )
             },
             exitTransition = {
@@ -241,10 +264,10 @@ fun ClassBellNavHost(modifier: Modifier = Modifier) {
                 val sign = if (targetIdx >= initialIdx) -1 else 1
 
                 slideOutHorizontally(
-                    animationSpec = tween(340, easing = CubicBezierEasing(0.16f, 1.0f, 0.3f, 1.0f)),
-                    targetOffsetX = { fullWidth -> (fullWidth * 0.35f * sign).toInt() }
+                    animationSpec = spring(dampingRatio = 0.88f, stiffness = 420f),
+                    targetOffsetX = { fullWidth -> (fullWidth * 0.08f * sign).toInt() }
                 ) + fadeOut(
-                    animationSpec = tween(220, easing = FastOutLinearInEasing)
+                    animationSpec = tween(160, easing = FastOutLinearInEasing)
                 )
             },
             popEnterTransition = {
@@ -253,10 +276,10 @@ fun ClassBellNavHost(modifier: Modifier = Modifier) {
                 val sign = if (targetIdx >= initialIdx) 1 else -1
 
                 slideInHorizontally(
-                    animationSpec = tween(340, easing = CubicBezierEasing(0.16f, 1.0f, 0.3f, 1.0f)),
-                    initialOffsetX = { fullWidth -> (fullWidth * 0.35f * sign).toInt() }
+                    animationSpec = spring(dampingRatio = 0.88f, stiffness = 420f),
+                    initialOffsetX = { fullWidth -> (fullWidth * 0.08f * sign).toInt() }
                 ) + fadeIn(
-                    animationSpec = tween(280, easing = LinearOutSlowInEasing)
+                    animationSpec = tween(220, easing = LinearOutSlowInEasing)
                 )
             },
             popExitTransition = {
@@ -265,10 +288,10 @@ fun ClassBellNavHost(modifier: Modifier = Modifier) {
                 val sign = if (targetIdx >= initialIdx) -1 else 1
 
                 slideOutHorizontally(
-                    animationSpec = tween(340, easing = CubicBezierEasing(0.16f, 1.0f, 0.3f, 1.0f)),
-                    targetOffsetX = { fullWidth -> (fullWidth * 0.35f * sign).toInt() }
+                    animationSpec = spring(dampingRatio = 0.88f, stiffness = 420f),
+                    targetOffsetX = { fullWidth -> (fullWidth * 0.08f * sign).toInt() }
                 ) + fadeOut(
-                    animationSpec = tween(220, easing = FastOutLinearInEasing)
+                    animationSpec = tween(160, easing = FastOutLinearInEasing)
                 )
             }
         ) {

@@ -15,12 +15,19 @@ import com.classbell.app.data.repository.SemesterRepository
 import com.classbell.app.data.repository.SettingsRepository
 import com.classbell.app.service.AlarmScheduler
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+
 class ClassBellApp : Application() {
 
     companion object {
         const val CHANNEL_IN_CLASS_ID = "classbell_in_class_v3"
         const val CHANNEL_WARNING_ID = "classbell_warning"
         const val CHANNEL_AFFAIRS_ID = "classbell_affairs"
+
+        @Volatile
+        var cachedPeriodSlots: List<com.classbell.app.data.model.PeriodSlot> = emptyList()
     }
 
     val database by lazy { ClassBellDatabase.getDatabase(this) }
@@ -45,6 +52,13 @@ class ClassBellApp : Application() {
         super.onCreate()
         setupCrashHandler()
         createNotificationChannels()
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                cachedPeriodSlots = database.periodSlotDao().getAllPeriodSlotsSync()
+            } catch (e: Throwable) {
+                android.util.Log.e("ClassBellApp", "Failed to cache period slots", e)
+            }
+        }
     }
 
     private fun setupCrashHandler() {
