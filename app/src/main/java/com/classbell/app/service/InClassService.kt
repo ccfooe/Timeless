@@ -229,7 +229,14 @@ class InClassService : Service() {
             return zonedDateTime.toInstant().toEpochMilli()
         }
 
-        fun createExtras(capsuleTitle: String, whenMillis: Long): android.os.Bundle {
+        fun makeProgressBar(percent: Int, length: Int = 10): String {
+            val clamped = percent.coerceIn(0, 100)
+            val filled = (clamped * length) / 100
+            val empty = (length - filled).coerceAtLeast(0)
+            return "▰".repeat(filled) + "▱".repeat(empty)
+        }
+
+        fun createExtras(capsuleTitle: String, whenMillis: Long, progressPercent: Int): android.os.Bundle {
             return android.os.Bundle().apply {
                 putBoolean("android.requestPromotedOngoing", true)
                 putBoolean("coloros.fluid_cloud", true)
@@ -238,6 +245,14 @@ class InClassService : Service() {
                 putBoolean("oplus_capsule", true)
                 putInt("oplus_notification_type", 1)
                 putInt("oplus_view_type", 1)
+                putInt("coloros_notification_type", 1)
+                putInt("coloros_view_type", 1)
+                putInt("coloros_progress", progressPercent)
+                putInt("oplus_progress", progressPercent)
+                putInt("coloros_progress_max", 100)
+                putInt("oplus_progress_max", 100)
+                putInt("coloros_progress_current", progressPercent)
+                putInt("oplus_progress_current", progressPercent)
                 putString("android.substName", getString(R.string.app_name))
                 putString("coloros_capsule_icon", "ic_stat_in_class")
                 putString("oplus_capsule_icon", "ic_stat_in_class")
@@ -256,18 +271,36 @@ class InClassService : Service() {
             val progressPercent = (subPeriod.progress * 100).toInt().coerceIn(0, 100)
             val breakTitle = subPeriod.breakTitle ?: getString(R.string.status_recess)
             val nextPeriod = subPeriod.nextPeriodLabel ?: ""
+            val progressBar = makeProgressBar(progressPercent)
 
-            val title = "☕ $breakTitle (余${subPeriod.remainingMinutes}分)"
-            val contentText = "📍 $room · 距$nextPeriod (${subPeriod.endTime.hour}:${subPeriod.endTime.minute.toString().padStart(2, '0')}) 还有 ${subPeriod.remainingMinutes} 分钟"
-            val bigTextContent = "☕ $breakTitle\n📍 教室: $room\n⏰ 下节课 $nextPeriod 将于 ${subPeriod.endTime.hour}:${subPeriod.endTime.minute.toString().padStart(2, '0')} 开始 (剩余 ${subPeriod.remainingMinutes} 分钟)\n⏳ 课间进度: $progressPercent%"
-            val capsuleTitle = "☕ $breakTitle · 余${subPeriod.remainingMinutes}分"
-            val extras = createExtras(capsuleTitle, targetWhen)
+            // Compact title for the camera punch-hole capsule (ColorOS Aqua Dynamics guideline: <= 4-6 chars)
+            val capsuleTitle = breakTitle
+            // Rich expanded title for floating card & notifications
+            val bigTitle = "☕ $breakTitle"
+            // High-visibility progress bar in subText directly below the chronometer
+            val subText = "$breakTitle $progressPercent%  $progressBar  ·  📍 $room"
+            val contentText = if (nextPeriod.isNotEmpty()) {
+                getString(R.string.recess_remaining_format, nextPeriod, subPeriod.remainingMinutes.toInt())
+            } else {
+                "$breakTitle · ${subPeriod.remainingMinutes}m"
+            }
+            val bigTextContent = getString(
+                R.string.notification_recess_bigtext_format,
+                breakTitle,
+                room,
+                nextPeriod,
+                "${subPeriod.endTime.hour}:${subPeriod.endTime.minute.toString().padStart(2, '0')}",
+                getString(R.string.time_remaining_format, subPeriod.remainingMinutes.toInt()),
+                progressPercent,
+                progressBar
+            )
+            val extras = createExtras(capsuleTitle, targetWhen, progressPercent)
 
             val publicNotification = NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_stat_in_class)
-                .setContentTitle(title)
+                .setContentTitle(capsuleTitle)
                 .setContentText(contentText)
-                .setSubText(getString(R.string.status_recess))
+                .setSubText(subText)
                 .setUsesChronometer(true)
                 .setChronometerCountDown(true)
                 .setWhen(targetWhen)
@@ -275,7 +308,7 @@ class InClassService : Service() {
                 .setProgress(100, progressPercent, false)
                 .setStyle(
                     NotificationCompat.BigTextStyle()
-                        .setBigContentTitle("☕ $breakTitle")
+                        .setBigContentTitle(bigTitle)
                         .setSummaryText(getString(R.string.recess_progress_format, progressPercent))
                         .bigText(bigTextContent)
                 )
@@ -290,16 +323,16 @@ class InClassService : Service() {
 
             val notification = NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_stat_in_class)
-                .setContentTitle(title)
+                .setContentTitle(capsuleTitle)
                 .setContentText(contentText)
-                .setSubText(getString(R.string.status_recess))
+                .setSubText(subText)
                 .setUsesChronometer(true)
                 .setChronometerCountDown(true)
                 .setWhen(targetWhen)
                 .setShowWhen(true)
                 .setStyle(
                     NotificationCompat.BigTextStyle()
-                        .setBigContentTitle("☕ $breakTitle")
+                        .setBigContentTitle(bigTitle)
                         .setSummaryText(getString(R.string.recess_progress_format, progressPercent))
                         .bigText(bigTextContent)
                 )
@@ -325,18 +358,34 @@ class InClassService : Service() {
             // In-Class Sub-Period Notification
             val targetWhen = calculateTargetWhen(subPeriod.endTime)
             val progressPercent = (subPeriod.progress * 100).toInt().coerceIn(0, 100)
+            val statusLabel = getString(R.string.status_in_progress)
+            val progressBar = makeProgressBar(progressPercent)
 
-            val title = "📕 $courseName · ${subPeriod.periodLabel} (上课中)"
-            val contentText = "📍 $room · 下课 ${subPeriod.endTime.hour}:${subPeriod.endTime.minute.toString().padStart(2, '0')} (余${subPeriod.remainingMinutes}分) · 第${subPeriod.periodIndexInCourse}/${subPeriod.totalPeriodsInCourse}节"
-            val bigTextContent = "📍 教室: $room\n⏰ ${subPeriod.periodLabel}下课时间: ${subPeriod.endTime.hour}:${subPeriod.endTime.minute.toString().padStart(2, '0')} (剩余 ${subPeriod.remainingMinutes} 分钟)\n⏳ 本节进度: $progressPercent% · 第 ${subPeriod.periodIndexInCourse}/${subPeriod.totalPeriodsInCourse} 节"
-            val capsuleTitle = "📕 ${subPeriod.periodLabel} · 余${subPeriod.remainingMinutes}分"
-            val extras = createExtras(capsuleTitle, targetWhen)
+            // Compact title for the camera punch-hole capsule (ColorOS Aqua Dynamics guideline: <= 4-6 chars)
+            val capsuleTitle = subPeriod.periodLabel
+            // Rich expanded title for floating card & notifications
+            val bigTitle = "📕 $courseName · $className"
+            // High-visibility progress bar in subText directly below the chronometer
+            val subText = "$statusLabel $progressPercent%  $progressBar  ·  📍 $room"
+            val contentText = "📍 $room · ${subPeriod.periodLabel} · $progressPercent% $progressBar · ${getString(R.string.time_remaining_format, subPeriod.remainingMinutes.toInt())}"
+            val bigTextContent = getString(
+                R.string.notification_inclass_bigtext_format,
+                room,
+                subPeriod.periodLabel,
+                "${subPeriod.endTime.hour}:${subPeriod.endTime.minute.toString().padStart(2, '0')}",
+                getString(R.string.time_remaining_format, subPeriod.remainingMinutes.toInt()),
+                progressPercent,
+                progressBar,
+                subPeriod.periodIndexInCourse,
+                subPeriod.totalPeriodsInCourse
+            )
+            val extras = createExtras(capsuleTitle, targetWhen, progressPercent)
 
             val publicNotification = NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_stat_in_class)
-                .setContentTitle(title)
+                .setContentTitle(capsuleTitle)
                 .setContentText(contentText)
-                .setSubText("授课进行中 · ${subPeriod.periodLabel}")
+                .setSubText(subText)
                 .setUsesChronometer(true)
                 .setChronometerCountDown(true)
                 .setWhen(targetWhen)
@@ -344,8 +393,8 @@ class InClassService : Service() {
                 .setProgress(100, progressPercent, false)
                 .setStyle(
                     NotificationCompat.BigTextStyle()
-                        .setBigContentTitle(title)
-                        .setSummaryText("正在上课 · $progressPercent%")
+                        .setBigContentTitle(bigTitle)
+                        .setSummaryText("$statusLabel · $progressPercent%")
                         .bigText(bigTextContent)
                 )
                 .setOngoing(true)
@@ -359,17 +408,17 @@ class InClassService : Service() {
 
             val notification = NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_stat_in_class)
-                .setContentTitle(title)
+                .setContentTitle(capsuleTitle)
                 .setContentText(contentText)
-                .setSubText("授课进行中 · ${subPeriod.periodLabel}")
+                .setSubText(subText)
                 .setUsesChronometer(true)
                 .setChronometerCountDown(true)
                 .setWhen(targetWhen)
                 .setShowWhen(true)
                 .setStyle(
                     NotificationCompat.BigTextStyle()
-                        .setBigContentTitle(title)
-                        .setSummaryText("正在上课 · $progressPercent%")
+                        .setBigContentTitle(bigTitle)
+                        .setSummaryText("$statusLabel · $progressPercent%")
                         .bigText(bigTextContent)
                 )
                 .setProgress(100, progressPercent, false)
@@ -394,21 +443,34 @@ class InClassService : Service() {
             // Fallback for ad-hoc custom sessions or before slots loaded
             val totalSecs = Duration.between(startTime, endTime).seconds.coerceAtLeast(1)
             val elapsedSecs = Duration.between(startTime, now).seconds.coerceIn(0, totalSecs)
-            val progressPercent = ((elapsedSecs * 100) / totalSecs).toInt()
+            val progressPercent = ((elapsedSecs * 100) / totalSecs).toInt().coerceIn(0, 100)
             val remainingMinutes = ChronoUnit.MINUTES.between(now, endTime).coerceAtLeast(0)
             val targetWhen = calculateTargetWhen(endTime)
+            val statusLabel = getString(R.string.status_in_progress)
+            val progressBar = makeProgressBar(progressPercent)
 
-            val title = "$courseName · $className"
-            val contentText = "📍 $room · 下课 ${endTime.hour}:${endTime.minute.toString().padStart(2, '0')} (余${remainingMinutes}分)"
-            val bigTextContent = "📍 教室: $room\n⏰ 下课时间: ${endTime.hour}:${endTime.minute.toString().padStart(2, '0')} (剩余 ${remainingMinutes} 分钟)\n⏳ 课堂进度: $progressPercent%"
-            val capsuleTitle = "📕 $courseName · 余${remainingMinutes}分"
-            val extras = createExtras(capsuleTitle, targetWhen)
+            // Compact title for the camera punch-hole capsule (ColorOS Aqua Dynamics guideline: <= 4-6 chars)
+            val capsuleTitle = statusLabel
+            // Rich expanded title for floating card & notifications
+            val bigTitle = "📕 $courseName · $className"
+            // High-visibility progress bar in subText directly below the chronometer
+            val subText = "$statusLabel $progressPercent%  $progressBar  ·  📍 $room"
+            val contentText = "📍 $room · $progressPercent% $progressBar · ${getString(R.string.time_remaining_format, remainingMinutes.toInt())}"
+            val bigTextContent = getString(
+                R.string.notification_fallback_bigtext_format,
+                room,
+                "${endTime.hour}:${endTime.minute.toString().padStart(2, '0')}",
+                getString(R.string.time_remaining_format, remainingMinutes.toInt()),
+                progressPercent,
+                progressBar
+            )
+            val extras = createExtras(capsuleTitle, targetWhen, progressPercent)
 
             val publicNotification = NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_stat_in_class)
-                .setContentTitle("📕 $courseName · $className")
+                .setContentTitle(capsuleTitle)
                 .setContentText(contentText)
-                .setSubText("授课进行中")
+                .setSubText(subText)
                 .setUsesChronometer(true)
                 .setChronometerCountDown(true)
                 .setWhen(targetWhen)
@@ -416,8 +478,8 @@ class InClassService : Service() {
                 .setProgress(100, progressPercent, false)
                 .setStyle(
                     NotificationCompat.BigTextStyle()
-                        .setBigContentTitle("📕 $courseName · $className")
-                        .setSummaryText("正在上课 · $progressPercent%")
+                        .setBigContentTitle(bigTitle)
+                        .setSummaryText("$statusLabel · $progressPercent%")
                         .bigText(bigTextContent)
                 )
                 .setOngoing(true)
@@ -431,17 +493,17 @@ class InClassService : Service() {
 
             val notification = NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_stat_in_class)
-                .setContentTitle("📕 $courseName · $className")
+                .setContentTitle(capsuleTitle)
                 .setContentText(contentText)
-                .setSubText("授课进行中")
+                .setSubText(subText)
                 .setUsesChronometer(true)
                 .setChronometerCountDown(true)
                 .setWhen(targetWhen)
                 .setShowWhen(true)
                 .setStyle(
                     NotificationCompat.BigTextStyle()
-                        .setBigContentTitle("📕 $courseName · $className")
-                        .setSummaryText("正在上课 · $progressPercent%")
+                        .setBigContentTitle(bigTitle)
+                        .setSummaryText("$statusLabel · $progressPercent%")
                         .bigText(bigTextContent)
                 )
                 .setProgress(100, progressPercent, false)
