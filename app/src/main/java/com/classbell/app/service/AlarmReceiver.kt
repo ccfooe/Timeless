@@ -23,14 +23,48 @@ class AlarmReceiver : BroadcastReceiver() {
                 val room = intent.getStringExtra(AlarmScheduler.EXTRA_ROOM) ?: ""
                 val startTime = intent.getStringExtra(AlarmScheduler.EXTRA_START_TIME) ?: ""
                 val endTime = intent.getStringExtra(AlarmScheduler.EXTRA_END_TIME) ?: ""
+                val periodLabel = intent.getStringExtra(AlarmScheduler.EXTRA_PERIOD_LABEL) ?: ""
+                val periodStart = intent.getIntExtra(AlarmScheduler.EXTRA_PERIOD_START, 1)
+                val periodEnd = intent.getIntExtra(AlarmScheduler.EXTRA_PERIOD_END, 1)
 
-                InClassService.start(context, course, className, room, startTime, endTime)
+                InClassService.start(context, course, className, room, startTime, endTime, periodStart, periodEnd)
+
+                val pendingIntent = PendingIntent.getActivity(
+                    context,
+                    0,
+                    Intent(context, MainActivity::class.java),
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                )
+
+                val title = if (periodLabel.isNotBlank()) "🔔 $periodLabel 上课时间到 · $course" else "🔔 上课时间到 · $course"
+                val body = "地点: $room · 授课班级: $className"
+
+                val notification = NotificationCompat.Builder(context, ClassBellApp.CHANNEL_WARNING_ID)
+                    .setSmallIcon(R.drawable.ic_stat_in_class)
+                    .setContentTitle(title)
+                    .setContentText(body)
+                    .setPriority(NotificationCompat.PRIORITY_HIGH)
+                    .setDefaults(NotificationCompat.DEFAULT_ALL)
+                    .setAutoCancel(true)
+                    .setContentIntent(pendingIntent)
+                    .build()
+
+                notificationManager.notify(2000, notification)
             }
 
-            AlarmScheduler.ACTION_CLASS_WARN -> {
+            AlarmScheduler.ACTION_PERIOD_TRANSITION -> {
                 val course = intent.getStringExtra(AlarmScheduler.EXTRA_COURSE_NAME) ?: ""
+                val className = intent.getStringExtra(AlarmScheduler.EXTRA_CLASS_NAME) ?: ""
+                val room = intent.getStringExtra(AlarmScheduler.EXTRA_ROOM) ?: ""
+                val startTime = intent.getStringExtra(AlarmScheduler.EXTRA_START_TIME) ?: ""
                 val endTime = intent.getStringExtra(AlarmScheduler.EXTRA_END_TIME) ?: ""
-                val warnMinutes = intent.getIntExtra(AlarmScheduler.EXTRA_WARN_MINUTES, 5)
+                val periodLabel = intent.getStringExtra(AlarmScheduler.EXTRA_PERIOD_LABEL) ?: ""
+                val breakTitle = intent.getStringExtra(AlarmScheduler.EXTRA_BREAK_TITLE) ?: "课间休息"
+                val nextPeriodLabel = intent.getStringExtra(AlarmScheduler.EXTRA_NEXT_PERIOD_LABEL) ?: ""
+                val periodStart = intent.getIntExtra(AlarmScheduler.EXTRA_PERIOD_START, 1)
+                val periodEnd = intent.getIntExtra(AlarmScheduler.EXTRA_PERIOD_END, 1)
+
+                InClassService.start(context, course, className, room, startTime, endTime, periodStart, periodEnd)
 
                 val pendingIntent = PendingIntent.getActivity(
                     context,
@@ -40,8 +74,36 @@ class AlarmReceiver : BroadcastReceiver() {
                 )
 
                 val notification = NotificationCompat.Builder(context, ClassBellApp.CHANNEL_WARNING_ID)
-                    .setSmallIcon(R.drawable.ic_launcher_foreground)
-                    .setContentTitle("下课倒计时提醒 · $course")
+                    .setSmallIcon(R.drawable.ic_stat_in_class)
+                    .setContentTitle("☕ $periodLabel 已下课 · 进入$breakTitle")
+                    .setContentText("下节课 $nextPeriodLabel 即将开始，适当休息放松一下吧")
+                    .setPriority(NotificationCompat.PRIORITY_HIGH)
+                    .setDefaults(NotificationCompat.DEFAULT_ALL)
+                    .setAutoCancel(true)
+                    .setContentIntent(pendingIntent)
+                    .build()
+
+                notificationManager.notify(2003, notification)
+            }
+
+            AlarmScheduler.ACTION_CLASS_WARN -> {
+                val course = intent.getStringExtra(AlarmScheduler.EXTRA_COURSE_NAME) ?: ""
+                val endTime = intent.getStringExtra(AlarmScheduler.EXTRA_END_TIME) ?: ""
+                val warnMinutes = intent.getIntExtra(AlarmScheduler.EXTRA_WARN_MINUTES, 5)
+                val periodLabel = intent.getStringExtra(AlarmScheduler.EXTRA_PERIOD_LABEL) ?: ""
+
+                val pendingIntent = PendingIntent.getActivity(
+                    context,
+                    0,
+                    Intent(context, MainActivity::class.java),
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                )
+
+                val title = if (periodLabel.isNotBlank()) "⏰ $periodLabel 下课提醒 · $course" else "⏰ 下课提醒 · $course"
+
+                val notification = NotificationCompat.Builder(context, ClassBellApp.CHANNEL_WARNING_ID)
+                    .setSmallIcon(R.drawable.ic_stat_in_class)
+                    .setContentTitle(title)
                     .setContentText("还有 $warnMinutes 分钟下课（预计 $endTime 下课）")
                     .setPriority(NotificationCompat.PRIORITY_HIGH)
                     .setDefaults(NotificationCompat.DEFAULT_ALL)
@@ -64,9 +126,9 @@ class AlarmReceiver : BroadcastReceiver() {
                 )
 
                 val notification = NotificationCompat.Builder(context, ClassBellApp.CHANNEL_WARNING_ID)
-                    .setSmallIcon(R.drawable.ic_launcher_foreground)
-                    .setContentTitle("下课时间到")
-                    .setContentText("$course 课程已下课，辛苦了！")
+                    .setSmallIcon(R.drawable.ic_stat_in_class)
+                    .setContentTitle("🎉 课程已全部下课")
+                    .setContentText("$course 今日课程已全部下课，辛苦了！")
                     .setPriority(NotificationCompat.PRIORITY_HIGH)
                     .setAutoCancel(true)
                     .setContentIntent(pendingIntent)

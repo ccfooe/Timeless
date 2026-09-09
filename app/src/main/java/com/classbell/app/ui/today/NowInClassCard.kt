@@ -68,6 +68,14 @@ fun NowInClassCard(
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
         if (currentMeeting != null) {
+            val sub = currentMeeting.subPeriodState
+            val isBreak = sub?.isBreak == true
+            val activeColor = if (isBreak) AccentAmber else accentColor
+
+            val targetStartTime = sub?.startTime ?: currentMeeting.startTime
+            val targetEndTime = sub?.endTime ?: currentMeeting.endTime
+            val activeProgress = sub?.progress ?: currentMeeting.progress
+
             // Live In-Class Active Dashboard (Swiss mechanical / Pure Surface)
             PureSurface(
                 modifier = Modifier.fillMaxWidth(),
@@ -85,14 +93,18 @@ fun NowInClassCard(
                                 modifier = Modifier
                                     .size(7.dp)
                                     .clip(CircleShape)
-                                    .background(accentColor)
+                                    .background(activeColor)
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
-                                text = stringResource(R.string.status_in_progress),
+                                text = when {
+                                    isBreak -> sub?.breakTitle ?: stringResource(R.string.status_recess)
+                                    sub != null -> "${stringResource(R.string.status_in_progress)} · ${sub.periodLabel}"
+                                    else -> stringResource(R.string.status_in_progress)
+                                },
                                 style = MaterialTheme.typography.labelSmall,
                                 fontWeight = FontWeight.Bold,
-                                color = accentColor
+                                color = activeColor
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
@@ -128,11 +140,28 @@ fun NowInClassCard(
                         color = MaterialTheme.colorScheme.onSurface
                     )
 
+                    if (isBreak && sub?.nextPeriodLabel != null) {
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = stringResource(R.string.next_period_starts_at, sub.nextPeriodLabel, TimeUtils.formatTime(sub.endTime)),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = activeColor,
+                            fontWeight = FontWeight.Medium
+                        )
+                    } else if (sub != null && sub.totalPeriodsInCourse > 1) {
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = stringResource(R.string.period_in_course_format, sub.periodLabel, sub.periodIndexInCourse, sub.totalPeriodsInCourse),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+
                     Spacer(modifier = Modifier.height(6.dp))
 
                     // Huge Digital Countdown Display (Swiss Typography, tight monospace)
                     val totalRemainingSecs = run {
-                        val duration = Duration.between(currentTime, currentMeeting.endTime).seconds
+                        val duration = Duration.between(currentTime, targetEndTime).seconds
                         if (duration > 0) duration else 0L
                     }
                     val hours = totalRemainingSecs / 3600
@@ -147,32 +176,32 @@ fun NowInClassCard(
                     Text(
                         text = timerStr,
                         style = CountdownDigits,
-                        color = accentColor
+                        color = activeColor
                     )
 
                     Spacer(modifier = Modifier.height(14.dp))
 
                     // Ultra-slim Progress Track (4dp)
                     LinearProgressIndicator(
-                        progress = { currentMeeting.progress },
+                        progress = { activeProgress },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(4.dp)
                             .clip(RoundedCornerShape(2.dp)),
-                        color = accentColor,
-                        trackColor = accentColor.copy(alpha = 0.15f)
+                        color = activeColor,
+                        trackColor = activeColor.copy(alpha = 0.15f)
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
 
                     // Micro Timestamp Row
-                    val elapsedMinutes = Duration.between(currentMeeting.startTime, currentTime).toMinutes().coerceAtLeast(0)
+                    val elapsedMinutes = Duration.between(targetStartTime, currentTime).toMinutes().coerceAtLeast(0)
                     val elapsedText = if (elapsedMinutes >= 60) {
                         "${elapsedMinutes / 60}h ${elapsedMinutes % 60}m"
                     } else {
                         "${elapsedMinutes}m"
                     }
-                    val percent = (currentMeeting.progress * 100).toInt().coerceIn(0, 100)
+                    val percent = (activeProgress * 100).toInt().coerceIn(0, 100)
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -180,18 +209,22 @@ fun NowInClassCard(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = TimeUtils.formatTime(currentMeeting.startTime),
+                            text = TimeUtils.formatTime(targetStartTime),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
-                            text = stringResource(R.string.elapsed_format, elapsedText, percent),
+                            text = if (isBreak) {
+                                stringResource(R.string.recess_progress_format, percent)
+                            } else {
+                                stringResource(R.string.elapsed_format, elapsedText, percent)
+                            },
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.Medium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
-                            text = TimeUtils.formatTime(currentMeeting.endTime),
+                            text = TimeUtils.formatTime(targetEndTime),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -226,7 +259,7 @@ fun NowInClassCard(
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(12.dp),
                             colors = ButtonDefaults.outlinedButtonColors(
-                                contentColor = accentColor
+                                contentColor = activeColor
                             )
                         ) {
                             Icon(
@@ -235,7 +268,10 @@ fun NowInClassCard(
                                 modifier = Modifier.size(16.dp)
                             )
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text(stringResource(R.string.btn_extend_5min), style = MaterialTheme.typography.labelMedium)
+                            Text(
+                                text = if (isBreak) stringResource(R.string.btn_extend_break_5min) else stringResource(R.string.btn_extend_5min),
+                                style = MaterialTheme.typography.labelMedium
+                            )
                         }
                     }
                 }

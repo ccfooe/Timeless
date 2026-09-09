@@ -202,10 +202,7 @@ fun TodayScreen(
                     TodayMeetingCard(
                         meeting = meeting,
                         onStartThisClass = {
-                            viewModel.startClassNow(
-                                course = meeting.course,
-                                durationMinutes = java.time.Duration.between(meeting.startTime, meeting.endTime).toMinutes().toInt().coerceAtLeast(10)
-                            )
+                            viewModel.startCourseRoutine(meeting)
                         }
                     )
                 }

@@ -21,5 +21,6 @@ data class MeetingOccurrence(
     val holidayName: String? = null,
     val status: MeetingStatus = MeetingStatus.UPCOMING,
     val progress: Float = 0f,
-    val remainingMinutes: Long = 0L
+    val remainingMinutes: Long = 0L,
+    val subPeriodState: SubPeriodState? = null
 )

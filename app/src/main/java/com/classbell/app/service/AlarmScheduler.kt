@@ -7,7 +7,9 @@ import android.content.Intent
 import android.os.Build
 import com.classbell.app.data.model.Affair
 import com.classbell.app.data.model.MeetingOccurrence
+import com.classbell.app.data.model.PeriodSlot
 import com.classbell.app.data.model.ReminderChoice
+import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -21,6 +23,7 @@ class AlarmScheduler(private val context: Context) {
         const val ACTION_CLASS_START = "com.classbell.app.ACTION_CLASS_START"
         const val ACTION_CLASS_WARN = "com.classbell.app.ACTION_CLASS_WARN"
         const val ACTION_CLASS_END = "com.classbell.app.ACTION_CLASS_END"
+        const val ACTION_PERIOD_TRANSITION = "com.classbell.app.ACTION_PERIOD_TRANSITION"
         const val ACTION_AFFAIR = "com.classbell.app.ACTION_AFFAIR"
 
         const val EXTRA_COURSE_NAME = "extra_course_name"
@@ -29,74 +32,185 @@ class AlarmScheduler(private val context: Context) {
         const val EXTRA_END_TIME = "extra_end_time"
         const val EXTRA_START_TIME = "extra_start_time"
         const val EXTRA_WARN_MINUTES = "extra_warn_minutes"
+        const val EXTRA_PERIOD_ORDER = "extra_period_order"
+        const val EXTRA_PERIOD_LABEL = "extra_period_label"
+        const val EXTRA_PERIOD_START = "extra_period_start"
+        const val EXTRA_PERIOD_END = "extra_period_end"
+        const val EXTRA_IS_BREAK = "extra_is_break"
+        const val EXTRA_BREAK_TITLE = "extra_break_title"
+        const val EXTRA_NEXT_PERIOD_LABEL = "extra_next_period_label"
         const val EXTRA_AFFAIR_TITLE = "extra_affair_title"
         const val EXTRA_AFFAIR_PLACE = "extra_affair_place"
         const val EXTRA_AFFAIR_TIME = "extra_affair_time"
     }
 
-    fun scheduleClassAlarms(meeting: MeetingOccurrence, warnMinutes: Int = 5) {
+    fun scheduleClassAlarms(
+        meeting: MeetingOccurrence,
+        warnMinutes: Int = 5,
+        periodSlots: List<PeriodSlot> = emptyList()
+    ) {
         if (meeting.isHolidaySuppressed) return
 
         val zone = ZoneId.systemDefault()
         val now = LocalDateTime.now()
+        val courseKey = meeting.course.id.toInt() * 100
 
-        val startDateTime = LocalDateTime.of(meeting.date, meeting.startTime)
-        val endDateTime = LocalDateTime.of(meeting.date, meeting.endTime)
-        val warnDateTime = endDateTime.minusMinutes(warnMinutes.toLong())
+        val periodSlotMap = periodSlots.associateBy { it.order }
+        val courseSlots = (meeting.course.periodStart..meeting.course.periodEnd).mapNotNull { periodSlotMap[it] }
 
-        val courseKey = meeting.course.id.toInt() * 10
+        if (courseSlots.isNotEmpty()) {
+            // Granular sub-period scheduling for each individual period and break
+            for (i in courseSlots.indices) {
+                val slot = courseSlots[i]
+                val slotStart = LocalDateTime.of(meeting.date, slot.startTime)
+                val slotEnd = LocalDateTime.of(meeting.date, slot.endTime)
+                val slotWarn = slotEnd.minusMinutes(warnMinutes.toLong())
 
-        // 1. Class Start Alarm
-        if (startDateTime.isAfter(now)) {
-            val intent = Intent(context, AlarmReceiver::class.java).apply {
-                action = ACTION_CLASS_START
-                putExtra(EXTRA_COURSE_NAME, meeting.course.name)
-                putExtra(EXTRA_CLASS_NAME, meeting.course.className)
-                putExtra(EXTRA_ROOM, meeting.course.room)
-                putExtra(EXTRA_START_TIME, meeting.startTime.toString())
-                putExtra(EXTRA_END_TIME, meeting.endTime.toString())
+                // 1. Period Start Alarm (at slot.startTime)
+                if (slotStart.isAfter(now)) {
+                    val intent = Intent(context, AlarmReceiver::class.java).apply {
+                        action = ACTION_CLASS_START
+                        putExtra(EXTRA_COURSE_NAME, meeting.course.name)
+                        putExtra(EXTRA_CLASS_NAME, meeting.course.className)
+                        putExtra(EXTRA_ROOM, meeting.course.room)
+                        putExtra(EXTRA_START_TIME, slot.startTime.toString())
+                        putExtra(EXTRA_END_TIME, slot.endTime.toString())
+                        putExtra(EXTRA_PERIOD_ORDER, slot.order)
+                        putExtra(EXTRA_PERIOD_LABEL, slot.label)
+                        putExtra(EXTRA_PERIOD_START, meeting.course.periodStart)
+                        putExtra(EXTRA_PERIOD_END, meeting.course.periodEnd)
+                    }
+                    val pendingIntent = PendingIntent.getBroadcast(
+                        context,
+                        courseKey + i * 4 + 1,
+                        intent,
+                        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                    )
+                    setExactAlarm(slotStart.atZone(zone).toInstant().toEpochMilli(), pendingIntent)
+                }
+
+                // 2. Period Ending Warning Alarm (e.g. 5 min before slot.endTime)
+                if (slotWarn.isAfter(now)) {
+                    val intent = Intent(context, AlarmReceiver::class.java).apply {
+                        action = ACTION_CLASS_WARN
+                        putExtra(EXTRA_COURSE_NAME, meeting.course.name)
+                        putExtra(EXTRA_CLASS_NAME, meeting.course.className)
+                        putExtra(EXTRA_ROOM, meeting.course.room)
+                        putExtra(EXTRA_END_TIME, slot.endTime.toString())
+                        putExtra(EXTRA_WARN_MINUTES, warnMinutes)
+                        putExtra(EXTRA_PERIOD_LABEL, slot.label)
+                    }
+                    val pendingIntent = PendingIntent.getBroadcast(
+                        context,
+                        courseKey + i * 4 + 2,
+                        intent,
+                        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                    )
+                    setExactAlarm(slotWarn.atZone(zone).toInstant().toEpochMilli(), pendingIntent)
+                }
+
+                // 3. Period End / Break Transition Alarm (at slot.endTime)
+                if (slotEnd.isAfter(now)) {
+                    if (i < courseSlots.size - 1) {
+                        // Intermediate period end: Transition to Recess / Break
+                        val nextSlot = courseSlots[i + 1]
+                        val breakDuration = Duration.between(slot.endTime, nextSlot.startTime).toMinutes()
+                        val breakTitle = if (breakDuration >= 15) "大课间休息" else "课间休息"
+
+                        val intent = Intent(context, AlarmReceiver::class.java).apply {
+                            action = ACTION_PERIOD_TRANSITION
+                            putExtra(EXTRA_COURSE_NAME, meeting.course.name)
+                            putExtra(EXTRA_CLASS_NAME, meeting.course.className)
+                            putExtra(EXTRA_ROOM, meeting.course.room)
+                            putExtra(EXTRA_PERIOD_ORDER, slot.order)
+                            putExtra(EXTRA_PERIOD_LABEL, slot.label)
+                            putExtra(EXTRA_IS_BREAK, true)
+                            putExtra(EXTRA_BREAK_TITLE, breakTitle)
+                            putExtra(EXTRA_NEXT_PERIOD_LABEL, nextSlot.label)
+                            putExtra(EXTRA_START_TIME, slot.endTime.toString())
+                            putExtra(EXTRA_END_TIME, nextSlot.startTime.toString())
+                            putExtra(EXTRA_PERIOD_START, meeting.course.periodStart)
+                            putExtra(EXTRA_PERIOD_END, meeting.course.periodEnd)
+                        }
+                        val pendingIntent = PendingIntent.getBroadcast(
+                            context,
+                            courseKey + i * 4 + 3,
+                            intent,
+                            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                        )
+                        setExactAlarm(slotEnd.atZone(zone).toInstant().toEpochMilli(), pendingIntent)
+                    } else {
+                        // Final period end: Whole course session ends
+                        val intent = Intent(context, AlarmReceiver::class.java).apply {
+                            action = ACTION_CLASS_END
+                            putExtra(EXTRA_COURSE_NAME, meeting.course.name)
+                            putExtra(EXTRA_PERIOD_LABEL, slot.label)
+                        }
+                        val pendingIntent = PendingIntent.getBroadcast(
+                            context,
+                            courseKey + i * 4 + 4,
+                            intent,
+                            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                        )
+                        setExactAlarm(slotEnd.atZone(zone).toInstant().toEpochMilli(), pendingIntent)
+                    }
+                }
             }
-            val pendingIntent = PendingIntent.getBroadcast(
-                context,
-                courseKey + 1,
-                intent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-            )
-            setExactAlarm(startDateTime.atZone(zone).toInstant().toEpochMilli(), pendingIntent)
-        }
+        } else {
+            // Fallback for custom or unspecified slots
+            val startDateTime = LocalDateTime.of(meeting.date, meeting.startTime)
+            val endDateTime = LocalDateTime.of(meeting.date, meeting.endTime)
+            val warnDateTime = endDateTime.minusMinutes(warnMinutes.toLong())
 
-        // 2. Class End Warning Alarm (e.g. 5 minutes before end)
-        if (warnDateTime.isAfter(now)) {
-            val intent = Intent(context, AlarmReceiver::class.java).apply {
-                action = ACTION_CLASS_WARN
-                putExtra(EXTRA_COURSE_NAME, meeting.course.name)
-                putExtra(EXTRA_CLASS_NAME, meeting.course.className)
-                putExtra(EXTRA_ROOM, meeting.course.room)
-                putExtra(EXTRA_END_TIME, meeting.endTime.toString())
-                putExtra(EXTRA_WARN_MINUTES, warnMinutes)
+            if (startDateTime.isAfter(now)) {
+                val intent = Intent(context, AlarmReceiver::class.java).apply {
+                    action = ACTION_CLASS_START
+                    putExtra(EXTRA_COURSE_NAME, meeting.course.name)
+                    putExtra(EXTRA_CLASS_NAME, meeting.course.className)
+                    putExtra(EXTRA_ROOM, meeting.course.room)
+                    putExtra(EXTRA_START_TIME, meeting.startTime.toString())
+                    putExtra(EXTRA_END_TIME, meeting.endTime.toString())
+                }
+                val pendingIntent = PendingIntent.getBroadcast(
+                    context,
+                    courseKey + 1,
+                    intent,
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                )
+                setExactAlarm(startDateTime.atZone(zone).toInstant().toEpochMilli(), pendingIntent)
             }
-            val pendingIntent = PendingIntent.getBroadcast(
-                context,
-                courseKey + 2,
-                intent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-            )
-            setExactAlarm(warnDateTime.atZone(zone).toInstant().toEpochMilli(), pendingIntent)
-        }
 
-        // 3. Class End Alarm
-        if (endDateTime.isAfter(now)) {
-            val intent = Intent(context, AlarmReceiver::class.java).apply {
-                action = ACTION_CLASS_END
-                putExtra(EXTRA_COURSE_NAME, meeting.course.name)
+            if (warnDateTime.isAfter(now)) {
+                val intent = Intent(context, AlarmReceiver::class.java).apply {
+                    action = ACTION_CLASS_WARN
+                    putExtra(EXTRA_COURSE_NAME, meeting.course.name)
+                    putExtra(EXTRA_CLASS_NAME, meeting.course.className)
+                    putExtra(EXTRA_ROOM, meeting.course.room)
+                    putExtra(EXTRA_END_TIME, meeting.endTime.toString())
+                    putExtra(EXTRA_WARN_MINUTES, warnMinutes)
+                }
+                val pendingIntent = PendingIntent.getBroadcast(
+                    context,
+                    courseKey + 2,
+                    intent,
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                )
+                setExactAlarm(warnDateTime.atZone(zone).toInstant().toEpochMilli(), pendingIntent)
             }
-            val pendingIntent = PendingIntent.getBroadcast(
-                context,
-                courseKey + 3,
-                intent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-            )
-            setExactAlarm(endDateTime.atZone(zone).toInstant().toEpochMilli(), pendingIntent)
+
+            if (endDateTime.isAfter(now)) {
+                val intent = Intent(context, AlarmReceiver::class.java).apply {
+                    action = ACTION_CLASS_END
+                    putExtra(EXTRA_COURSE_NAME, meeting.course.name)
+                }
+                val pendingIntent = PendingIntent.getBroadcast(
+                    context,
+                    courseKey + 3,
+                    intent,
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                )
+                setExactAlarm(endDateTime.atZone(zone).toInstant().toEpochMilli(), pendingIntent)
+            }
         }
     }
 

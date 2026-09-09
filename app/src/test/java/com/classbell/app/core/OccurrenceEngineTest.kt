@@ -110,7 +110,10 @@ class OccurrenceEngineTest {
         assertEquals(MeetingStatus.IN_PROGRESS, morningMeeting.status)
         assertFalse(morningMeeting.isHolidaySuppressed)
         assertTrue(morningMeeting.progress > 0f && morningMeeting.progress < 1f)
-        assertEquals(120L, morningMeeting.remainingMinutes) // 10:00 to 12:00 = 120 mins
+        assertEquals(5L, morningMeeting.remainingMinutes) // Sub-period 2 (09:20-10:05), at 10:00 -> 5 mins remaining in this period
+        org.junit.Assert.assertNotNull(morningMeeting.subPeriodState)
+        assertEquals(com.classbell.app.data.model.SubPeriodKind.IN_CLASS, morningMeeting.subPeriodState?.kind)
+        assertEquals(2, morningMeeting.subPeriodState?.periodOrder)
 
         val afternoonMeeting = meetings[1]
         assertEquals("25级摄影摄像技术01班", afternoonMeeting.course.className)

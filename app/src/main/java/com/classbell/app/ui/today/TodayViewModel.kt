@@ -4,12 +4,15 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.classbell.app.core.OccurrenceEngine
 import com.classbell.app.core.WeekCalculator
 import com.classbell.app.data.model.Affair
 import com.classbell.app.data.model.Course
 import com.classbell.app.data.model.MeetingOccurrence
 import com.classbell.app.data.model.MeetingStatus
+import com.classbell.app.data.model.PeriodSlot
 import com.classbell.app.data.model.Semester
+import com.classbell.app.data.model.SubPeriodKind
 import com.classbell.app.data.repository.AffairRepository
 import com.classbell.app.data.repository.CourseRepository
 import com.classbell.app.data.repository.ScheduleRepository
@@ -69,12 +72,17 @@ class TodayViewModel(
             }
         }
 
-        // Auto schedule alarms for today
+        // Auto schedule alarms for today with granular period slots
         viewModelScope.launch {
             val warnMin = settingsRepository.endWarnMinutesFlow.firstOrNull() ?: 5
-            scheduleRepository.getMeetingsOnDate(LocalDate.now()).collect { meetings ->
+            combine(
+                scheduleRepository.getMeetingsOnDate(LocalDate.now()),
+                scheduleRepository.periodSlots
+            ) { meetings, slots ->
+                meetings to slots
+            }.collect { (meetings, slots) ->
                 for (m in meetings) {
-                    alarmScheduler.scheduleClassAlarms(m, warnMin)
+                    alarmScheduler.scheduleClassAlarms(m, warnMin, slots)
                 }
             }
         }
@@ -84,16 +92,19 @@ class TodayViewModel(
         scheduleRepository.activeSemester,
         _currentTime,
         scheduleRepository.getMeetingsOnDate(LocalDate.now()),
+        scheduleRepository.periodSlots,
         scheduleRepository.manualSession,
         affairRepository.getAffairsForDate(LocalDate.now())
     ) { args: Array<Any?> ->
         val semester = args[0] as Semester?
         val time = args[1] as LocalTime
         @Suppress("UNCHECKED_CAST")
-        val meetings = args[2] as List<MeetingOccurrence>
-        val manualSession = args[3] as MeetingOccurrence?
+        val rawMeetings = args[2] as List<MeetingOccurrence>
         @Suppress("UNCHECKED_CAST")
-        val affairs = args[4] as List<Affair>
+        val periodSlots = args[3] as List<PeriodSlot>
+        val manualSession = args[4] as MeetingOccurrence?
+        @Suppress("UNCHECKED_CAST")
+        val affairs = args[5] as List<Affair>
 
         val today = LocalDate.now()
         val weekNum = if (semester != null) {
@@ -112,7 +123,25 @@ class TodayViewModel(
             )
         } else "教学周"
 
-        // Active meeting: manual session takes precedence, then scheduled active meeting
+        // Dynamically compute subPeriodState for each meeting with the current second tick
+        val meetings = rawMeetings.map { m ->
+            val sub = OccurrenceEngine.resolveSubPeriodState(m.course, periodSlots, time)
+            val status = when {
+                m.isHolidaySuppressed -> MeetingStatus.HOLIDAY
+                time.isBefore(m.startTime) -> MeetingStatus.UPCOMING
+                time.isAfter(m.endTime) || time == m.endTime -> MeetingStatus.FINISHED
+                else -> MeetingStatus.IN_PROGRESS
+            }
+            val prog = if (sub != null && (sub.kind == SubPeriodKind.IN_CLASS || sub.kind == SubPeriodKind.BREAK)) {
+                sub.progress
+            } else m.progress
+            val rem = if (sub != null && (sub.kind == SubPeriodKind.IN_CLASS || sub.kind == SubPeriodKind.BREAK)) {
+                sub.remainingMinutes
+            } else m.remainingMinutes
+            m.copy(status = status, progress = prog, remainingMinutes = rem, subPeriodState = sub)
+        }
+
+        // Active meeting: manual session takes precedence if set, then scheduled active meeting
         val activeMeeting = if (manualSession != null) {
             // Recalculate progress and remaining minutes with current time
             val totalSecs = Duration.between(manualSession.startTime, manualSession.endTime).seconds.coerceAtLeast(1)
@@ -155,6 +184,24 @@ class TodayViewModel(
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = TodayUiState()
     )
+
+    /**
+     * Starts tracking a scheduled course routine without accumulating entire multi-hour blocks.
+     * Directly respects the university's period timetable.
+     */
+    fun startCourseRoutine(meeting: MeetingOccurrence) {
+        scheduleRepository.endManualSession()
+        InClassService.start(
+            context = context,
+            courseName = meeting.course.name,
+            className = meeting.course.className,
+            room = meeting.course.room,
+            startTime = meeting.startTime.toString(),
+            endTime = meeting.endTime.toString(),
+            periodStart = meeting.periodStart,
+            periodEnd = meeting.periodEnd
+        )
+    }
 
     fun startClassNow(course: Course, durationMinutes: Int = 45) {
         val now = LocalTime.now()
