@@ -20,6 +20,7 @@ class AlarmReceiver : BroadcastReceiver() {
             AlarmScheduler.ACTION_CLASS_START -> {
                 val course = intent.getStringExtra(AlarmScheduler.EXTRA_COURSE_NAME) ?: ""
                 val className = intent.getStringExtra(AlarmScheduler.EXTRA_CLASS_NAME) ?: ""
+                val teacher = intent.getStringExtra(AlarmScheduler.EXTRA_TEACHER)
                 val room = intent.getStringExtra(AlarmScheduler.EXTRA_ROOM) ?: ""
                 val startTime = intent.getStringExtra(AlarmScheduler.EXTRA_START_TIME) ?: ""
                 val endTime = intent.getStringExtra(AlarmScheduler.EXTRA_END_TIME) ?: ""
@@ -27,7 +28,8 @@ class AlarmReceiver : BroadcastReceiver() {
                 val periodStart = intent.getIntExtra(AlarmScheduler.EXTRA_PERIOD_START, 1)
                 val periodEnd = intent.getIntExtra(AlarmScheduler.EXTRA_PERIOD_END, 1)
 
-                InClassService.start(context, course, className, room, startTime, endTime, periodStart, periodEnd)
+                val displayClass = teacher?.takeIf { it.isNotBlank() } ?: className
+                InClassService.start(context, course, displayClass, room, startTime, endTime, periodStart, periodEnd)
 
                 val pendingIntent = PendingIntent.getActivity(
                     context,
@@ -37,7 +39,8 @@ class AlarmReceiver : BroadcastReceiver() {
                 )
 
                 val title = if (periodLabel.isNotBlank()) "🔔 $periodLabel 上课时间到 · $course" else "🔔 上课时间到 · $course"
-                val body = "地点: $room · 授课班级: $className"
+                val teacherOrClass = if (!teacher.isNullOrBlank()) "教师: $teacher" else "授课班级: $className"
+                val body = "地点: $room · $teacherOrClass"
 
                 val notification = NotificationCompat.Builder(context, ClassBellApp.CHANNEL_WARNING_ID)
                     .setSmallIcon(R.drawable.ic_stat_in_class)
@@ -55,6 +58,7 @@ class AlarmReceiver : BroadcastReceiver() {
             AlarmScheduler.ACTION_PERIOD_TRANSITION -> {
                 val course = intent.getStringExtra(AlarmScheduler.EXTRA_COURSE_NAME) ?: ""
                 val className = intent.getStringExtra(AlarmScheduler.EXTRA_CLASS_NAME) ?: ""
+                val teacher = intent.getStringExtra(AlarmScheduler.EXTRA_TEACHER)
                 val room = intent.getStringExtra(AlarmScheduler.EXTRA_ROOM) ?: ""
                 val startTime = intent.getStringExtra(AlarmScheduler.EXTRA_START_TIME) ?: ""
                 val endTime = intent.getStringExtra(AlarmScheduler.EXTRA_END_TIME) ?: ""
@@ -64,7 +68,8 @@ class AlarmReceiver : BroadcastReceiver() {
                 val periodStart = intent.getIntExtra(AlarmScheduler.EXTRA_PERIOD_START, 1)
                 val periodEnd = intent.getIntExtra(AlarmScheduler.EXTRA_PERIOD_END, 1)
 
-                InClassService.start(context, course, className, room, startTime, endTime, periodStart, periodEnd)
+                val displayClass = teacher?.takeIf { it.isNotBlank() } ?: className
+                InClassService.start(context, course, displayClass, room, startTime, endTime, periodStart, periodEnd)
 
                 val pendingIntent = PendingIntent.getActivity(
                     context,

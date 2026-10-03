@@ -8,18 +8,26 @@ plugins {
 
 android {
     namespace = "com.classbell.app"
-    compileSdk = 36
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.classbell.app"
-        minSdk = 29
-        targetSdk = 36
-        versionCode = 14
-        versionName = "2.2.2"
+        minSdk = 26
+        targetSdk = 35
+        versionCode = 50
+        versionName = "2.4.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        getByName("debug") {
+            enableV1Signing = true
+            enableV2Signing = true
+        }
+    }
+
+    /*
     applicationVariants.all {
         outputs.all {
             (this as? com.android.build.gradle.internal.api.BaseVariantOutputImpl)?.let { output ->
@@ -27,8 +35,12 @@ android {
             }
         }
     }
+    */
 
     buildTypes {
+        debug {
+            signingConfig = signingConfigs.getByName("debug")
+        }
         release {
             isMinifyEnabled = false
             proguardFiles(

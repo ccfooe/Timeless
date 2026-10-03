@@ -33,6 +33,26 @@
     <string name="time_remaining_format">剩余 %d 分钟</string>
     <string name="elapsed_format">已进行 %1$s · %2$d%%</string>
 
+    <!-- Didi-style Lockscreen Notification -->
+    <string name="didi_in_class_countdown">%d分钟后下课</string>
+    <string name="didi_in_class_ending_soon">即将下课</string>
+    <string name="didi_recess_countdown">课间休息 · 剩余%d分钟</string>
+    <string name="didi_recess_ending_soon">课间休息即将结束</string>
+    <string name="didi_preclass_countdown">%d分钟后上课</string>
+    <string name="didi_preclass_starting_soon">即将上课</string>
+    <string name="didi_btn_extend">+5分</string>
+    <string name="didi_btn_end">下课</string>
+    <string name="didi_btn_next">提前下节</string>
+    <string name="didi_milestone_start">上课</string>
+    <string name="didi_milestone_half">半程</string>
+    <string name="didi_milestone_end">下课</string>
+    <string name="didi_milestone_break_start">下课</string>
+    <string name="didi_milestone_break_mid">课间</string>
+    <string name="didi_milestone_break_end">上课</string>
+    <string name="didi_milestone_pre_start">准备</string>
+    <string name="didi_milestone_pre_mid">预备</string>
+    <string name="didi_milestone_pre_end">上课</string>
+
     <!-- Class Controls -->
     <string name="btn_start_class">开始上课</string>
     <string name="btn_quick_class">即时上课</string>
@@ -68,7 +88,11 @@
     <string name="affair_category_other">其他</string>
 
     <!-- Settings Screen Sections & Items -->
-    <string name="settings_title">我的与设置</string>
+    <string name="settings_title">我的</string>
+    <string name="settings_section_schedule_mgmt">核心作息管理</string>
+    <string name="settings_section_appearance_pref">个性化与偏好</string>
+    <string name="settings_section_system_infra">系统保障与数据</string>
+    <string name="settings_section_help_about">帮助与关于</string>
     <string name="settings_section_general">通用设置</string>
     <string name="settings_section_import_ai">智能识别录入 (LLM)</string>
     <string name="settings_section_schedule">课表与提醒</string>
@@ -86,9 +110,40 @@
     <string name="import_schedule_screenshot_sub">拍照或相册选取作息课程表图片，AI 自动提取</string>
     <string name="import_calendar_screenshot">导入校历截图 (LLM)</string>
     <string name="import_calendar_screenshot_sub">提取第一周开学日期、教学周与节假日安排</string>
-    <string name="llm_settings">大模型 API 设置 (BYOK)</string>
-    <string name="llm_settings_sub_unconfigured">未配置密钥 (点击添加)</string>
-    <string name="llm_settings_sub_configured">已配置: %s</string>
+    <string name="import_period_table_screenshot">导入学校作息时间表截图 (LLM)</string>
+    <string name="import_period_table_screenshot_sub">识别学校作息时间表，自动同步全校各节课起止时间</string>
+    <string name="import_period_table_title">导入学校作息时间表</string>
+    <string name="confirm_period_table_title">确认学校作息时间表</string>
+    <string name="confirm_period_table_desc">AI 已成功识别出以下教学节次及起止时间。确认后将同步更新全校作息，打铃与倒计时将以此为准。</string>
+    <string name="confirm_period_table_btn">确认并同步作息表</string>
+    <string name="capsule_pre_class">课前</string>
+    <string name="pre_class_remaining_format">距 %1$s 上课还有 %2$d 分钟</string>
+    <string name="pre_class_countdown_format">距上课还剩 %s</string>
+    <string name="btn_cancel_pre_class">取消准备</string>
+    <string name="ai_photo_recognize_period_table">拍照/相册识别作息</string>
+    <string name="llm_settings">AI 识别与 API 通道设置</string>
+    <string name="llm_settings_sub_official">Timeless 官方云端 (智谱 GLM-4.6v · 免密)</string>
+    <string name="llm_settings_sub_custom_configured">自定义通道: %s</string>
+    <string name="llm_settings_sub_custom_unconfigured">自定义通道 (未配置密钥)</string>
+
+    <!-- Role / Identity Mode -->
+    <string name="role_mode_title">当前身份模式</string>
+    <string name="role_teacher">教师模式</string>
+    <string name="role_student">学生模式</string>
+    <string name="role_teacher_desc">关注授课班级与学生人数，掌控教学节奏</string>
+    <string name="role_student_desc">关注任课教师与教室方位，防跑错与迟到</string>
+
+    <!-- Adaptive Today Strings -->
+    <string name="today_title_teacher">今日教学</string>
+    <string name="today_title_student">今日课程</string>
+    <string name="today_sub_teacher">今日共需讲授 %d 节课</string>
+    <string name="today_sub_student">今日共需修读 %d 节课</string>
+
+    <!-- Course Teacher field -->
+    <string name="course_teacher_label">任课教师</string>
+    <string name="course_teacher_placeholder">例如：张教授、李老师 (可选)</string>
+    <string name="course_detail_teacher">任课教师</string>
+
     <!-- Appearance & Display -->
     <string name="appearance_settings">外观与个性化</string>
     <string name="theme_mode_title">外观模式</string>
@@ -106,24 +161,24 @@
     <string name="dialog_accent_color_title">选择主题强调色</string>
 
     <string name="alarm_settings">提醒与通知设置</string>
-    <string name="lockscreen_cloud_title">锁屏卡片与流体云权限 (ColorOS 16/17)</string>
-    <string name="lockscreen_cloud_sub">直达通道设置流体云灵动胶囊与锁屏显示全部内容</string>
-    <string name="dialog_lockscreen_title">锁屏显示与流体云 (灵动胶囊) 设置</string>
-    <string name="dialog_lockscreen_content">ColorOS 16 / 17 系统对于非应用商店直接安装的应用，默认会限制锁屏与流体云胶囊展示。请按以下指引开启：\n\n1. 💧 开启「流体云」开关：\n点击下方按钮将直接进入 Timeless 的「上课状态实时卡片」通道，请确保开启「流体云 / 灵动胶囊」开关，上课时前置摄像头药丸位置即可显示胶囊并支持轻触展开。\n\n2. 📱 开启「在锁屏上显示」：\n在同一设置页中，点击「锁屏」，勾选为「显示所有通知内容」（若为“隐藏敏感内容”则锁屏可能不展开卡片）。\n\n3. 🌙 检查勿扰模式：\n若状态栏有月亮图标，请在系统「声音与振动 → 勿扰模式」中允许 Timeless 或临时关闭勿扰。</string>
-    <string name="btn_open_system_notification">前往系统通道设置 (开启流体云)</string>
+    <string name="lockscreen_cloud_title">前台常驻与锁屏通知权限</string>
+    <string name="lockscreen_cloud_sub">设置锁屏显示完整内容与状态栏常驻倒计时</string>
+    <string name="dialog_lockscreen_title">锁屏显示与常驻通知设置</string>
+    <string name="dialog_lockscreen_content">为确保上课期间在锁屏界面能实时查看倒计时卡片，请按以下指引开启：\n\n1. 📱 开启「在锁屏上显示」：\n进入通知设置，勾选为「显示所有通知内容」（若为“隐藏敏感内容”则锁屏可能无法展开卡片）。\n\n2. 🔔 开启常驻通知：\n确保「课堂实时进度」通道处于允许状态，以便上课时状态栏常驻进度。\n\n3. 🌙 检查勿扰模式：\n若系统开启了勿扰模式，请在系统「声音与振动 → 勿扰模式」中将 Timeless 加入允许列表。</string>
+    <string name="btn_open_system_notification">前往系统通知设置</string>
     <string name="warn_minutes_title">下课前提醒时间</string>
     <string name="warn_minutes_sub">提前 %d 分钟发送震动与横幅提醒</string>
-    <string name="survival_guide">后台保活与提醒指南</string>
-    <string name="survival_guide_sub">ColorOS 16/17 流体云、电池优化与多任务锁定设置</string>
-    <string name="user_guide_title">新手使用指南与双轨录入说明</string>
-    <string name="user_guide_sub">了解 AI 识别录入与无 API 纯本地手动排课说明</string>
+    <string name="survival_guide">后台运行与自启动设置指南</string>
+    <string name="survival_guide_sub">通知权限、电池优化无限制与后台自启动</string>
+    <string name="user_guide_title">使用指南与功能说明</string>
+    <string name="user_guide_sub">了解全能智能录入、作息管理与手势操作说明</string>
     <string name="backup_and_restore">数据备份与导出</string>
     <string name="export_backup_title">导出本地数据备份 (JSON)</string>
     <string name="export_backup_sub">包含学期、课程、作息与事务（不含 API Key）</string>
     <string name="import_backup_title">导入数据备份 (JSON)</string>
     <string name="import_backup_sub">从 JSON 文件中恢复全部课程、学期与日程</string>
     <string name="about_timeless">关于 Timeless</string>
-    <string name="about_timeless_sub">v2.2.2 · 专为高校教师打造的课堂节拍掌控伴侣</string>
+    <string name="about_timeless_sub">v2.3.2 · 专为高校教师打造的课堂节拍掌控伴侣</string>
     <string name="clear_all_data">清除全部本地数据</string>
     <string name="clear_all_data_sub">重置数据库至初始状态</string>
 
@@ -133,37 +188,67 @@
     <string name="file_read_error">读取文件失败: %s</string>
     <string name="storage_unavailable">存储访问不可用</string>
     <string name="share_backup_chooser">分享备份文件</string>
+    <string name="export_dialog_title">导出本地数据备份</string>
+    <string name="export_dialog_intro">请选择备份导出方式。备份文件包含学期、课程、作息与事务，不含任何私密密钥。</string>
+    <string name="export_save_local_title">保存到手机本地存储 (推荐)</string>
+    <string name="export_save_local_sub">存储到系统“下载”或“文档”目录，方便直接备份或导入</string>
+    <string name="export_share_apps_title">发送到 QQ / 微信 / 邮件</string>
+    <string name="export_share_apps_sub">通过系统分享面板发送备份文件给好友或电脑</string>
+    <string name="export_save_success">备份文件已成功保存到本地！</string>
+    <string name="export_save_failed">保存备份失败: %s</string>
     <string name="data_reset_success">数据已重置</string>
     <string name="dialog_clear_title">重置本地数据</string>
     <string name="dialog_clear_content">确定要清除所有课程、校历与日程数据吗？此操作无法撤销。清除后将恢复内置的初始学期与作息时间表。</string>
     <string name="dialog_warn_minutes_title">设置下课前提醒</string>
     <string name="dialog_warn_minutes_content">在下课前 %d 分钟通过强力震动与锁屏横幅提醒防拖堂。</string>
-    <string name="dialog_about_body">版本：v2.2.2\n核心特性：\n• 流体云开启体验全面升级：点击上课静默吸附至状态栏，彻底消除应用内遮挡弹窗\n• ColorOS 16/17 前摄胶囊极致轻量化（长度压缩至 2/3，对称包裹摄像头挖孔）\n• 流体云展开卡片高精度进度条可视化（▰▰▰▰▱▱▱▱▱▱ 步进进度动态渲染）\n• 状态栏与主页毫秒级时间绝对对齐（消除时钟抖动与偏差）\n• 锁屏常驻卡片与动态倒计时通知深度适配\n• Smartisan 拟物级高阻尼弹簧平滑过渡动效与导航触感微动效\n• 全自动高校作息节拍（自动识别上课 45 分钟与课间休息/大课间，精准分段倒计时）\n• 苹果/Smartisan 极简纯净美学重构\n• 底部导航栏紧凑优雅压缩（释放屏幕纵向空间）\n• 课表全天10节课同屏完美尽显（上移空白间隙+第9/10节完整呈现）\n• 5 组包豪斯大师级强调色自由切换\n• 外观模式自由切换（跟随系统/白天浅色/夜间深色）\n• 瑞士机械表盘式超大等宽数字倒计时\n• 多模态 AI 智能截图录入 + 离线手动双轨排课\n• 纯本地离线运行，严密保障教学隐私</string>
+    <string name="dialog_about_body" formatted="false">版本：v2.4.0 (Build 50)\n独立设计与研发：李超 (Chao Li)\n\nTimeless 是一款专为大学校园设计的极简作息与课表管理工具。坚持现代极简纯净美学，拒绝冗余社交与商业广告，专注于每一次准时守候。\n\n核心特性：\n• 教师 / 学生双模式智能自适应：同一套课表，一键无缝切换身份视角。老师专注授课班级与防拖堂，学生聚焦上课教室与任课老师。\n• 全能智能录入：主页全局一键智能识别排课、校历与调课公文。\n• 锁屏常驻与前台倒计时：状态栏与锁屏常驻卡片，实时掌握下课节拍。\n• 纯本地离线与数据主权：数据 100% 存储于手机本地 SQLite 数据库，支持一键 JSON 备份与换机迁移。</string>
 
     <!-- Hero Card & Today Screen -->
     <string name="hero_start_class_title">开始新的一节课</string>
+    <string name="hero_start_class_title_student">开始专注自习</string>
     <string name="hero_start_class_subtitle">专注课堂节拍 · 灵动倒计时</string>
     <string name="hero_enter_class">进入课堂</string>
 
     <!-- Survival Guide Dialog -->
-    <string name="survival_title">ColorOS / Android 后台保活指南</string>
+    <string name="survival_title">后台运行与自启动设置指南</string>
     <string name="survival_desc">为确保下课倒计时常驻卡片与提前5分钟提醒在手机锁屏或灭屏时准时触发，请完成以下设置：</string>
-    <string name="guide_step1_title">允许通知、锁屏显示与 ColorOS 流体云</string>
-    <string name="guide_step1_desc">点击下方按钮进入通知设置，务必开启「允许通知」、「锁屏通知（显示全部内容）」及「流体云」实时胶囊开关。</string>
-    <string name="guide_step2_title">忽略电池优化 (无限制)</string>
-    <string name="guide_step2_desc">点击下方按钮，将本应用电池策略设置为「无限制/不优化」，避免系统休眠时冻结倒计时与闹钟。</string>
-    <string name="guide_step3_title">ColorOS 允许自启动与关联启动</string>
-    <string name="guide_step3_desc">进入系统设置 → 应用管理 → 自启动管理，将 Timeless 设为「允许自启动」。</string>
-    <string name="guide_step4_title">多任务后台锁定</string>
-    <string name="guide_step4_desc">上划进入多任务卡片页面，点击 Timeless 卡片右上角菜单，选择「锁定」，防止一键清理误杀。</string>
-    <string name="btn_goto_notifications">前往设置：通知、锁屏与流体云权限</string>
+    <string name="guide_step1_title">允许前台常驻与锁屏通知</string>
+    <string name="guide_step1_desc">点击下方按钮进入系统通知设置，务必开启「允许通知」及「锁屏通知（显示全部内容）」开关。</string>
+    <string name="guide_step2_title">忽略电池优化 (设为无限制)</string>
+    <string name="guide_step2_desc">点击下方按钮，将本应用电池策略设置为「无限制/不优化」，避免系统休眠时冻结倒计时与闹钟服务。</string>
+    <string name="guide_step3_title">允许应用后台自启动</string>
+    <string name="guide_step3_desc">进入系统应用设置或自启动管理，将 Timeless 设为「允许自启动」与「允许后台活动」。</string>
+    <string name="guide_step4_title">多任务卡片锁定</string>
+    <string name="guide_step4_desc">进入多任务后台卡片页面，下拉或长按 Timeless 卡片选择「锁定」，防止一键清理误杀。</string>
+    <string name="btn_goto_notifications">前往设置：通知与锁屏权限</string>
     <string name="btn_goto_battery">前往设置：忽略电池优化</string>
-    <string name="btn_goto_permissions">前往设置：应用权限详情</string>
+    <string name="btn_goto_permissions">前往设置：应用自启动与权限详情</string>
     <string name="btn_understood_configured">我已了解并配置</string>
     <string name="btn_skip_for_now">暂不配置</string>
 
     <!-- LLM Dialog -->
-    <string name="llm_dialog_title">大模型 API 设置 (BYOK)</string>
+    <string name="llm_dialog_title">AI 智能识别通道设置</string>
+    <string name="ai_channel_mode_label">选择识别通道</string>
+    <string name="ai_channel_tab_official">官方云端</string>
+    <string name="ai_channel_tab_custom">自定义外部 API</string>
+    <string name="ai_channel_official_desc">开箱即用，免密内置。由 Timeless 官方云端算力节点驱动，无需自备 API Key，即刻畅享课表与校历秒级智能提取。</string>
+    <string name="official_model_gemini_title">Google Gemini 3.6 Flash</string>
+    <string name="official_model_gemini_badge">国际推荐</string>
+    <string name="official_model_gemini_desc">高可用多模态视觉推理，支持各类繁体与特殊校历格式，免密内置</string>
+    <string name="official_model_glm_title">Timeless 官方智能云通道</string>
+    <string name="official_model_glm_badge">开箱即用 · 极速直连</string>
+    <string name="official_model_glm_desc">基于深度优化的多模态高校排程识别引擎，国内毫秒级极速响应。免密直连，无需自行配置或购买 API Key。</string>
+    <string name="ai_channel_custom">自定义外部 API (高级)</string>
+    <string name="ai_channel_custom_desc">使用您自备的 API Key（兼容智谱 GLM-4V、OpenAI GPT-4o、阿里通义千问等）。密钥保存在本机 DataStore，绝不上报。</string>
+    <string name="ai_channel_custom_intro">支持任意兼容 OpenAI 接口规范的多模态视觉大模型服务。密钥保存在本机 DataStore，绝不上报。</string>
+    <string name="ai_channel_official_endpoint">官方服务节点 (Endpoint)</string>
+    <string name="ai_channel_official_model_badge">内置通道：Timeless 官方智能云 (开箱即用)</string>
+    <string name="llm_official_status_ready">服务在线</string>
+    <string name="llm_official_node_label">中转节点</string>
+    <string name="llm_official_reset_node">恢复默认节点</string>
+    <string name="llm_test_official">测试官方通道连接</string>
+    <string name="llm_test_custom">测试自定义通道连接</string>
+    <string name="llm_testing">正在测试连接...</string>
     <string name="llm_dialog_intro">支持任意兼容 OpenAI 接口规范的多模态大模型服务（如智谱 GLM-4.5v、阿里 Qwen-VL、OpenAI GPT-4o 等）。密钥保存在本机 DataStore，绝不上报。</string>
     <string name="llm_test_connection">测试连接</string>
 
@@ -179,21 +264,72 @@
     <string name="period_end_time">下课时间 (HH:MM)</string>
     <string name="back">返回</string>
 
-    <!-- User Guide Dialog -->
-    <string name="user_guide_header">Timeless 新手使用指南</string>
-    <string name="guide_tab_scheduling">排课与录入</string>
-    <string name="guide_tab_features">课堂与锁屏</string>
-    <string name="mode_ai_title">方案 A：AI 智能识别录入（推荐，极速高效）</string>
-    <string name="mode_ai_desc">如果您拥有大模型 API Key（在「设置 -> API 设置」中配置），直接在「设置」中上传学校教务处课表或校历截图，AI 将自动提取全学期课程名、节次、教室、单双周及开学日期，3秒即可完成录入！</string>
-    <string name="mode_manual_title">方案 B：无 API 离线手动排课（自主可控，无需网络）</string>
-    <string name="mode_manual_desc">没有大模型 API？完全不用担心，Timeless 同样提供完善的离线手动排课支持：\n\n1. 【作息时间表】：在「设置 -> 作息时间表」中，根据您所在高校的真实作息微调每小节上下课时间（默认已预置 10 节课标准作息）。\n2. 【手动添加课程】：切换至底部「课表」标签页，点击右下角「+」按钮，手动填写课程名称、教室、周次范围（如 1-16 周）、单双周及小节（如 1-2 节）。\n3. 【校历与待办】：在「日历」标签页点击「+」添加会议、监考或校务日程。</string>
-    <string name="feature_lockscreen_title">锁屏大卡片与 ColorOS 16 流体云</string>
-    <string name="feature_lockscreen_desc">点击首页「开始新的一节课」或任意待上课程，即可进入授课倒计时。锁屏状态下自动常驻大卡片教学进度，ColorOS 16 状态栏与 AOD 息屏自动浮现动态倒计时胶囊，随时抬手掌握节拍。</string>
-    <string name="feature_warn_title">下课前 5 分钟强力提醒，绝不拖堂</string>
-    <string name="feature_warn_desc">距离下课前 5 分钟（时间可在设置中自由调整），手机将触发强力震动与横幅提醒，协助您从容收尾课堂教学。</string>
-    <string name="feature_privacy_title">纯本地离线隐私与数据备份</string>
-    <string name="feature_privacy_desc">您的全部排课与日程数据 100% 保存在手机本地 SQLite 数据库中，绝不上传任何云端服务器。支持在设置中一键导出 JSON 备份，换机迁移无忧。</string>
+    <!-- User Guide Screen -->
+    <string name="user_guide_header">使用指南与帮助</string>
+    <string name="guide_tab_roles">身份模式</string>
+    <string name="guide_tab_scheduling">快速排课</string>
+    <string name="guide_tab_clock">课堂与锁屏</string>
+    <string name="guide_tab_privacy">离线与隐私</string>
+
+    <string name="guide_role_card_title">教师模式与学生模式有什么不同？</string>
+    <string name="guide_role_card_desc">Timeless 专为校园师生打造。同一套课表，根据当前身份智能呈现最关心的核心信息：\n\n• 👨‍🏫 教师模式（针对任课教师）：\n主页显示「今日教学」，卡片优先突出【授课班级】与【学生人数】；下课前 5 分钟强力震动提醒防拖堂，随时一键发起教学计时。\n\n• 🎓 学生模式（针对学生）：\n主页显示「今日课程」，卡片优先突出【上课教室】与【任课教师】，一眼看清去哪栋楼找哪位老师上课，彻底杜绝跑错教室；精准支持课间休息/大课间倒计时与自主自习专注。\n\n💡 提示：老师和学生使用同一个安装包即可，在设置页顶部可随时一键切换，两套数据无缝兼容互通。</string>
+
+    <string name="guide_schedule_ai_title">方式 A：全能智能录入（推荐，3秒搞定）</string>
+    <string name="guide_schedule_ai_desc">直接点击首页或日历右下角的「+」号全能录入入口，支持拍摄/选取教务系统课表截图、校历公文，或直接粘贴微信群通知文字。内置智能多模态引擎，秒级提炼全学期课程、作息与成对调课，一键导入！</string>
+
+    <string name="guide_schedule_manual_title">方式 B：离线手动自主排课（无需网络）</string>
+    <string name="guide_schedule_manual_desc">无需网络或 API，Timeless 提供完整的离线排课体验：\n\n1. 【作息时间表】：在「我的 → 作息时间表」中，根据所在大学实际作息微调每节课起止时间（默认已内置 10 节课标准作息）。\n2. 【添加课程】：切换到底部「课表」标签，点击右上角或菜单即可手动添加课程名、教室、任课老师与周次。\n3. 【日程事项】：在底部「日历」标签点击「+」，可添加考试、研讨、监考或个人待办提醒。</string>
+
+    <string name="guide_clock_card_title">抬手即知下课节拍 · 锁屏与动态提醒</string>
+    <string name="guide_clock_card_desc">• 锁屏常驻大卡片：无需频繁解锁亮屏，锁屏界面常驻当前小节剩余时间与课程进度条。\n• 前台悬浮与动态通知：进入课堂后，状态栏与通知中心自动同步实时倒计时，优雅不遮挡。\n• 防拖堂准时提醒：距下课前 5 分钟（时间可在设置中自定义），手机自动触发强力震动提醒，协助从容收尾课堂。</string>
+
+    <string name="guide_privacy_card_title" formatted="false">100% 纯本地离线隐私与数据备份</string>
+    <string name="guide_privacy_card_desc" formatted="false">• 本地存储：您的所有课表、教学安排与日程事项 100% 存储于手机本地 SQLite 数据库中，绝不上传任何外部服务器，完全保障隐私安全。\n• 自由导出与换机：在「设置」中支持一键「导出备份」，可直接保存到手机本地文件或分享至微信/QQ；换新手机时通过「导入备份」一秒复原全学期数据。</string>
     <string name="btn_got_it">我知道了</string>
+
+    <!-- Mode preview card in Settings -->
+    <string name="role_preview_teacher_concise">聚焦授课班级与学生人数，防拖堂准时提醒</string>
+    <string name="role_preview_student_concise">聚焦上课教室与任课老师，杜绝跑错教室</string>
+    <string name="role_preview_teacher_title">教师模式已就绪</string>
+    <string name="role_preview_teacher_f1">焦点：突出授课班级 · 学生人数 · 备课日程</string>
+    <string name="role_preview_teacher_f2">节奏：下课前 5 分钟强震动防拖堂提醒</string>
+    <string name="role_preview_teacher_f3">行动：主页快捷开启授课倒计时与锁屏大卡片</string>
+
+    <string name="role_preview_student_title">学生模式已就绪</string>
+    <string name="role_preview_student_f1">焦点：突出上课教室 · 任课教师（防跑错楼栋）</string>
+    <string name="role_preview_student_f2">节奏：上课 45 分钟与课间/大课间精准分段倒计时</string>
+    <string name="role_preview_student_f3">行动：主页快捷开启专注自习与灵动胶囊</string>
+
+    <!-- Timezone Auto-Conversion -->
+    <string name="timezone_auto_convert_title">自动转换当地时区</string>
+    <string name="timezone_auto_convert_sub_off">已关闭 · 保持北京时间显示 (默认)</string>
+    <string name="timezone_auto_convert_sub_on">已开启 · 自动转换为手机所在时区 (%s)</string>
+    <string name="timezone_badge_local">当地时间</string>
+    <string name="timezone_badge_local_short">当地</string>
+    <string name="timezone_orig_beijing">原北京时间 %s</string>
+
+    <!-- Appearance & Display Secondary Screen -->
+    <string name="appearance_screen_title">外观与个性化</string>
+    <string name="tab_accent_color">主题强调色</string>
+    <string name="tab_theme_mode">外观模式</string>
+    <string name="tab_language">语言 / Language</string>
+    <string name="theme_mode_system_desc">跟随系统深浅色设置自动适配</string>
+    <string name="theme_mode_light_desc">明亮通透，适合白天高亮环境使用</string>
+    <string name="theme_mode_dark_desc">暗黑沉浸，夜间上课柔和舒适不刺眼</string>
+    <string name="language_zh_desc">简体中文 (Chinese Simplified)</string>
+    <string name="language_en_desc">English (英文)</string>
+
+    <!-- About Timeless Secondary Screen -->
+    <string name="about_screen_title">关于 Timeless</string>
+    <string name="about_hero_tagline">极简高效作息助手 · 专注每一次准时守候</string>
+    <string name="about_card_philosophy_title">设计哲学</string>
+    <string name="about_card_philosophy_content">Timeless 诞生于对数字时代过度社交与繁杂弹窗的克制反思。坚持现代极简纯净设计，拒绝冗杂信息与商业广告，专注于陪伴师生度过每一个专注而优雅的课堂瞬间。</string>
+    <string name="about_card_features_title">核心特性</string>
+    <string name="about_card_features_content">· 教师/学生双模式自适应：同一套课表，根据身份智能切换关注焦点，支持两套视角无缝互通。\n· 锁屏动态卡片与前台提醒：锁屏与状态栏常驻倒计时表盘，随时抬手掌握下课节拍。\n· 跨时区与全景日程联动：跨国出差出游根据手机所在时区智能换算，支持校务与待办统一管理。\n· 纯净离线与数据主权：排程与校历 100% 存储于手机本地，支持一键 JSON 备份与换机迁移。</string>
+    <string name="about_card_privacy_title" formatted="false">100% 离线隐私与数据主权</string>
+    <string name="about_card_privacy_content">所有课程、校历、事项与时间表全部存储于您手机的本地 SQLite 数据库中，绝不上报。支持一键导出标准 JSON 备份，随时自主迁移或安全归档。</string>
+    <string name="about_card_team_title">独立设计与研发</string>
+    <string name="about_card_team_content">李超 (Chao Li)</string>
 
     <!-- Notification & Alarms -->
     <string name="notification_channel_in_class">课堂实时进度</string>
@@ -263,6 +399,9 @@
     <string name="affair_notes_placeholder">记录需要提前准备的事项细节...</string>
     <string name="affair_save_btn">立即保存</string>
     <string name="affair_update_btn">确认修改</string>
+    <string name="affair_status_label">事项状态</string>
+    <string name="affair_status_done">已完成</string>
+    <string name="affair_status_todo">待处理</string>
 
     <!-- Schedule & Course -->
     <string name="prev_week">上一周</string>
@@ -318,6 +457,12 @@
     <string name="import_idle_prompt">请从上一页选择或拍摄截图进行解析</string>
     <string name="import_parsing_title">正在使用多模态大模型智能解析截图...</string>
     <string name="import_parsing_desc">正在自动提取课程名称、班级、节次、周次与教室信息</string>
+    <string name="import_parsing_title_timetable">正在使用多模态大模型智能解析课表...</string>
+    <string name="import_parsing_desc_timetable">正在自动提取课程名称、班级、节次、周次与教室信息</string>
+    <string name="import_parsing_title_calendar">正在使用多模态大模型智能解析校历...</string>
+    <string name="import_parsing_desc_calendar">正在自动提取开学第一周、教学周与节假日安排信息</string>
+    <string name="import_parsing_title_period_table">正在使用多模态大模型智能解析作息表...</string>
+    <string name="import_parsing_desc_period_table">正在自动提取全校教学节次及各节起止时间信息</string>
     <string name="import_calendar_extracted">已提取学期校历：%s</string>
     <string name="import_calendar_w1">第一周周一：%s</string>
     <string name="import_calendar_teaching_weeks">教学周区间：第 %1$d–%2$d 周</string>
@@ -335,6 +480,7 @@
     <string name="error_cannot_open_image">无法打开选取的图片文件</string>
     <string name="error_parse_failed">解析失败，请检查图片或 API 设置</string>
     <string name="error_parse_exception">解析异常: %s</string>
+    <string name="error_no_courses_found">未在图片中识别到课程安排。\n\n💡 温馨提示：当前功能为【课表导入】。若您上传的是包含开学日、放假日、期中/期末考试周的【校历 / 行事历】，请返回在设置中选择【导入校历截图】进行识别。</string>
     <string name="error_calendar_parse_failed">校历解析失败</string>
     <string name="error_calendar_parse_exception">校历解析异常: %s</string>
     <string name="default_imported_calendar_name">导入学期校历</string>
@@ -353,4 +499,24 @@
     <string name="capsule_period_format">%d节</string>
     <string name="capsule_in_class">上课</string>
     <string name="capsule_recess">课间</string>
+
+    <!-- AI Smart Affair Recognition -->
+    <string name="affair_smart_paste_title">AI 智能填单</string>
+    <string name="affair_smart_paste_tip">支持微信群通知快速解析</string>
+    <string name="affair_smart_paste_placeholder">粘贴学校通知、群消息或便签，如：“周五下午2点在行政楼401开教学研讨会...”</string>
+    <string name="affair_smart_paste_clipboard">粘贴剪贴板</string>
+    <string name="affair_smart_paste_clear">清空</string>
+    <string name="affair_smart_paste_btn">智能识别并填入</string>
+    <string name="affair_smart_paste_parsing">AI 正在提炼要点...</string>
+    <string name="affair_smart_paste_success">✨ 已智能识别并填入事项信息</string>
+    <string name="affair_smart_paste_empty_clipboard">剪贴板中没有文本内容</string>
+    <string name="affair_smart_paste_empty_text">请先输入或粘贴待识别的文本</string>
+
+    <!-- System Calendar Sync -->
+    <string name="sync_system_calendar_title">同步到系统日历</string>
+    <string name="sync_system_calendar_sub_on">已同步课表与待办至手机日历，可在锁屏与手表中查看</string>
+    <string name="sync_system_calendar_sub_off">开启后课程与待办将自动呈现在手机日历、锁屏与手表中</string>
+    <string name="sync_system_calendar_toast_synced">已同步课表与待办到系统日历</string>
+    <string name="sync_system_calendar_toast_cleared">已关闭并清理系统日历中的课表与待办</string>
+    <string name="sync_system_calendar_permission_denied">需要系统日历读写权限以同步课程与事项</string>
 </resources>

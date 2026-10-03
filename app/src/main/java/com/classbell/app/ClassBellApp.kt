@@ -22,7 +22,7 @@ import kotlinx.coroutines.launch
 class ClassBellApp : Application() {
 
     companion object {
-        const val CHANNEL_IN_CLASS_ID = "classbell_in_class_v4"
+        const val CHANNEL_IN_CLASS_ID = "classbell_in_class_v5"
         const val CHANNEL_WARNING_ID = "classbell_warning"
         const val CHANNEL_AFFAIRS_ID = "classbell_affairs"
 
@@ -88,13 +88,14 @@ class ClassBellApp : Application() {
                 manager.deleteNotificationChannel("classbell_in_class")
                 manager.deleteNotificationChannel("classbell_in_class_v2")
                 manager.deleteNotificationChannel("classbell_in_class_v3")
+                manager.deleteNotificationChannel("classbell_in_class_v4")
             }
 
-            // 1. In-Class Progress Channel (Low importance prevents heads-up popup over app, while preserving Fluid Cloud capsule & lockscreen card)
+            // 1. In-Class Progress Channel (Default importance guarantees stable lockscreen card on ColorOS & Android while keeping silent)
             val inClassChannel = NotificationChannel(
                 CHANNEL_IN_CLASS_ID,
                 getString(R.string.notification_channel_in_class),
-                NotificationManager.IMPORTANCE_LOW
+                NotificationManager.IMPORTANCE_DEFAULT
             ).apply {
                 description = getString(R.string.notification_channel_in_class_desc)
                 setShowBadge(false)

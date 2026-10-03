@@ -26,7 +26,7 @@ import kotlinx.coroutines.launch
         Affair::class,
         Override::class
     ],
-    version = 2,
+    version = 4,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -49,6 +49,22 @@ abstract class ClassBellDatabase : RoomDatabase() {
             }
         }
 
+        val MIGRATION_2_3 = object : androidx.room.migration.Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE courses ADD COLUMN teacher TEXT DEFAULT NULL")
+            }
+        }
+
+        val MIGRATION_3_4 = object : androidx.room.migration.Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE overrides ADD COLUMN courseId INTEGER DEFAULT NULL")
+                db.execSQL("ALTER TABLE overrides ADD COLUMN targetPeriodStart INTEGER DEFAULT NULL")
+                db.execSQL("ALTER TABLE overrides ADD COLUMN targetPeriodEnd INTEGER DEFAULT NULL")
+                db.execSQL("ALTER TABLE overrides ADD COLUMN targetRoom TEXT DEFAULT NULL")
+                db.execSQL("ALTER TABLE overrides ADD COLUMN note TEXT DEFAULT NULL")
+            }
+        }
+
         fun getDatabase(context: Context): ClassBellDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
@@ -56,7 +72,7 @@ abstract class ClassBellDatabase : RoomDatabase() {
                     ClassBellDatabase::class.java,
                     "classbell.db"
                 )
-                    .addMigrations(MIGRATION_1_2)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
                     .addCallback(DatabaseSeedCallback(context.applicationContext))
                     .fallbackToDestructiveMigration()
                     .build()

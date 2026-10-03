@@ -29,7 +29,9 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -50,10 +52,14 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.classbell.app.R
 import com.classbell.app.core.TimeUtils
 import com.classbell.app.data.model.Course
+import com.classbell.app.data.model.PeriodSlot
 import com.classbell.app.ui.schedule.CourseEditDialog
 import com.classbell.app.ui.theme.AccentOrange
 
-@OptIn(ExperimentalMaterial3Api::class)
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.ui.unit.sp
+import com.classbell.app.ui.components.ClassBellSecondaryTopBar
+
 @Composable
 fun ImportConfirmScreen(
     viewModel: ImportViewModel,
@@ -65,15 +71,13 @@ fun ImportConfirmScreen(
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.import_confirm_title), fontWeight = FontWeight.Bold) },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.back))
-                    }
-                }
+            ClassBellSecondaryTopBar(
+                title = stringResource(R.string.import_confirm_title),
+                onNavigateBack = onNavigateBack
             )
-        }
+        },
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
+        containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
         Box(
             modifier = Modifier
@@ -85,10 +89,10 @@ fun ImportConfirmScreen(
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(24.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
+                            .padding(horizontal = 24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
+                        Spacer(modifier = Modifier.height(60.dp))
                         Text(
                             text = stringResource(R.string.import_idle_prompt),
                             style = MaterialTheme.typography.bodyLarge,
@@ -102,23 +106,38 @@ fun ImportConfirmScreen(
                 }
 
                 is ImportStage.Parsing -> {
+                    val (parsingTitle, parsingDesc) = when (currentStage.type) {
+                        ImportType.TIMETABLE -> stringResource(R.string.import_parsing_title_timetable) to stringResource(R.string.import_parsing_desc_timetable)
+                        ImportType.CALENDAR -> stringResource(R.string.import_parsing_title_calendar) to stringResource(R.string.import_parsing_desc_calendar)
+                        ImportType.PERIOD_TABLE -> stringResource(R.string.import_parsing_title_period_table) to stringResource(R.string.import_parsing_desc_period_table)
+                    }
+
                     Column(
-                        modifier = Modifier.fillMaxSize(),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        CircularProgressIndicator(color = AccentOrange)
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            text = stringResource(R.string.import_parsing_title),
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
+                        Spacer(modifier = Modifier.height(72.dp))
+                        CircularProgressIndicator(
+                            color = AccentOrange,
+                            strokeWidth = 3.5.dp,
+                            modifier = Modifier.size(48.dp)
                         )
-                        Spacer(modifier = Modifier.height(6.dp))
+                        Spacer(modifier = Modifier.height(24.dp))
                         Text(
-                            text = stringResource(R.string.import_parsing_desc),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            text = parsingTitle,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = parsingDesc,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = TextAlign.Center,
+                            lineHeight = 22.sp
                         )
                     }
                 }
@@ -157,14 +176,22 @@ fun ImportConfirmScreen(
                     }
                 }
 
+                is ImportStage.ConfirmPeriodTable -> {
+                    ConfirmPeriodTableContent(
+                        initialSlots = currentStage.periodSlots,
+                        onConfirm = { viewModel.saveConfirmedPeriodTable(it) },
+                        onCancel = onNavigateBack
+                    )
+                }
+
                 is ImportStage.Error -> {
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(24.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
+                            .padding(horizontal = 24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
+                        Spacer(modifier = Modifier.height(60.dp))
                         Icon(
                             imageVector = Icons.Default.Error,
                             contentDescription = null,
@@ -185,8 +212,31 @@ fun ImportConfirmScreen(
                             textAlign = TextAlign.Center
                         )
                         Spacer(modifier = Modifier.height(24.dp))
-                        Button(onClick = { viewModel.resetStage(); onNavigateBack() }) {
-                            Text(stringResource(R.string.import_retry_btn))
+                        if (currentStage.canSwitchToGlm) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 8.dp),
+                                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                            ) {
+                                OutlinedButton(
+                                    onClick = { viewModel.resetStage(); onNavigateBack() },
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Text(stringResource(R.string.back))
+                                }
+                                Button(
+                                    onClick = { viewModel.switchToGlmAndRetry() },
+                                    modifier = Modifier.weight(1.4f),
+                                    colors = ButtonDefaults.buttonColors(containerColor = AccentOrange)
+                                ) {
+                                    Text("换用智谱专线重试")
+                                }
+                            }
+                        } else {
+                            Button(onClick = { viewModel.resetStage(); onNavigateBack() }) {
+                                Text(stringResource(R.string.import_retry_btn))
+                            }
                         }
                     }
                 }
@@ -349,5 +399,121 @@ fun ConfirmTimetableContent(
                 editingCourseIndex = null
             }
         )
+    }
+}
+
+@Composable
+fun ConfirmPeriodTableContent(
+    initialSlots: List<PeriodSlot>,
+    onConfirm: (List<PeriodSlot>) -> Unit,
+    onCancel: () -> Unit
+) {
+    val slotList = remember { mutableStateListOf<PeriodSlot>().apply { addAll(initialSlots) } }
+
+    Column(modifier = Modifier.fillMaxSize()) {
+        LazyColumn(
+            modifier = Modifier
+                .weight(1f)
+                .padding(horizontal = 16.dp),
+            contentPadding = PaddingValues(top = 16.dp, bottom = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            item {
+                Column(modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)) {
+                    Text(
+                        text = stringResource(R.string.confirm_period_table_title),
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = stringResource(R.string.confirm_period_table_desc),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+
+            itemsIndexed(slotList) { index, slot ->
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Surface(
+                                shape = RoundedCornerShape(8.dp),
+                                color = AccentOrange.copy(alpha = 0.12f),
+                                modifier = Modifier.size(36.dp)
+                            ) {
+                                Box(contentAlignment = Alignment.Center) {
+                                    Text(
+                                        text = "${slot.order}",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        color = AccentOrange
+                                    )
+                                }
+                            }
+                            Column {
+                                Text(
+                                    text = slot.label,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                                Text(
+                                    text = "${slot.startTime} – ${slot.endTime}",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+
+                        IconButton(onClick = { slotList.removeAt(index) }) {
+                            Icon(
+                                Icons.Default.Delete,
+                                contentDescription = stringResource(R.string.delete),
+                                tint = Color.Red.copy(alpha = 0.8f)
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+        // Bottom Action Bar
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            TextButton(
+                onClick = onCancel,
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(stringResource(R.string.import_discard_btn))
+            }
+
+            Button(
+                onClick = { onConfirm(slotList) },
+                modifier = Modifier.weight(2f),
+                colors = ButtonDefaults.buttonColors(containerColor = AccentOrange),
+                enabled = slotList.isNotEmpty()
+            ) {
+                Text(stringResource(R.string.confirm_period_table_btn))
+            }
+        }
     }
 }

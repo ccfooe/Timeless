@@ -22,5 +22,7 @@ data class MeetingOccurrence(
     val status: MeetingStatus = MeetingStatus.UPCOMING,
     val progress: Float = 0f,
     val remainingMinutes: Long = 0L,
-    val subPeriodState: SubPeriodState? = null
+    val subPeriodState: SubPeriodState? = null,
+    val isShiftOverride: Boolean = false,
+    val shiftLabel: String? = null
 )

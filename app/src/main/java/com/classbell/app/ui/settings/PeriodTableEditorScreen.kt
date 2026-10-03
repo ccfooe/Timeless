@@ -30,13 +30,21 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import com.classbell.app.ui.components.ClassBellSecondaryTopBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import android.net.Uri
+import android.widget.Toast
+import androidx.activity.compose.LocalActivityResultRegistryOwner
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -60,8 +68,24 @@ import java.time.LocalTime
 fun PeriodTableEditorScreen(
     periodRepository: PeriodRepository,
     onNavigateBack: () -> Unit,
+    onImportPeriodTable: ((Uri) -> Unit)? = null,
+    onNavigateToImportConfirm: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
+    val registryOwner = LocalActivityResultRegistryOwner.current
+
+    val periodPickerLauncher = if (registryOwner != null) {
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.GetContent()
+        ) { uri: Uri? ->
+            uri?.let {
+                onImportPeriodTable?.invoke(it)
+                onNavigateToImportConfirm?.invoke()
+            }
+        }
+    } else null
+
     val periods by periodRepository.allPeriodSlots.collectAsStateWithLifecycle(initialValue = emptyList())
     var editingSlot by remember { mutableStateOf<PeriodSlot?>(null) }
     var isAddingSlot by remember { mutableStateOf(false) }
@@ -69,15 +93,29 @@ fun PeriodTableEditorScreen(
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.period_editor_title), fontWeight = FontWeight.Bold) },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.back))
+            ClassBellSecondaryTopBar(
+                title = stringResource(R.string.period_editor_title),
+                onNavigateBack = onNavigateBack,
+                actions = {
+                    if (onImportPeriodTable != null && onNavigateToImportConfirm != null) {
+                        TextButton(
+                            onClick = {
+                                periodPickerLauncher?.launch("image/*")
+                                    ?: Toast.makeText(context, context.getString(R.string.storage_unavailable), Toast.LENGTH_SHORT).show()
+                            }
+                        ) {
+                            Text(
+                                text = stringResource(R.string.ai_photo_recognize_period_table),
+                                color = AccentOrange,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
                     }
                 }
             )
         },
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
+        containerColor = MaterialTheme.colorScheme.background,
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { isAddingSlot = true },

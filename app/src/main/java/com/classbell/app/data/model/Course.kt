@@ -30,6 +30,7 @@ data class Course(
     val room: String,     // e.g. "贡院401"
     val className: String, // e.g. "25级广播电视编导03班"
     val studentCount: Int = 0, // e.g. 49
+    val teacher: String? = null, // e.g. "张教授", "李老师"
     val nature: String? = "必修", // 必修 / 选修
     val examType: String? = "考试", // 考试 / 考查
     val color: String = "#FF4D6D" // Hex color string

@@ -313,21 +313,34 @@ fun ScheduleGrid(
                 .padding(start = TimeColWidth)
                 .horizontalScroll(hScrollState)
         ) {
-            val isEn = LocalContext.current.resources.configuration.locales[0].language == "en"
+            val isEn = java.util.Locale.getDefault().language == "en"
             (1..7).forEach { day ->
+                val dayMeetings = weeklyMeetings[day].orEmpty()
+                val shiftLabel = dayMeetings.firstOrNull { it.isShiftOverride }?.shiftLabel
                 Box(
                     modifier = Modifier
                         .width(DayColWidth)
                         .padding(vertical = 4.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    val label = if (isEn) listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")[day - 1] else "周${WeekdayNames[day - 1]}"
-                    Text(
-                        text = label,
-                        style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        val label = if (isEn) listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")[day - 1] else "周${WeekdayNames[day - 1]}"
+                        Text(
+                            text = label,
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        if (shiftLabel != null) {
+                            Text(
+                                text = "[$shiftLabel]",
+                                style = MaterialTheme.typography.labelSmall,
+                                fontSize = 9.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = AccentOrange
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -431,14 +444,32 @@ fun ScheduleGrid(
                                         fontSize = 10.sp,
                                         color = Color.White.copy(alpha = 0.9f)
                                     )
+                                    val subLabel = meeting.course.teacher?.takeIf { it.isNotBlank() } ?: meeting.course.className
                                     Text(
-                                        text = meeting.course.className,
+                                        text = subLabel,
                                         style = MaterialTheme.typography.labelSmall,
                                         fontSize = 9.sp,
                                         color = Color.White.copy(alpha = 0.8f),
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis
                                     )
+                                }
+
+                                if (meeting.isShiftOverride) {
+                                    Box(
+                                        modifier = Modifier
+                                            .align(Alignment.TopEnd)
+                                            .clip(RoundedCornerShape(bottomStart = 4.dp, topEnd = 4.dp))
+                                            .background(Color(0xFFE65100))
+                                            .padding(horizontal = 3.dp, vertical = 1.dp)
+                                    ) {
+                                        Text(
+                                            text = "调",
+                                            color = Color.White,
+                                            fontSize = 8.sp,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -481,8 +512,17 @@ fun CourseDetailSheetContent(
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
-
+        if (meeting.isShiftOverride) {
+            DetailRow(
+                label = "调课状态",
+                value = meeting.shiftLabel ?: "已根据调课规则调整"
+            )
+        }
+        meeting.course.teacher?.let {
+            if (it.isNotBlank()) {
+                DetailRow(label = stringResource(R.string.course_detail_teacher), value = it)
+            }
+        }
         DetailRow(label = stringResource(R.string.course_detail_class), value = meeting.course.className)
         DetailRow(label = stringResource(R.string.course_detail_students), value = stringResource(R.string.course_detail_students_count, meeting.course.studentCount))
         DetailRow(

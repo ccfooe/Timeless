@@ -57,6 +57,10 @@ class MainActivity : ComponentActivity() {
                 val config = Configuration(resources.configuration).apply {
                     setLocale(locale)
                 }
+                @Suppress("DEPRECATION")
+                resources.updateConfiguration(config, resources.displayMetrics)
+                @Suppress("DEPRECATION")
+                applicationContext.resources.updateConfiguration(config, applicationContext.resources.displayMetrics)
                 val ctx = LocalizedActivityContext(this@MainActivity, config)
                 Pair(ctx, config)
             }

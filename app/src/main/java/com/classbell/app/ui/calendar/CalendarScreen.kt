@@ -1,14 +1,18 @@
 package com.classbell.app.ui.calendar
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.runtime.remember
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -23,6 +27,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Delete
@@ -30,6 +35,10 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.SwapHoriz
+import com.classbell.app.data.model.Course
+import com.classbell.app.data.model.Override
+import com.classbell.app.data.model.OverrideKind
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -39,6 +48,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -50,8 +60,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import com.classbell.app.ui.theme.AccentOrange
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.classbell.app.R
 import com.classbell.app.core.TimeUtils
@@ -63,8 +77,6 @@ import com.classbell.app.data.model.HolidayType
 import com.classbell.app.data.model.MeetingOccurrence
 import com.classbell.app.data.model.Semester
 import com.classbell.app.ui.theme.AccentAmber
-import com.classbell.app.ui.theme.AccentOrange
-import com.classbell.app.ui.theme.AccentOrangeSubtle
 import com.classbell.app.ui.theme.LocalAccentColor
 import com.classbell.app.ui.theme.LocalAccentColorSubtle
 import com.classbell.app.ui.theme.SystemBlue
@@ -83,6 +95,7 @@ fun CalendarScreen(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val accentColor = LocalAccentColor.current
+    val context = LocalContext.current
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -120,7 +133,7 @@ fun CalendarScreen(
                 )
             }
 
-            // ColorOS 16 Calendar Grid with Week Numbers and 休/班 markers
+            // ColorOS 16 Calendar Grid with Week Numbers and 休/班/调 markers
             item {
                 ColorOSCalendarGrid(
                     yearMonth = state.selectedYearMonth,
@@ -128,6 +141,9 @@ fun CalendarScreen(
                     semester = state.activeSemester,
                     affairsInMonth = state.allAffairsInMonth,
                     holidaysInMonth = state.holidaysInMonth,
+                    overridesInSemester = state.overridesInSemester,
+                    holidaysInSemester = state.holidaysInSemester,
+                    autoTimezone = state.autoTimezoneConversion,
                     onDateClick = { viewModel.selectDate(it) }
                 )
             }
@@ -136,8 +152,29 @@ fun CalendarScreen(
             item {
                 SelectedDateBar(
                     date = state.selectedDate,
-                    weekNumber = state.selectedDateWeekNumber
+                    weekNumber = state.selectedDateWeekNumber,
+                    hasOverride = state.overridesInSemester.any { it.date == state.selectedDate },
+                    onOpenShiftDialog = { viewModel.openShiftDialog() }
                 )
+            }
+
+            // Prominent Shift Override Status Card (Allows direct instant cancellation or editing)
+            val selectedDateOverrides = state.overridesInSemester.filter { it.date == state.selectedDate }
+            if (selectedDateOverrides.isNotEmpty()) {
+                item {
+                    ShiftOverrideStatusCard(
+                        date = state.selectedDate,
+                        overrides = selectedDateOverrides,
+                        courses = state.allCoursesInSemester,
+                        onClear = {
+                            viewModel.clearOverridesForDate(state.selectedDate)
+                            android.widget.Toast.makeText(context, "已取消该日调课状态，恢复正常课表", android.widget.Toast.LENGTH_SHORT).show()
+                        },
+                        onEdit = {
+                            viewModel.openShiftDialog()
+                        }
+                    )
+                }
             }
 
             // Timeline Layer 1: Courses on Selected Date
@@ -150,7 +187,7 @@ fun CalendarScreen(
                         Icon(
                             imageVector = Icons.Default.Schedule,
                             contentDescription = null,
-                            tint = AccentOrange,
+                            tint = accentColor,
                             modifier = Modifier.size(16.dp)
                         )
                         Spacer(modifier = Modifier.width(6.dp))
@@ -213,6 +250,7 @@ fun CalendarScreen(
                 items(state.selectedDateAffairs) { affair ->
                     ColorOSAffairCard(
                         affair = affair,
+                        autoTimezone = state.autoTimezoneConversion,
                         onToggle = { viewModel.toggleAffair(affair) },
                         onEdit = { viewModel.openEditAffair(affair) },
                         onDelete = { viewModel.deleteAffair(affair) }
@@ -227,7 +265,24 @@ fun CalendarScreen(
                 initialAffair = state.affairToEdit,
                 defaultDate = state.selectedDate,
                 onDismiss = { viewModel.closeEditAffair() },
-                onSave = { viewModel.saveAffair(it) }
+                onSave = { viewModel.saveAffair(it) },
+                onSmartParse = { text -> viewModel.parseAffair(text) }
+            )
+        }
+
+        // Shift Course Dialog
+        if (state.isEditingShift) {
+            val dateOverrides = state.overridesInSemester.filter { it.date == state.selectedDate }
+            ShiftCourseDialog(
+                targetDate = state.selectedDate,
+                courses = state.allCoursesInSemester,
+                currentOverrides = dateOverrides,
+                onSaveWholeDayShift = { date, follows, note -> viewModel.saveWholeDayShift(date, follows, note) },
+                onSaveWholeDayCancel = { date, note -> viewModel.saveWholeDayCancel(date, note) },
+                onSaveSingleAdjustment = { date, cId, pStart, pEnd, room, note -> viewModel.saveSingleAdjustment(date, cId, pStart, pEnd, room, note) },
+                onSaveSingleCancel = { date, cId, note -> viewModel.saveSingleCancel(date, cId, note) },
+                onClearOverrides = { date -> viewModel.clearOverridesForDate(date) },
+                onDismiss = { viewModel.closeShiftDialog() }
             )
         }
     }
@@ -241,6 +296,8 @@ fun ColorOSMonthHeader(
     onNext: () -> Unit,
     onJumpToToday: () -> Unit
 ) {
+    val accentColor = LocalAccentColor.current
+
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -252,23 +309,32 @@ fun ColorOSMonthHeader(
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Black
             )
-            Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.width(10.dp))
 
-            // Quick "今" (Back to Today) button
-            Box(
+            // Quick "今" (Back to Today) button (OnePlus/Apple style high-contrast pill/capsule)
+            Surface(
                 modifier = Modifier
-                    .size(26.dp)
-                    .clip(CircleShape)
-                    .background(if (isCurrentMonth) AccentOrangeSubtle else MaterialTheme.colorScheme.surfaceVariant)
+                    .clip(RoundedCornerShape(14.dp))
                     .clickable(onClick = onJumpToToday),
-                contentAlignment = Alignment.Center
+                shape = RoundedCornerShape(14.dp),
+                color = if (isCurrentMonth) accentColor.copy(alpha = 0.14f) else accentColor,
+                border = if (isCurrentMonth) BorderStroke(1.dp, accentColor.copy(alpha = 0.35f)) else null
             ) {
-                Text(
-                    text = stringResource(R.string.calendar_today_btn),
-                    style = MaterialTheme.typography.labelSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = if (isCurrentMonth) AccentOrange else MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                Box(
+                    modifier = Modifier
+                        .defaultMinSize(minWidth = 28.dp, minHeight = 28.dp)
+                        .padding(horizontal = 8.dp, vertical = 3.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = stringResource(R.string.calendar_today_btn),
+                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 12.sp),
+                        fontWeight = FontWeight.Bold,
+                        color = if (isCurrentMonth) accentColor else Color.White,
+                        maxLines = 1,
+                        softWrap = false
+                    )
+                }
             }
         }
 
@@ -290,16 +356,22 @@ fun ColorOSCalendarGrid(
     semester: Semester?,
     affairsInMonth: List<Affair>,
     holidaysInMonth: List<Holiday>,
+    overridesInSemester: List<Override> = emptyList(),
+    holidaysInSemester: List<Holiday> = emptyList(),
+    autoTimezone: Boolean = false,
     onDateClick: (LocalDate) -> Unit
 ) {
     val firstDayOfMonth = yearMonth.atDay(1)
     val daysInMonth = yearMonth.lengthOfMonth()
     val firstWeekday = firstDayOfMonth.dayOfWeek.value // 1..7
 
-    val affairDates = affairsInMonth.map { it.date }.toSet()
+    val affairDates = affairsInMonth.map {
+        com.classbell.app.core.TimeUtils.convertAffairDateTime(it.date, it.time, autoTimezone).effectiveDate
+    }.toSet()
 
-    val isEn = LocalContext.current.resources.configuration.locales[0].language == "en"
+    val isEn = java.util.Locale.getDefault().language == "en"
     val weekdayHeaders = if (isEn) WeekdayHeadersEn else WeekdayHeadersZh
+    val accentColor = LocalAccentColor.current
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -317,7 +389,7 @@ fun ColorOSCalendarGrid(
                         style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Center,
-                        color = if (index == 0) AccentOrange else MaterialTheme.colorScheme.onSurfaceVariant
+                        color = if (index == 0) accentColor else MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
@@ -351,7 +423,7 @@ fun ColorOSCalendarGrid(
                             style = MaterialTheme.typography.labelSmall,
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
-                            color = AccentOrange.copy(alpha = 0.85f),
+                            color = accentColor.copy(alpha = 0.85f),
                             textAlign = TextAlign.Center
                         )
                     }
@@ -367,8 +439,12 @@ fun ColorOSCalendarGrid(
                             val isToday = thisDate == LocalDate.now()
                             val hasAffair = thisDate in affairDates
 
+                            val dayOverrides = overridesInSemester.filter { it.date == thisDate }
+                            val isShiftOverride = dayOverrides.any { it.kind == OverrideKind.SHIFT || it.kind == OverrideKind.COURSE_ADJUST }
+                            val isCancelOverride = dayOverrides.any { it.kind == OverrideKind.CANCEL && it.courseId == null }
+
                             // Check holiday or makeup day (休 / 班)
-                            val holiday = holidaysInMonth.firstOrNull {
+                            val holiday = (holidaysInMonth.ifEmpty { holidaysInSemester }).firstOrNull {
                                 !thisDate.isBefore(it.startDate) && !thisDate.isAfter(it.endDate)
                             }
                             val isRestHoliday = holiday?.type == HolidayType.REST
@@ -381,7 +457,10 @@ fun ColorOSCalendarGrid(
                                 modifier = Modifier
                                     .weight(1f)
                                     .height(48.dp)
-                                    .clickable { onDateClick(thisDate) },
+                                    .clickable(
+                                        interactionSource = remember { MutableInteractionSource() },
+                                        indication = null
+                                    ) { onDateClick(thisDate) },
                                 contentAlignment = Alignment.Center
                             ) {
                                 Box(
@@ -408,33 +487,51 @@ fun ColorOSCalendarGrid(
                                             color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurface
                                         )
 
-                                        Row(
-                                            horizontalArrangement = Arrangement.spacedBy(2.dp),
-                                            verticalAlignment = Alignment.CenterVertically
-                                        ) {
-                                            if (isRestHoliday) {
-                                                Text(
-                                                    text = stringResource(R.string.marker_holiday),
-                                                    fontSize = 8.sp,
-                                                    fontWeight = FontWeight.Bold,
-                                                    color = if (isSelected) Color.White else SystemRed
-                                                )
-                                            } else if (isMakeupWorkday) {
-                                                Text(
-                                                    text = stringResource(R.string.marker_workday),
-                                                    fontSize = 8.sp,
-                                                    fontWeight = FontWeight.Bold,
-                                                    color = if (isSelected) Color.White else SystemBlue
-                                                )
-                                            } else if (hasAffair) {
-                                                Box(
-                                                    modifier = Modifier
-                                                        .size(3.dp)
-                                                        .clip(CircleShape)
-                                                        .background(if (isSelected) Color.White else accentColor)
-                                                )
-                                            }
+                                        if (hasAffair) {
+                                            Box(
+                                                modifier = Modifier
+                                                    .padding(top = 1.dp)
+                                                    .size(4.dp)
+                                                    .clip(CircleShape)
+                                                    .background(if (isSelected) Color.White else accentColor)
+                                            )
                                         }
+                                    }
+                                }
+
+                                // Top-Right Badge: 调 (orange) / 班 (blue) / 休 (red)
+                                if (isShiftOverride) {
+                                    Box(
+                                        modifier = Modifier
+                                            .align(Alignment.TopEnd)
+                                            .padding(end = 2.dp, top = 2.dp)
+                                            .clip(RoundedCornerShape(3.dp))
+                                            .background(AccentOrange)
+                                            .padding(horizontal = 2.5.dp, vertical = 0.5.dp)
+                                    ) {
+                                        Text("调", fontSize = 8.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                                    }
+                                } else if (isMakeupWorkday) {
+                                    Box(
+                                        modifier = Modifier
+                                            .align(Alignment.TopEnd)
+                                            .padding(end = 2.dp, top = 2.dp)
+                                            .clip(RoundedCornerShape(3.dp))
+                                            .background(SystemBlue)
+                                            .padding(horizontal = 2.5.dp, vertical = 0.5.dp)
+                                    ) {
+                                        Text("班", fontSize = 8.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                                    }
+                                } else if (isRestHoliday || isCancelOverride) {
+                                    Box(
+                                        modifier = Modifier
+                                            .align(Alignment.TopEnd)
+                                            .padding(end = 2.dp, top = 2.dp)
+                                            .clip(RoundedCornerShape(3.dp))
+                                            .background(SystemRed)
+                                            .padding(horizontal = 2.5.dp, vertical = 0.5.dp)
+                                    ) {
+                                        Text("休", fontSize = 8.sp, fontWeight = FontWeight.Bold, color = Color.White)
                                     }
                                 }
                             }
@@ -450,36 +547,214 @@ fun ColorOSCalendarGrid(
 }
 
 @Composable
-fun SelectedDateBar(date: LocalDate, weekNumber: Int) {
+fun SelectedDateBar(
+    date: LocalDate,
+    weekNumber: Int,
+    hasOverride: Boolean = false,
+    onOpenShiftDialog: () -> Unit
+) {
+    val accentColor = LocalAccentColor.current
+    val accentColorSubtle = LocalAccentColorSubtle.current
+
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            text = TimeUtils.formatDateWithWeekday(date),
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.ExtraBold
-        )
-
-        Box(
-            modifier = Modifier
-                .clip(RoundedCornerShape(8.dp))
-                .background(AccentOrangeSubtle)
-                .padding(horizontal = 8.dp, vertical = 3.dp)
-        ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
-                text = stringResource(R.string.week_format, weekNumber),
-                style = MaterialTheme.typography.labelSmall,
-                color = AccentOrange,
-                fontWeight = FontWeight.Bold
+                text = TimeUtils.formatDateWithWeekday(date),
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.ExtraBold
             )
+            Spacer(modifier = Modifier.width(8.dp))
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(accentColorSubtle)
+                    .padding(horizontal = 8.dp, vertical = 3.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.week_format, weekNumber),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = accentColor,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+
+        // Minimalist "调课设置" action pill
+        Surface(
+            modifier = Modifier
+                .clip(RoundedCornerShape(12.dp))
+                .clickable(onClick = onOpenShiftDialog),
+            shape = RoundedCornerShape(12.dp),
+            color = if (hasOverride) AccentOrange.copy(alpha = 0.15f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+            border = if (hasOverride) BorderStroke(1.dp, AccentOrange.copy(alpha = 0.4f)) else null
+        ) {
+            Row(
+                modifier = Modifier.padding(horizontal = 9.dp, vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Default.SwapHoriz,
+                    contentDescription = null,
+                    tint = if (hasOverride) AccentOrange else MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(14.dp)
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = if (hasOverride) "已调课" else "调课设置",
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = if (hasOverride) AccentOrange else MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun ShiftOverrideStatusCard(
+    date: LocalDate,
+    overrides: List<Override>,
+    courses: List<Course>,
+    onClear: () -> Unit,
+    onEdit: () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = AccentOrange.copy(alpha = 0.08f)),
+        border = BorderStroke(1.dp, AccentOrange.copy(alpha = 0.35f))
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(14.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .size(28.dp)
+                            .clip(CircleShape)
+                            .background(AccentOrange.copy(alpha = 0.18f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.SwapHoriz,
+                            contentDescription = null,
+                            tint = AccentOrange,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "今日已设置调课规则",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = AccentOrange
+                    )
+                }
+
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(AccentOrange)
+                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                ) {
+                    Text(
+                        text = "调课生效中",
+                        style = MaterialTheme.typography.labelSmall,
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            overrides.forEach { ov ->
+                val desc = when (ov.kind) {
+                    OverrideKind.SHIFT -> {
+                        val dayName = when (ov.followsWeekday) {
+                            1 -> "周一"; 2 -> "周二"; 3 -> "周三"; 4 -> "周四"; 5 -> "周五"; 6 -> "周六"; else -> "周日"
+                        }
+                        "全天执行【$dayName】课表" + (ov.note?.let { " · $it" } ?: "")
+                    }
+                    OverrideKind.CANCEL -> {
+                        if (ov.courseId == null) "全天停课/放假" + (ov.note?.let { " · $it" } ?: "")
+                        else {
+                            val cName = courses.firstOrNull { it.id == ov.courseId }?.name ?: "课程"
+                            "【$cName】单课停课" + (ov.note?.let { " · $it" } ?: "")
+                        }
+                    }
+                    OverrideKind.COURSE_ADJUST -> {
+                        val cName = courses.firstOrNull { it.id == ov.courseId }?.name ?: "课程"
+                        "【$cName】改至第${ov.targetPeriodStart}-${ov.targetPeriodEnd}节 · ${ov.targetRoom ?: ""}" + (ov.note?.let { " · $it" } ?: "")
+                    }
+                }
+                Text(
+                    text = "• $desc",
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.padding(vertical = 1.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                // Clear button (instantly clears and restores normal calendar)
+                OutlinedButton(
+                    onClick = onClear,
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(10.dp),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.5f)),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        containerColor = MaterialTheme.colorScheme.error.copy(alpha = 0.08f),
+                        contentColor = MaterialTheme.colorScheme.error
+                    )
+                ) {
+                    Icon(Icons.Default.Delete, contentDescription = null, modifier = Modifier.size(15.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("取消调课状态", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                }
+
+                // Edit button (opens dialog)
+                OutlinedButton(
+                    onClick = onEdit,
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(10.dp),
+                    border = BorderStroke(1.dp, AccentOrange.copy(alpha = 0.5f)),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        containerColor = Color.Transparent,
+                        contentColor = AccentOrange
+                    )
+                ) {
+                    Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(15.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("修改调课设置", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                }
+            }
         }
     }
 }
 
 @Composable
 fun ColorOSMeetingCard(meeting: MeetingOccurrence) {
+    val accentColor = LocalAccentColor.current
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -498,17 +773,61 @@ fun ColorOSMeetingCard(meeting: MeetingOccurrence) {
                     .width(4.dp)
                     .height(44.dp)
                     .clip(RoundedCornerShape(2.dp))
-                    .background(AccentOrange)
+                    .background(
+                        when {
+                            meeting.isHolidaySuppressed -> Color.Gray.copy(alpha = 0.35f)
+                            meeting.isShiftOverride -> AccentOrange
+                            else -> accentColor
+                        }
+                    )
             )
 
             Spacer(modifier = Modifier.width(12.dp))
 
             Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = meeting.course.name,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = meeting.course.name,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = if (meeting.isHolidaySuppressed) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f) else MaterialTheme.colorScheme.onSurface,
+                        textDecoration = if (meeting.isHolidaySuppressed) androidx.compose.ui.text.style.TextDecoration.LineThrough else androidx.compose.ui.text.style.TextDecoration.None
+                    )
+                    if (meeting.isHolidaySuppressed) {
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f))
+                                .padding(horizontal = 5.dp, vertical = 1.dp)
+                        ) {
+                            Text(
+                                text = meeting.holidayName ?: "放假停课",
+                                style = MaterialTheme.typography.labelSmall,
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    } else if (meeting.isShiftOverride) {
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(AccentOrange.copy(alpha = 0.15f))
+                                .border(0.5.dp, AccentOrange, RoundedCornerShape(4.dp))
+                                .padding(horizontal = 5.dp, vertical = 1.dp)
+                        ) {
+                            Text(
+                                text = meeting.shiftLabel ?: "调课",
+                                style = MaterialTheme.typography.labelSmall,
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = AccentOrange
+                            )
+                        }
+                    }
+                }
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = "${meeting.course.className} · ${meeting.course.room}",
@@ -522,7 +841,12 @@ fun ColorOSMeetingCard(meeting: MeetingOccurrence) {
                     text = "${TimeUtils.formatTime(meeting.startTime)}–${TimeUtils.formatTime(meeting.endTime)}",
                     style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.Bold,
-                    color = AccentOrange
+                    color = when {
+                        meeting.isHolidaySuppressed -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                        meeting.isShiftOverride -> AccentOrange
+                        else -> accentColor
+                    },
+                    textDecoration = if (meeting.isHolidaySuppressed) androidx.compose.ui.text.style.TextDecoration.LineThrough else androidx.compose.ui.text.style.TextDecoration.None
                 )
                 Text(
                     text = stringResource(R.string.course_period_format, meeting.periodStart, meeting.periodEnd),
@@ -537,19 +861,23 @@ fun ColorOSMeetingCard(meeting: MeetingOccurrence) {
 @Composable
 fun ColorOSAffairCard(
     affair: Affair,
+    autoTimezone: Boolean = false,
     onToggle: () -> Unit,
     onEdit: () -> Unit,
     onDelete: () -> Unit
 ) {
+    val accentColor = LocalAccentColor.current
     val categoryColor = when (affair.category) {
         AffairCategory.MEETING -> Color(0xFF3A86FF)
         AffairCategory.EXAM -> Color(0xFFE63946)
-        AffairCategory.AFFAIR -> AccentOrange
+        AffairCategory.AFFAIR -> accentColor
         AffairCategory.OTHER -> Color(0xFF8338EC)
     }
 
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onEdit),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
@@ -557,63 +885,147 @@ fun ColorOSAffairCard(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(14.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+                .padding(horizontal = 14.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(
-                modifier = Modifier
-                    .weight(1f)
-                    .clickable(onClick = onToggle),
-                verticalAlignment = Alignment.CenterVertically
+            // 1. Dedicated Round Checkbox
+            IconButton(
+                onClick = onToggle,
+                modifier = Modifier.size(28.dp)
             ) {
-                // Category left bar
-                Box(
-                    modifier = Modifier
-                        .width(4.dp)
-                        .height(38.dp)
-                        .clip(RoundedCornerShape(2.dp))
-                        .background(if (affair.isDone) categoryColor.copy(alpha = 0.4f) else categoryColor)
-                )
-
-                Spacer(modifier = Modifier.width(12.dp))
-
-                Column {
-                    Text(
-                        text = affair.title,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = if (affair.isDone) FontWeight.Normal else FontWeight.SemiBold,
-                        color = if (affair.isDone) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f) else MaterialTheme.colorScheme.onSurface,
-                        textDecoration = if (affair.isDone) androidx.compose.ui.text.style.TextDecoration.LineThrough else androidx.compose.ui.text.style.TextDecoration.None
+                if (affair.isDone) {
+                    Icon(
+                        imageVector = Icons.Default.CheckCircle,
+                        contentDescription = stringResource(R.string.affair_status_done),
+                        tint = Color(0xFF34C759),
+                        modifier = Modifier.size(22.dp)
                     )
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .size(20.dp)
+                            .border(
+                                width = 1.8.dp,
+                                color = if (affair.isDone) Color.Gray.copy(alpha = 0.5f) else categoryColor.copy(alpha = 0.85f),
+                                shape = CircleShape
+                            )
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            // 2. Category vertical bar
+            Box(
+                modifier = Modifier
+                    .width(3.5.dp)
+                    .height(38.dp)
+                    .clip(RoundedCornerShape(2.dp))
+                    .background(if (affair.isDone) categoryColor.copy(alpha = 0.35f) else categoryColor)
+            )
+
+            Spacer(modifier = Modifier.width(10.dp))
+
+            // 3. Middle Content: Title + Place
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = affair.title,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = if (affair.isDone) FontWeight.Normal else FontWeight.SemiBold,
+                    color = if (affair.isDone) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f) else MaterialTheme.colorScheme.onSurface,
+                    textDecoration = if (affair.isDone) androidx.compose.ui.text.style.TextDecoration.LineThrough else androidx.compose.ui.text.style.TextDecoration.None,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                if (!affair.place.isNullOrBlank()) {
+                    Spacer(modifier = Modifier.height(2.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        if (!affair.place.isNullOrBlank()) {
-                            Icon(Icons.Default.LocationOn, contentDescription = null, modifier = Modifier.size(12.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                            Spacer(modifier = Modifier.width(2.dp))
-                            Text(
-                                text = "${affair.place} · ",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                        affair.time?.let {
-                            Text(
-                                text = TimeUtils.formatTime(it),
-                                style = MaterialTheme.typography.bodySmall,
-                                fontWeight = FontWeight.Bold,
-                                color = if (affair.isDone) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f) else AccentOrange
-                            )
-                        }
+                        Icon(
+                            imageVector = Icons.Default.LocationOn,
+                            contentDescription = null,
+                            modifier = Modifier.size(13.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.width(2.dp))
+                        Text(
+                            text = affair.place,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
                     }
                 }
             }
 
-            Row {
-                IconButton(onClick = onEdit) {
-                    Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.edit_affair), modifier = Modifier.size(18.dp))
+            Spacer(modifier = Modifier.width(10.dp))
+
+            // 4. Right: Time Badge on top, Edit & Delete buttons below
+            Column(
+                horizontalAlignment = Alignment.End,
+                verticalArrangement = Arrangement.Center
+            ) {
+                val conv = com.classbell.app.core.TimeUtils.convertAffairDateTime(affair.date, affair.time, autoTimezone)
+                conv.effectiveTime?.let { effTime ->
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(if (affair.isDone) Color.Gray.copy(alpha = 0.12f) else categoryColor.copy(alpha = 0.12f))
+                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                    ) {
+                        Text(
+                            text = TimeUtils.formatTime(effTime),
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = if (affair.isDone) Color.Gray else categoryColor,
+                            maxLines = 1,
+                            softWrap = false
+                        )
+                        if (conv.isConverted) {
+                            Spacer(modifier = Modifier.width(3.dp))
+                            Text(
+                                text = stringResource(R.string.timezone_badge_local_short),
+                                fontSize = 9.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = categoryColor,
+                                maxLines = 1,
+                                softWrap = false
+                            )
+                        }
+                    }
                 }
-                IconButton(onClick = onDelete) {
-                    Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.delete_affair), tint = Color.Red, modifier = Modifier.size(18.dp))
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides 0.dp) {
+                        IconButton(
+                            onClick = onEdit,
+                            modifier = Modifier.size(26.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Edit,
+                                contentDescription = stringResource(R.string.edit_affair),
+                                modifier = Modifier.size(15.dp),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(6.dp))
+                        IconButton(
+                            onClick = onDelete,
+                            modifier = Modifier.size(26.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = stringResource(R.string.delete_affair),
+                                tint = Color(0xFFE53935),
+                                modifier = Modifier.size(15.dp)
+                            )
+                        }
+                    }
                 }
             }
         }

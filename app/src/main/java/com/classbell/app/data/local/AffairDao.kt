@@ -35,7 +35,7 @@ interface AffairDao {
     suspend fun insert(affair: Affair): Long
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertAll(affairs: List<Affair>)
+    suspend fun insertAll(affairs: List<Affair>): List<Long>
 
     @Update
     suspend fun update(affair: Affair)

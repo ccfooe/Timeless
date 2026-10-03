@@ -22,7 +22,7 @@ class AffairRepository(private val affairDao: AffairDao) {
 
     suspend fun insertAffair(affair: Affair): Long = affairDao.insert(affair)
 
-    suspend fun insertAll(affairs: List<Affair>) = affairDao.insertAll(affairs)
+    suspend fun insertAll(affairs: List<Affair>): List<Long> = affairDao.insertAll(affairs)
 
     suspend fun updateAffair(affair: Affair) = affairDao.update(affair)
 

@@ -10,3 +10,8 @@
 /captures
 .externalNativeBuild
 .cxx
+.agents/
+.planning/
+.kotlin/
+build_info.txt
+cloudflare-worker/

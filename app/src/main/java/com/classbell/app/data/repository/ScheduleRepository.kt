@@ -273,11 +273,27 @@ class ScheduleRepository(
     suspend fun getHolidaysForSemesterSync(semesterId: Long): List<Holiday> =
         holidayDao.getHolidaysForSemesterSync(semesterId)
 
+    fun getHolidaysForSemester(semesterId: Long): Flow<List<Holiday>> =
+        holidayDao.getHolidaysForSemester(semesterId)
+
+    fun getCoursesForSemester(semesterId: Long): Flow<List<Course>> =
+        courseDao.getCoursesForSemester(semesterId)
+
     suspend fun insertHoliday(holiday: Holiday) = holidayDao.insert(holiday)
+    suspend fun insertHolidays(holidays: List<Holiday>) = holidayDao.insertAll(holidays)
     suspend fun deleteHoliday(holiday: Holiday) = holidayDao.delete(holiday)
 
     suspend fun getOverridesForSemesterSync(semesterId: Long): List<Override> =
         overrideDao.getOverridesForSemesterSync(semesterId)
+
+    fun getOverridesForSemester(semesterId: Long): Flow<List<Override>> =
+        overrideDao.getOverridesForSemester(semesterId)
+
+    suspend fun getOverridesForDateSync(semesterId: Long, date: LocalDate): List<Override> =
+        overrideDao.getOverridesForDateSync(semesterId, date)
+
+    suspend fun clearOverridesForDate(semesterId: Long, date: LocalDate) =
+        overrideDao.deleteOverridesForDate(semesterId, date)
 
     suspend fun insertOverride(override: Override) = overrideDao.insert(override)
     suspend fun deleteOverride(override: Override) = overrideDao.delete(override)

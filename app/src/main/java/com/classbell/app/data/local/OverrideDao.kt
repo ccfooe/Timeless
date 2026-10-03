@@ -19,8 +19,17 @@ interface OverrideDao {
     @Query("SELECT * FROM overrides WHERE semesterId = :semesterId")
     suspend fun getOverridesForSemesterSync(semesterId: Long): List<Override>
 
+    @Query("SELECT * FROM overrides WHERE semesterId = :semesterId AND date = :date")
+    fun getOverridesForDateFlow(semesterId: Long, date: LocalDate): Flow<List<Override>>
+
+    @Query("SELECT * FROM overrides WHERE semesterId = :semesterId AND date = :date")
+    suspend fun getOverridesForDateSync(semesterId: Long, date: LocalDate): List<Override>
+
     @Query("SELECT * FROM overrides WHERE semesterId = :semesterId AND date = :date LIMIT 1")
     suspend fun getOverrideForDate(semesterId: Long, date: LocalDate): Override?
+
+    @Query("DELETE FROM overrides WHERE semesterId = :semesterId AND date = :date")
+    suspend fun deleteOverridesForDate(semesterId: Long, date: LocalDate)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(override: Override): Long

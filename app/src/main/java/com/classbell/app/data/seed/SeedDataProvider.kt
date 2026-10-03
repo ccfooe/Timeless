@@ -22,7 +22,7 @@ object SeedDataProvider {
             examTo = 20,
             practiceFrom = 21,
             practiceTo = 21,
-            notes = "正式行课: 8月31日; 新生军训: 9月14日-27日",
+            notes = "",
             isActive = true
         )
     }
@@ -90,45 +90,6 @@ object SeedDataProvider {
     }
 
     fun getDefaultCourses(semesterId: Long = 1L): List<Course> {
-        return listOf(
-            Course(
-                id = 1L,
-                semesterId = semesterId,
-                name = "影视声音创作★",
-                code = "B090118",
-                dayOfWeek = 3, // Wednesday
-                periodStart = 1,
-                periodEnd = 4,
-                weekFrom = 2,
-                weekTo = 17,
-                weekPattern = WeekPattern.ALL,
-                campus = "金牛校区",
-                room = "贡院401",
-                className = "25级广播电视编导03班",
-                studentCount = 49,
-                nature = "必修",
-                examType = "考试",
-                color = "#FF4D6D"
-            ),
-            Course(
-                id = 2L,
-                semesterId = semesterId,
-                name = "影视声音创作★",
-                code = "2040109",
-                dayOfWeek = 3, // Wednesday
-                periodStart = 5,
-                periodEnd = 8,
-                weekFrom = 2,
-                weekTo = 17,
-                weekPattern = WeekPattern.ALL,
-                campus = "金牛校区",
-                room = "贡院401",
-                className = "25级摄影摄像技术01班",
-                studentCount = 47,
-                nature = "必修",
-                examType = "考试",
-                color = "#7209B7"
-            )
-        )
+        return emptyList()
     }
 }

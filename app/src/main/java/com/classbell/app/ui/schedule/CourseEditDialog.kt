@@ -64,12 +64,13 @@ fun CourseEditDialog(
     var campus by remember { mutableStateOf(initialCourse?.campus ?: "") }
     var room by remember { mutableStateOf(initialCourse?.room ?: "") }
     var className by remember { mutableStateOf(initialCourse?.className ?: "") }
+    var teacher by remember { mutableStateOf(initialCourse?.teacher ?: "") }
     var studentCountStr by remember { mutableStateOf(initialCourse?.studentCount?.toString() ?: "45") }
     var nature by remember { mutableStateOf(initialCourse?.nature ?: "必修") }
     var examType by remember { mutableStateOf(initialCourse?.examType ?: "考试") }
     var selectedColor by remember { mutableStateOf(initialCourse?.color ?: CourseColors[0]) }
 
-    val isEn = LocalContext.current.resources.configuration.locales[0].language == "en"
+    val isEn = java.util.Locale.getDefault().language == "en"
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -91,6 +92,15 @@ fun CourseEditDialog(
                     value = name,
                     onValueChange = { name = it },
                     label = { Text(stringResource(R.string.course_name_label)) },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                OutlinedTextField(
+                    value = teacher,
+                    onValueChange = { teacher = it },
+                    label = { Text(stringResource(R.string.course_teacher_label)) },
+                    placeholder = { Text(stringResource(R.string.course_teacher_placeholder)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -255,6 +265,7 @@ fun CourseEditDialog(
                             campus = campus.trim().ifEmpty { null },
                             room = room.trim(),
                             className = className.trim(),
+                            teacher = teacher.trim().ifEmpty { null },
                             studentCount = studentCountStr.toIntOrNull() ?: 0,
                             nature = nature,
                             examType = examType,

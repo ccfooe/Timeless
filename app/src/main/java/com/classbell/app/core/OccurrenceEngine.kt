@@ -39,26 +39,38 @@ object OccurrenceEngine {
         val weekNumber = WeekCalculator.calculateWeekNumber(date, semester.week1Monday)
         if (weekNumber < 1) return emptyList()
 
-        // 1. Check for manual override first (highest priority)
-        val override = overrides.firstOrNull { it.date == date }
+        val dayOverrides = overrides.filter { it.date == date }
+        val wholeDayCancel = dayOverrides.firstOrNull { it.kind == OverrideKind.CANCEL && it.courseId == null }
+        val wholeDayShift = dayOverrides.firstOrNull { it.kind == OverrideKind.SHIFT && it.courseId == null }
+        val singleCancels = dayOverrides.filter { it.kind == OverrideKind.CANCEL && it.courseId != null }.mapNotNull { it.courseId }.toSet()
+        val singleAdjusts = dayOverrides.filter { it.kind == OverrideKind.COURSE_ADJUST && it.courseId != null }
 
-        // 2. Check for holiday
         val holiday = holidays.firstOrNull { !date.isBefore(it.startDate) && !date.isAfter(it.endDate) }
 
         var isHolidaySuppressed = false
         var holidayName: String? = null
         var effectiveDayOfWeek = date.dayOfWeek.value // 1 (Mon) .. 7 (Sun)
+        var isShiftDay = false
+        var defaultShiftLabel: String? = null
 
-        if (override != null) {
-            when (override.kind) {
-                OverrideKind.CANCEL -> {
-                    isHolidaySuppressed = true
-                    holidayName = "调休停课"
-                }
-                OverrideKind.SHIFT -> {
-                    override.followsWeekday?.let { effectiveDayOfWeek = it }
-                }
-            }
+        fun weekdayToCn(day: Int): String = when (day) {
+            1 -> "一"
+            2 -> "二"
+            3 -> "三"
+            4 -> "四"
+            5 -> "五"
+            6 -> "六"
+            else -> "日"
+        }
+
+        if (wholeDayCancel != null) {
+            isHolidaySuppressed = true
+            holidayName = wholeDayCancel.note?.ifBlank { null } ?: "调休停课"
+        } else if (wholeDayShift != null) {
+            val targetDay = wholeDayShift.followsWeekday ?: date.dayOfWeek.value
+            effectiveDayOfWeek = targetDay
+            isShiftDay = true
+            defaultShiftLabel = wholeDayShift.note?.ifBlank { null } ?: "调·周${weekdayToCn(targetDay)}"
         } else if (holiday != null) {
             holidayName = holiday.name
             when (holiday.type) {
@@ -66,26 +78,30 @@ object OccurrenceEngine {
                     isHolidaySuppressed = true
                 }
                 HolidayType.MAKEUP -> {
-                    holiday.followsWeekday?.let { effectiveDayOfWeek = it }
+                    val targetDay = holiday.followsWeekday ?: date.dayOfWeek.value
+                    effectiveDayOfWeek = targetDay
+                    isShiftDay = true
+                    defaultShiftLabel = "补·周${weekdayToCn(targetDay)}"
                 }
             }
         }
 
-        // 3. Find matching courses for the effective day and week
+        val periodSlotMap = periodSlots.associateBy { it.order }
+
+        val occurrences = mutableListOf<MeetingOccurrence>()
+
+        // 1. Regular or cloned weekly courses
         val matchingCourses = courses.filter { course ->
             course.dayOfWeek == effectiveDayOfWeek &&
                     weekNumber in course.weekFrom..course.weekTo &&
                     matchesPattern(weekNumber, course.weekPattern) &&
-                    weekNumber !in course.weekExclusions
-        }.sortedBy { it.periodStart }
+                    weekNumber !in course.weekExclusions &&
+                    course.id !in singleCancels
+        }
 
-        // 4. Map to PeriodSlot clock times
-        val periodSlotMap = periodSlots.associateBy { it.order }
-
-        return matchingCourses.map { course ->
+        for (course in matchingCourses) {
             val startSlot = periodSlotMap[course.periodStart]
             val endSlot = periodSlotMap[course.periodEnd]
-
             val startTime = startSlot?.startTime ?: LocalTime.of(8, 30)
             val endTime = endSlot?.endTime ?: LocalTime.of(12, 0)
 
@@ -102,7 +118,9 @@ object OccurrenceEngine {
                 resolveSubPeriodState(course, periodSlots, currentTime)
             } else null
 
-            val progress = if (subState != null && (subState.kind == SubPeriodKind.IN_CLASS || subState.kind == SubPeriodKind.BREAK)) {
+            val progress = if (isHolidaySuppressed) {
+                0f
+            } else if (subState != null && (subState.kind == SubPeriodKind.IN_CLASS || subState.kind == SubPeriodKind.BREAK)) {
                 subState.progress
             } else {
                 calculateProgress(
@@ -114,7 +132,9 @@ object OccurrenceEngine {
                 )
             }
 
-            val remainingMinutes = if (subState != null && (subState.kind == SubPeriodKind.IN_CLASS || subState.kind == SubPeriodKind.BREAK)) {
+            val remainingMinutes = if (isHolidaySuppressed) {
+                0L
+            } else if (subState != null && (subState.kind == SubPeriodKind.IN_CLASS || subState.kind == SubPeriodKind.BREAK)) {
                 subState.remainingMinutes
             } else if (date == todayDate && currentTime.isAfter(startTime) && currentTime.isBefore(endTime)) {
                 ChronoUnit.MINUTES.between(currentTime, endTime).coerceAtLeast(0)
@@ -122,21 +142,100 @@ object OccurrenceEngine {
                 0L
             }
 
-            MeetingOccurrence(
-                course = course,
-                date = date,
-                periodStart = course.periodStart,
-                periodEnd = course.periodEnd,
-                startTime = startTime,
-                endTime = endTime,
-                isHolidaySuppressed = isHolidaySuppressed,
-                holidayName = holidayName,
-                status = status,
-                progress = progress,
-                remainingMinutes = remainingMinutes,
-                subPeriodState = subState
+            occurrences.add(
+                MeetingOccurrence(
+                    course = course,
+                    date = date,
+                    periodStart = course.periodStart,
+                    periodEnd = course.periodEnd,
+                    startTime = startTime,
+                    endTime = endTime,
+                    isHolidaySuppressed = isHolidaySuppressed,
+                    holidayName = holidayName,
+                    status = status,
+                    progress = progress,
+                    remainingMinutes = remainingMinutes,
+                    subPeriodState = subState,
+                    isShiftOverride = isShiftDay,
+                    shiftLabel = defaultShiftLabel
+                )
             )
         }
+
+        if (!isHolidaySuppressed) {
+            // 2. Single-course ad-hoc adjustments on this date
+            for (adj in singleAdjusts) {
+                val baseCourse = courses.firstOrNull { it.id == adj.courseId } ?: continue
+                val pStart = adj.targetPeriodStart ?: baseCourse.periodStart
+                val pEnd = adj.targetPeriodEnd ?: baseCourse.periodEnd
+                val room = adj.targetRoom?.ifBlank { null } ?: baseCourse.room
+
+                val adjustedCourse = baseCourse.copy(
+                    periodStart = pStart,
+                    periodEnd = pEnd,
+                    room = room
+                )
+
+                val startSlot = periodSlotMap[pStart]
+                val endSlot = periodSlotMap[pEnd]
+                val startTime = startSlot?.startTime ?: LocalTime.of(8, 30)
+                val endTime = endSlot?.endTime ?: LocalTime.of(12, 0)
+
+                val status = determineStatus(
+                    targetDate = date,
+                    todayDate = todayDate,
+                    currentTime = currentTime,
+                    startTime = startTime,
+                    endTime = endTime,
+                    isHoliday = false
+                )
+
+                val subState = if (date == todayDate) {
+                    resolveSubPeriodState(adjustedCourse, periodSlots, currentTime)
+                } else null
+
+                val progress = if (subState != null && (subState.kind == SubPeriodKind.IN_CLASS || subState.kind == SubPeriodKind.BREAK)) {
+                    subState.progress
+                } else {
+                    calculateProgress(
+                        targetDate = date,
+                        todayDate = todayDate,
+                        currentTime = currentTime,
+                        startTime = startTime,
+                        endTime = endTime
+                    )
+                }
+
+                val remainingMinutes = if (subState != null && (subState.kind == SubPeriodKind.IN_CLASS || subState.kind == SubPeriodKind.BREAK)) {
+                    subState.remainingMinutes
+                } else if (date == todayDate && currentTime.isAfter(startTime) && currentTime.isBefore(endTime)) {
+                    ChronoUnit.MINUTES.between(currentTime, endTime).coerceAtLeast(0)
+                } else {
+                    0L
+                }
+
+                occurrences.add(
+                    MeetingOccurrence(
+                        course = adjustedCourse,
+                        date = date,
+                        periodStart = pStart,
+                        periodEnd = pEnd,
+                        startTime = startTime,
+                        endTime = endTime,
+                        isHolidaySuppressed = false,
+                        holidayName = null,
+                        status = status,
+                        progress = progress,
+                        remainingMinutes = remainingMinutes,
+                        subPeriodState = subState,
+                        isShiftOverride = true,
+                        shiftLabel = adj.note?.ifBlank { null } ?: "调课"
+                    )
+                )
+            }
+        }
+
+        return occurrences.sortedWith(compareBy({ it.periodStart }, { it.startTime }))
     }
 
     fun matchesPattern(weekNumber: Int, pattern: WeekPattern): Boolean {

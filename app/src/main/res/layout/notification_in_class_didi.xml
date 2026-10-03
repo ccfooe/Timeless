@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root_container"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_notification_didi_card"
+    android:paddingLeft="18dp"
+    android:paddingTop="14dp"
+    android:paddingRight="18dp"
+    android:paddingBottom="14dp">
+
+    <!-- Top Right: Circular Close/Finish Button -->
+    <ImageView
+        android:id="@+id/btn_stop"
+        android:layout_width="28dp"
+        android:layout_height="28dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentTop="true"
+        android:background="@drawable/bg_notification_close_btn"
+        android:src="@drawable/ic_close_white"
+        android:padding="6dp"
+        android:contentDescription="结束下课" />
+
+    <!-- Top Left: Alarm Icon -->
+    <ImageView
+        android:id="@+id/iv_alarm_icon"
+        android:layout_width="28dp"
+        android:layout_height="28dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:src="@drawable/ic_alarm_lightning"
+        android:contentDescription="Class Status" />
+
+    <!-- Top Middle: Course Name & Start Time / Room -->
+    <LinearLayout
+        android:id="@+id/ll_header_texts"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_toEndOf="@id/iv_alarm_icon"
+        android:layout_toStartOf="@id/btn_stop"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="8dp"
+        android:layout_alignParentTop="true"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tv_headline"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="影视声音创作★"
+            android:textColor="#FFFFFF"
+            android:textSize="17sp"
+            android:textStyle="bold"
+            android:singleLine="true"
+            android:ellipsize="end" />
+
+        <TextView
+            android:id="@+id/tv_subtitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:text="Start time: 14:10 · 贡院401"
+            android:textColor="#94A3B8"
+            android:textSize="12sp"
+            android:singleLine="true"
+            android:ellipsize="end" />
+    </LinearLayout>
+
+    <!-- Dotted Divider Line -->
+    <TextView
+        android:id="@+id/tv_dotted_divider"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/ll_header_texts"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        android:text="························································································"
+        android:textColor="#263044"
+        android:textSize="14sp"
+        android:letterSpacing="0.3"
+        android:maxLines="1"
+        android:ellipsize="none" />
+
+    <!-- Bottom Row: Status on Left, Big Clean Time on Right -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/tv_dotted_divider">
+
+        <TextView
+            android:id="@+id/tv_status_left"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:text="进行中 · 剩余 25 分钟"
+            android:textColor="#94A3B8"
+            android:textSize="13sp"
+            android:singleLine="true"
+            android:ellipsize="end" />
+
+        <TextView
+            android:id="@+id/tv_time_right"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:text="14:10"
+            android:textColor="#FFFFFF"
+            android:textSize="22sp"
+            android:textStyle="bold" />
+    </RelativeLayout>
+
+    <!-- Hidden compatibility view for timeline track if needed -->
+    <ImageView
+        android:id="@+id/iv_timeline_track"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/btn_extend"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone" />
+
+</RelativeLayout>

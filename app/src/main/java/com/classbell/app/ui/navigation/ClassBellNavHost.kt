@@ -55,6 +55,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
 import com.classbell.app.ClassBellApp
 import com.classbell.app.R
 import com.classbell.app.ui.calendar.CalendarScreen
@@ -63,9 +65,14 @@ import com.classbell.app.ui.import.ImportConfirmScreen
 import com.classbell.app.ui.import.ImportViewModel
 import com.classbell.app.ui.schedule.ScheduleScreen
 import com.classbell.app.ui.schedule.ScheduleViewModel
+import com.classbell.app.ui.settings.AboutScreen
+import com.classbell.app.ui.settings.AppearanceSettingsScreen
+import com.classbell.app.ui.settings.LlmSettingsScreen
 import com.classbell.app.ui.settings.PeriodTableEditorScreen
 import com.classbell.app.ui.settings.SettingsScreen
 import com.classbell.app.ui.settings.SettingsViewModel
+import com.classbell.app.ui.settings.SurvivalGuideScreen
+import com.classbell.app.ui.settings.UserGuideScreen
 import com.classbell.app.ui.stats.StatsScreen
 import com.classbell.app.ui.stats.StatsViewModel
 import com.classbell.app.ui.theme.AccentOrange
@@ -117,8 +124,10 @@ fun ClassBellNavHost(modifier: Modifier = Modifier) {
 
     val calendarViewModel: CalendarViewModel = viewModel(
         factory = CalendarViewModel.Factory(
+            context,
             app.scheduleRepository,
             app.affairRepository,
+            app.settingsRepository,
             app.alarmScheduler
         )
     )
@@ -144,7 +153,8 @@ fun ClassBellNavHost(modifier: Modifier = Modifier) {
             app.settingsRepository,
             app.courseRepository,
             app.semesterRepository,
-            app.scheduleRepository
+            app.scheduleRepository,
+            app.periodRepository
         )
     )
 
@@ -245,7 +255,10 @@ fun ClassBellNavHost(modifier: Modifier = Modifier) {
         NavHost(
             navController = navController,
             startDestination = Screen.Today.route,
-            modifier = Modifier.padding(innerPadding),
+            modifier = Modifier.padding(
+                top = if (isTopLevelDestination) innerPadding.calculateTopPadding() else 0.dp,
+                bottom = innerPadding.calculateBottomPadding()
+            ),
             enterTransition = {
                 val initialIdx = getTabOrder(initialState.destination.route)
                 val targetIdx = getTabOrder(targetState.destination.route)
@@ -316,13 +329,62 @@ fun ClassBellNavHost(modifier: Modifier = Modifier) {
                     viewModel = settingsViewModel,
                     importViewModel = importViewModel,
                     onNavigateToPeriodEditor = { navController.navigate(Screen.PeriodTableEditor.route) },
-                    onNavigateToImportConfirm = { navController.navigate("import_confirm") }
+                    onNavigateToImportConfirm = { navController.navigate("import_confirm") },
+                    onNavigateToUserGuide = { navController.navigate(Screen.UserGuide.route) },
+                    onNavigateToAppearance = { tab -> navController.navigate(Screen.Appearance.createRoute(tab)) },
+                    onNavigateToAbout = { navController.navigate(Screen.About.route) },
+                    onNavigateToSurvivalGuide = { navController.navigate(Screen.SurvivalGuide.route) },
+                    onNavigateToLlmSettings = { navController.navigate(Screen.LlmSettings.route) }
+                )
+            }
+
+            composable(
+                route = Screen.Appearance.route,
+                arguments = listOf(
+                    navArgument("tab") {
+                        type = NavType.IntType
+                        defaultValue = 0
+                    }
+                )
+            ) { backStackEntry ->
+                val tab = backStackEntry.arguments?.getInt("tab") ?: 0
+                AppearanceSettingsScreen(
+                    viewModel = settingsViewModel,
+                    initialTab = tab,
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
+
+            composable(Screen.About.route) {
+                AboutScreen(
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
+
+            composable(Screen.SurvivalGuide.route) {
+                SurvivalGuideScreen(
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
+
+            composable(Screen.LlmSettings.route) {
+                LlmSettingsScreen(
+                    viewModel = settingsViewModel,
+                    onNavigateBack = { navController.popBackStack() }
                 )
             }
 
             composable(Screen.PeriodTableEditor.route) {
                 PeriodTableEditorScreen(
                     periodRepository = app.periodRepository,
+                    onNavigateBack = { navController.popBackStack() },
+                    onImportPeriodTable = { uri -> importViewModel.parsePeriodTableImage(uri) },
+                    onNavigateToImportConfirm = { navController.navigate("import_confirm") }
+                )
+            }
+
+            composable(Screen.UserGuide.route) {
+                UserGuideScreen(
                     onNavigateBack = { navController.popBackStack() }
                 )
             }

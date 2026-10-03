@@ -19,6 +19,13 @@ sealed class Screen(val route: String, val title: String, val icon: ImageVector?
     object PeriodTableEditor : Screen("period_editor", "作息时间表")
     object ImportTimetable : Screen("import_timetable", "导入课表")
     object ImportCalendar : Screen("import_calendar", "导入校历")
+    object UserGuide : Screen("user_guide", "使用指南与帮助")
+    object Appearance : Screen("appearance?tab={tab}", "外观与个性化") {
+        fun createRoute(tab: Int = 0) = "appearance?tab=$tab"
+    }
+    object About : Screen("about", "关于 Timeless")
+    object SurvivalGuide : Screen("survival_guide", "后台运行与自启动指引")
+    object LlmSettings : Screen("llm_settings", "AI 识别设置")
 }
 
 val BottomNavItems = listOf(

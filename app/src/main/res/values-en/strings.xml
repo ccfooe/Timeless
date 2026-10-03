@@ -33,6 +33,26 @@
     <string name="time_remaining_format">%d min left</string>
     <string name="elapsed_format">%1$s elapsed · %2$d%%</string>
 
+    <!-- Didi-style Lockscreen Notification -->
+    <string name="didi_in_class_countdown">%d min until class ends</string>
+    <string name="didi_in_class_ending_soon">Class ending soon</string>
+    <string name="didi_recess_countdown">Recess · %d min left</string>
+    <string name="didi_recess_ending_soon">Recess ending soon</string>
+    <string name="didi_preclass_countdown">%d min until class</string>
+    <string name="didi_preclass_starting_soon">Starting soon</string>
+    <string name="didi_btn_extend">+5m</string>
+    <string name="didi_btn_end">End</string>
+    <string name="didi_btn_next">Next</string>
+    <string name="didi_milestone_start">Start</string>
+    <string name="didi_milestone_half">Half</string>
+    <string name="didi_milestone_end">End</string>
+    <string name="didi_milestone_break_start">Break</string>
+    <string name="didi_milestone_break_mid">Rest</string>
+    <string name="didi_milestone_break_end">Class</string>
+    <string name="didi_milestone_pre_start">Ready</string>
+    <string name="didi_milestone_pre_mid">Prep</string>
+    <string name="didi_milestone_pre_end">Start</string>
+
     <!-- Class Controls -->
     <string name="btn_start_class">Start Class</string>
     <string name="btn_quick_class">Quick Session</string>
@@ -68,7 +88,11 @@
     <string name="affair_category_other">Other</string>
 
     <!-- Settings Screen Sections & Items -->
-    <string name="settings_title">Settings</string>
+    <string name="settings_title">Mine</string>
+    <string name="settings_section_schedule_mgmt">Schedule &amp; Periods</string>
+    <string name="settings_section_appearance_pref">Appearance &amp; Preferences</string>
+    <string name="settings_section_system_infra">System &amp; Data</string>
+    <string name="settings_section_help_about">Help &amp; About</string>
     <string name="settings_section_general">General</string>
     <string name="settings_section_import_ai">AI Smart Import (LLM)</string>
     <string name="settings_section_schedule">Schedule &amp; Alarms</string>
@@ -86,9 +110,40 @@
     <string name="import_schedule_screenshot_sub">Select timetable image, AI extracts courses automatically</string>
     <string name="import_calendar_screenshot">Import Calendar Image (LLM)</string>
     <string name="import_calendar_screenshot_sub">Extract start date, teaching weeks and holidays</string>
-    <string name="llm_settings">LLM API Settings (BYOK)</string>
-    <string name="llm_settings_sub_unconfigured">No API key configured (tap to add)</string>
-    <string name="llm_settings_sub_configured">Configured: %s</string>
+    <string name="import_period_table_screenshot">Import Period Timetable (LLM)</string>
+    <string name="import_period_table_screenshot_sub">Recognize school bell schedule to sync period times</string>
+    <string name="import_period_table_title">Import Period Timetable</string>
+    <string name="confirm_period_table_title">Confirm Period Timetable</string>
+    <string name="confirm_period_table_desc">AI has extracted the following period slots. Confirming will sync your school timetable.</string>
+    <string name="confirm_period_table_btn">Confirm &amp; Sync Timetable</string>
+    <string name="capsule_pre_class">Prep</string>
+    <string name="pre_class_remaining_format">%2$d min before %1$s starts</string>
+    <string name="pre_class_countdown_format">Starts in %s</string>
+    <string name="btn_cancel_pre_class">Cancel Prep</string>
+    <string name="ai_photo_recognize_period_table">AI Photo Recognition</string>
+    <string name="llm_settings">AI Recognition &amp; API Channel</string>
+    <string name="llm_settings_sub_official">Timeless Official Cloud (GLM-4.6v · Ready to use)</string>
+    <string name="llm_settings_sub_custom_configured">Custom Channel: %s</string>
+    <string name="llm_settings_sub_custom_unconfigured">Custom Channel (Key Missing)</string>
+
+    <!-- Role / Identity Mode -->
+    <string name="role_mode_title">Current Identity</string>
+    <string name="role_teacher">Teacher</string>
+    <string name="role_student">Student</string>
+    <string name="role_teacher_desc">Focuses on classes &amp; student count for teaching</string>
+    <string name="role_student_desc">Focuses on teachers &amp; classrooms to prevent running to wrong hall</string>
+
+    <!-- Adaptive Today Strings -->
+    <string name="today_title_teacher">Today\'s Teaching</string>
+    <string name="today_title_student">Today\'s Classes</string>
+    <string name="today_sub_teacher">%d periods to teach today</string>
+    <string name="today_sub_student">%d periods to attend today</string>
+
+    <!-- Course Teacher field -->
+    <string name="course_teacher_label">Teacher / Professor</string>
+    <string name="course_teacher_placeholder">e.g. Prof. Zhang (Optional)</string>
+    <string name="course_detail_teacher">Teacher</string>
+
     <!-- Appearance & Display -->
     <string name="appearance_settings">Appearance &amp; Personalization</string>
     <string name="theme_mode_title">Appearance Mode</string>
@@ -106,24 +161,24 @@
     <string name="dialog_accent_color_title">Select Theme Accent Color</string>
 
     <string name="alarm_settings">Reminders &amp; Alarms</string>
-    <string name="lockscreen_cloud_title">Lock Screen Card &amp; Fluid Cloud (ColorOS 16/17)</string>
-    <string name="lockscreen_cloud_sub">Direct access to channel settings for Fluid Cloud capsule &amp; lockscreen</string>
-    <string name="dialog_lockscreen_title">Lock Screen &amp; Fluid Cloud Setup</string>
-    <string name="dialog_lockscreen_content">ColorOS 16 / 17 restricts lock screen cards and Fluid Cloud capsules by default for sideloaded apps. Please configure as follows:\n\n1. 💧 Enable "Fluid Cloud" Capsule:\nTap the button below to directly open the "In-Class Live Card" channel. Turn ON the "Fluid Cloud" switch to show the dynamic pill around the camera cutout.\n\n2. 📱 Enable "Show on Lock Screen":\nOn the same settings screen, tap "Lock screen" and select "Show all notification content".\n\n3. 🌙 Check Do Not Disturb (DND):\nIf DND (moon icon) is active, ColorOS suppresses alerts. Please whitelist Timeless or turn off DND.</string>
-    <string name="btn_open_system_notification">Open Channel Settings (Enable Fluid Cloud)</string>
+    <string name="lockscreen_cloud_title">Lockscreen &amp; Persistent Notification</string>
+    <string name="lockscreen_cloud_sub">Show real-time progress on lockscreen &amp; status bar</string>
+    <string name="dialog_lockscreen_title">Lockscreen &amp; Notification Settings</string>
+    <string name="dialog_lockscreen_content">To ensure real-time class progress displays on the lockscreen, please verify these settings:\n\n1. 📱 Show on Lock Screen:\nIn notification settings, select "Show all notification content".\n\n2. 🔔 Allow Resident Notifications:\nEnsure the "Class Progress" notification channel is enabled.\n\n3. 🌙 Check Do Not Disturb (DND):\nIf DND is active, add Timeless to the exception list under Sound &amp; Vibration.</string>
+    <string name="btn_open_system_notification">Open System Notification Settings</string>
     <string name="warn_minutes_title">Class Ending Reminder</string>
     <string name="warn_minutes_sub">Alert %d min before class ends via vibration &amp; banner</string>
-    <string name="survival_guide">Background Survival Guide</string>
-    <string name="survival_guide_sub">ColorOS 16/17 Fluid Cloud, battery &amp; task locking</string>
-    <string name="user_guide_title">Beginner\'s Guide &amp; Manual Entry</string>
-    <string name="user_guide_sub">Learn AI auto-import vs 100% offline manual scheduling</string>
+    <string name="survival_guide">Background Running &amp; Autostart Guide</string>
+    <string name="survival_guide_sub">Notification permissions, unrestricted battery &amp; autostart</string>
+    <string name="user_guide_title">User Guide &amp; Features</string>
+    <string name="user_guide_sub" formatted="false">Learn All-in-One smart import, schedule management &amp; gestures</string>
     <string name="backup_and_restore">Data Backup &amp; Export</string>
     <string name="export_backup_title">Export Local Backup (JSON)</string>
     <string name="export_backup_sub">Includes semesters, courses, periods &amp; affairs (excluding keys)</string>
     <string name="import_backup_title">Import Data Backup (JSON)</string>
     <string name="import_backup_sub">Restore all courses, semesters &amp; schedule from JSON</string>
     <string name="about_timeless">About Timeless</string>
-    <string name="about_timeless_sub">v2.2.2 · University teaching rhythm &amp; countdown companion</string>
+    <string name="about_timeless_sub">v2.3.2 · University teaching rhythm &amp; countdown companion</string>
     <string name="clear_all_data">Clear All Local Data</string>
     <string name="clear_all_data_sub">Reset database to initial state</string>
 
@@ -133,37 +188,67 @@
     <string name="file_read_error">Failed to read file: %s</string>
     <string name="storage_unavailable">Storage access unavailable</string>
     <string name="share_backup_chooser">Share Backup File</string>
+    <string name="export_dialog_title">Export Local Backup</string>
+    <string name="export_dialog_intro">Choose how you want to export your backup. The file includes courses, semesters, periods and affairs without private keys.</string>
+    <string name="export_save_local_title">Save to Phone Storage (Recommended)</string>
+    <string name="export_save_local_sub">Save directly to Downloads or Documents folder for easy restore</string>
+    <string name="export_share_apps_title">Send to QQ / WeChat / Email</string>
+    <string name="export_share_apps_sub">Send backup file to other devices or friends via system share</string>
+    <string name="export_save_success">Backup successfully saved to device!</string>
+    <string name="export_save_failed">Failed to save backup: %s</string>
     <string name="data_reset_success">Data reset complete</string>
     <string name="dialog_clear_title">Reset Local Data</string>
     <string name="dialog_clear_content">Are you sure you want to delete all courses, semesters, and affairs? This action cannot be undone.</string>
     <string name="dialog_warn_minutes_title">Class End Warning</string>
     <string name="dialog_warn_minutes_content">Vibrate and show notification %d minutes before class ends.</string>
-    <string name="dialog_about_body">Version: v2.2.2\nCore Features:\n• Fluid Cloud startup upgraded: silently docks to status bar, eliminating intrusive in-app popup\n• ColorOS 16/17 punch-hole capsule ultra-compact redesign (reduced to 2/3 width, symmetrically wrapping camera hole)\n• Fluid Cloud expanded card live progress bar visualization (▰▰▰▰▱▱▱▱▱▱ step gauge)\n• Exact millisecond synchronization between status bar and app countdown\n• Lockscreen card &amp; dynamic countdown notification adaptation\n• Smartisan OS physical spring transitions and tactile navigation feedback\n• Automated university period rhythm (auto-detects 45-min periods vs recess/breaks)\n• Apple/Smartisan minimalist pure surface aesthetics\n• Compact &amp; elegant bottom navigation bar (vertical screen space saved)\n• 10 daily class periods fully visible on single screen (tightened headers + periods 9 &amp; 10 fully in view)\n• 5 curated Bauhaus &amp; designer accent color palettes\n• Appearance mode (Follow System / Always Light / Always Dark)\n• Swiss mechanical watch giant monospace countdown\n• Multimodal AI import + 100% offline manual scheduling\n• Pure local storage with complete privacy</string>
+    <string name="dialog_about_body" formatted="false">Version: v2.4.0 (Build 50)\nCrafted &amp; Designed by: Chao Li\n\nTimeless is a minimalist campus schedule and class countdown tool designed with clean modern aesthetics. Ad-free, bloatware-free, and dedicated to pure punctuality.\n\nCore Features:\n• Dual Teacher/Student Adaptive Modes: Single timetable dynamically adapts to your identity.\n• All-in-One Smart Import: Extract timetables, calendars and shift notices in seconds.\n• Lockscreen &amp; Status Bar Countdown: Real-time countdown cards at a glance.\n• Pure Local Privacy &amp; Sovereignty: 100% on-device SQLite storage with one-tap JSON backup &amp; migration.</string>
 
     <!-- Hero Card & Today Screen -->
     <string name="hero_start_class_title">Start a New Class</string>
-    <string name="hero_start_class_subtitle">Master your teaching rhythm · Live countdown</string>
+    <string name="hero_start_class_title_student">Start Focus Study</string>
+    <string name="hero_start_class_subtitle">Paced Class Rhythms · Dynamic Countdown</string>
     <string name="hero_enter_class">Enter Class</string>
 
     <!-- Survival Guide Dialog -->
-    <string name="survival_title">ColorOS / Android Survival Guide</string>
-    <string name="survival_desc">To ensure lockscreen cards and alerts trigger reliably when screen is off, please complete:</string>
-    <string name="guide_step1_title">Allow Notifications, Lock Screen &amp; Fluid Cloud</string>
-    <string name="guide_step1_desc">Open notification settings, enable \'Allow notifications\', \'Lock screen content\' and \'Fluid Cloud\' capsule.</string>
+    <string name="survival_title">Background Running &amp; Autostart Guide</string>
+    <string name="survival_desc">To ensure countdown cards and alerts trigger reliably when screen is off, please complete:</string>
+    <string name="guide_step1_title">Allow Foreground &amp; Lockscreen Notifications</string>
+    <string name="guide_step1_desc">Open notification settings, enable "Allow notifications" and "Show on lockscreen".</string>
     <string name="guide_step2_title">Disable Battery Optimization (Unrestricted)</string>
-    <string name="guide_step2_desc">Set battery strategy to \'Unrestricted\' so alarms won\'t freeze when phone sleeps.</string>
-    <string name="guide_step3_title">Allow Auto-launch in ColorOS</string>
-    <string name="guide_step3_desc">Go to Settings → App Management → Auto-launch, set Timeless to \'Allowed\'.</string>
+    <string name="guide_step2_desc">Set battery strategy to "Unrestricted" so alarms and timers won\'t freeze when phone sleeps.</string>
+    <string name="guide_step3_title">Allow Background Autostart</string>
+    <string name="guide_step3_desc">In system app management or autostart settings, set Timeless to "Allowed".</string>
     <string name="guide_step4_title">Lock in Recent Tasks</string>
-    <string name="guide_step4_desc">Swipe to Recents, tap menu on Timeless card, select \'Lock\' to prevent task clearing.</string>
-    <string name="btn_goto_notifications">Go to Settings: Notifications &amp; Fluid Cloud</string>
+    <string name="guide_step4_desc">Swipe to Recents, pull down or tap menu on Timeless card, select "Lock" to prevent task clearing.</string>
+    <string name="btn_goto_notifications">Go to Settings: Notification Permissions</string>
     <string name="btn_goto_battery">Go to Settings: Battery Optimization</string>
-    <string name="btn_goto_permissions">Go to Settings: App Permissions</string>
+    <string name="btn_goto_permissions">Go to Settings: App Permissions &amp; Autostart</string>
     <string name="btn_understood_configured">Understood &amp; Configured</string>
     <string name="btn_skip_for_now">Skip for Now</string>
 
     <!-- LLM Dialog -->
-    <string name="llm_dialog_title">LLM API Settings (BYOK)</string>
+    <string name="llm_dialog_title">AI Recognition Settings</string>
+    <string name="ai_channel_mode_label">Select AI Channel</string>
+    <string name="ai_channel_tab_official">Official Cloud</string>
+    <string name="ai_channel_tab_custom">Custom API</string>
+    <string name="ai_channel_official_desc">Ready out-of-the-box with built-in cloud intelligence. Powered by Timeless official compute nodes with no API keys required.</string>
+    <string name="official_model_gemini_title">Google Gemini 3.6 Flash</string>
+    <string name="official_model_gemini_badge">Global Fast</string>
+    <string name="official_model_gemini_desc">Multimodal vision reasoning, supports diverse timetable &amp; calendar formats.</string>
+    <string name="official_model_glm_title">Timeless Official Cloud Channel</string>
+    <string name="official_model_glm_badge">Ready to Use · Fast</string>
+    <string name="official_model_glm_desc">Deeply optimized multimodal parser for campus timetables and calendars. Fast and direct without configuring API keys.</string>
+    <string name="ai_channel_custom" formatted="false">Custom External API (Advanced)</string>
+    <string name="ai_channel_custom_desc" formatted="false">Bring your own API key (supports Zhipu GLM-4V, OpenAI GPT-4o, Qwen-VL, etc.). Key is kept 100% locally on device.</string>
+    <string name="ai_channel_custom_intro">Supports OpenAI-compatible vision models. Keys are stored locally on device and never uploaded.</string>
+    <string name="ai_channel_official_endpoint">Official Service Endpoint</string>
+    <string name="ai_channel_official_model_badge">Built-in: Timeless Official Cloud Service</string>
+    <string name="llm_official_status_ready">Online</string>
+    <string name="llm_official_node_label">Relay Node</string>
+    <string name="llm_official_reset_node">Reset Default</string>
+    <string name="llm_test_official">Test Official Connection</string>
+    <string name="llm_test_custom">Test Custom Connection</string>
+    <string name="llm_testing">Testing connection...</string>
     <string name="llm_dialog_intro">Supports OpenAI-compatible vision models (e.g. GLM-4.5v, Qwen-VL, GPT-4o). Keys are stored locally on device and never uploaded.</string>
     <string name="llm_test_connection">Test Connection</string>
 
@@ -179,21 +264,72 @@
     <string name="period_end_time">End Time (HH:MM)</string>
     <string name="back">Back</string>
 
-    <!-- User Guide Dialog -->
-    <string name="user_guide_header">Timeless Beginner\'s Guide</string>
-    <string name="guide_tab_scheduling">Scheduling</string>
-    <string name="guide_tab_features">Class &amp; Lock Screen</string>
-    <string name="mode_ai_title">Option A: AI Smart Import (Fast &amp; Automated)</string>
-    <string name="mode_ai_desc">If you have an LLM API Key (configured in Settings), simply upload a screenshot of your syllabus or calendar. AI will extract course names, rooms, periods, and weeks in 3 seconds!</string>
-    <string name="mode_manual_title">Option B: Offline Manual Scheduling (No API, 100% Privacy)</string>
-    <string name="mode_manual_desc">No LLM API? Don\'t worry, Timeless fully supports offline manual scheduling:\n\n1. 【Period Table】: In Settings -> Period Times Table, customize your university\'s period times (preloaded with 10 standard periods).\n2. 【Add Course】: Switch to the \'Timetable\' tab, tap \'+\' to manually create courses with name, room, week range (e.g. Weeks 1-16), and periods (e.g. 1-2).\n3. 【Calendar &amp; Tasks】: Switch to \'Calendar\', tap \'+\' to add meetings, exams, and duties.</string>
-    <string name="feature_lockscreen_title">Lock Screen Card &amp; ColorOS 16 Fluid Cloud</string>
-    <string name="feature_lockscreen_desc">Tap \'Start a New Class\' on Today screen to activate live countdown. Lock screen displays full-width progress card; ColorOS 16 status bar and AOD show dynamic countdown capsule.</string>
-    <string name="feature_warn_title">5-Min End Alert to Prevent Overrunning</string>
-    <string name="feature_warn_desc">5 minutes before class ends (adjustable in Settings), your phone triggers a distinct vibration and banner to help you wrap up smoothly.</string>
-    <string name="feature_privacy_title">Pure Local Storage &amp; JSON Backup</string>
-    <string name="feature_privacy_desc">100% of your course and schedule data is stored strictly in your device\'s local database. Export JSON backups anytime for effortless migration.</string>
+    <!-- User Guide Screen -->
+    <string name="user_guide_header">Guide &amp; Help</string>
+    <string name="guide_tab_roles">Role Modes</string>
+    <string name="guide_tab_scheduling">Setup Schedule</string>
+    <string name="guide_tab_clock">Class &amp; Lock Screen</string>
+    <string name="guide_tab_privacy">Offline &amp; Privacy</string>
+
+    <string name="guide_role_card_title">Teacher Mode vs Student Mode: What\'s the Difference?</string>
+    <string name="guide_role_card_desc">Timeless is crafted for students and faculty alike. Using a single timetable, it intelligently adapts the view to match your perspective:\n\n• 👨‍🏫 Teacher Mode (For Instructors):\nHome shows \"Today\'s Teaching\", highlighting class names &amp; student numbers. Strong anti-overtime vibration alerts trigger 5 minutes before class ends, plus one-tap manual teaching session starts.\n\n• 🎓 Student Mode (For Students):\nHome shows \"Today\'s Classes\", prominently displaying classroom locations &amp; professors so you never wander into the wrong building or hall. Full support for recess/break transitions and focus study timers.\n\n💡 Tip: Teachers and students use the exact same app. Switch roles anytime in Settings with instant local synchronization.</string>
+
+    <string name="guide_schedule_ai_title">Option A: All-in-One Smart Import (Recommended)</string>
+    <string name="guide_schedule_ai_desc">Tap the \"+\" action button on the Home or Calendar screen to import portal screenshots, calendar notices, or pasted announcement texts. The multimodal engine extracts semesters, courses and shift rules in seconds!</string>
+
+    <string name="guide_schedule_manual_title">Option B: Offline Manual Scheduling (No Network Needed)</string>
+    <string name="guide_schedule_manual_desc">No internet or API key required. Timeless provides full offline manual scheduling:\n\n1. 【Period Table】: In Mine → Period Times Table, tweak start and end times to match your school (preloaded with 10 standard periods).\n2. 【Add Course】: Go to the \"Timetable\" tab and tap \"+\" to manually add course names, classrooms, professors, and periods.\n3. 【Calendar &amp; Tasks】: In the \"Calendar\" tab, tap \"+\" to schedule exams, meetings, or personal to-dos.</string>
+
+    <string name="guide_clock_card_title">Class Rhythms at a Glance · Lockscreen &amp; Notifications</string>
+    <string name="guide_clock_card_desc">• Lock Screen Card: Check current period countdown and progress bar without waking up your screen.\n• Foreground Status Capsule: When in class, the status bar and notifications dynamically display your live countdown.\n• Punctuality Warning: 5 minutes before class finishes (customizable in Settings), a distinct vibration helps you wrap up smoothly.</string>
+
+    <string name="guide_privacy_card_title" formatted="false">100% Local Storage &amp; Complete Privacy</string>
+    <string name="guide_privacy_card_desc" formatted="false">• Local Only: All schedules, courses, and to-do items are stored 100% in your device\'s local SQLite database. Nothing ever leaves your phone.\n• Effortless Backup &amp; Migration: Tap \"Export Backup\" in Settings to save a JSON file or share it via chat apps. Switch to a new device and restore your entire semester in a second.</string>
     <string name="btn_got_it">Got It</string>
+
+    <!-- Mode preview card in Settings -->
+    <string name="role_preview_teacher_concise">Focuses on class sections, student count, and prompt anti-overtime alerts</string>
+    <string name="role_preview_student_concise">Focuses on classrooms and professors to prevent running to the wrong room</string>
+    <string name="role_preview_teacher_title">Teacher Mode Ready</string>
+    <string name="role_preview_teacher_f1">Focus: Classes · Student Counts · Teaching Prep</string>
+    <string name="role_preview_teacher_f2">Rhythm: 5-min anti-overtime vibration alerts</string>
+    <string name="role_preview_teacher_f3">Action: Instant class countdown &amp; lockscreen progress</string>
+
+    <string name="role_preview_student_title">Student Mode Ready</string>
+    <string name="role_preview_student_f1">Focus: Classroom Locations · Professors (Anti-Lost)</string>
+    <string name="role_preview_student_f2">Rhythm: 45-min periods &amp; precise recess countdowns</string>
+    <string name="role_preview_student_f3">Action: Instant focus study &amp; ambient status bar capsule</string>
+
+    <!-- Timezone Auto-Conversion -->
+    <string name="timezone_auto_convert_title">Auto Timezone Conversion</string>
+    <string name="timezone_auto_convert_sub_off">Off · Display in Beijing Time (Default)</string>
+    <string name="timezone_auto_convert_sub_on">On · Auto-convert to device\'s local timezone (%s)</string>
+    <string name="timezone_badge_local">Local Time</string>
+    <string name="timezone_badge_local_short">Local</string>
+    <string name="timezone_orig_beijing">Orig. Beijing %s</string>
+
+    <!-- Appearance & Display Secondary Screen -->
+    <string name="appearance_screen_title">Appearance &amp; Personalization</string>
+    <string name="tab_accent_color">Accent Color</string>
+    <string name="tab_theme_mode">Theme Mode</string>
+    <string name="tab_language">Language</string>
+    <string name="theme_mode_system_desc">Follow system light/dark theme settings</string>
+    <string name="theme_mode_light_desc">Crisp and bright, ideal for daylight conditions</string>
+    <string name="theme_mode_dark_desc">Immersive dark surface, comfortable for night</string>
+    <string name="language_zh_desc">简体中文 (Chinese Simplified)</string>
+    <string name="language_en_desc">English (US)</string>
+
+    <!-- About Timeless Secondary Screen -->
+    <string name="about_screen_title">About Timeless</string>
+    <string name="about_hero_tagline">Minimalist Schedule &amp; Timer · Dedicated to Pure Punctuality</string>
+    <string name="about_card_philosophy_title">Design Philosophy</string>
+    <string name="about_card_philosophy_content">Timeless is crafted as a quiet alternative to bloated social feeds and noisy notifications. Rooted in clean modern design, it removes distractions to honor the quiet focus of every campus minute.</string>
+    <string name="about_card_features_title">Core Features</string>
+    <string name="about_card_features_content">· Dual Teacher/Student Adaptive Identity Modes\n· Lockscreen Dynamic Card &amp; Status Bar Countdown\n· Automatic Local Timezone Conversion for global travel\n· Zero-Config AI screenshot import &amp; 100% on-device privacy</string>
+    <string name="about_card_privacy_title" formatted="false">100% Local Privacy &amp; Sovereignty</string>
+    <string name="about_card_privacy_content">All schedules, courses, notes and affairs are stored strictly in your phone\'s local SQLite database. Nothing ever leaves your device. Export JSON backups anytime for effortless migration.</string>
+    <string name="about_card_team_title">Crafted &amp; Designed by</string>
+    <string name="about_card_team_content">Chao Li</string>
 
     <!-- Notification & Alarms -->
     <string name="notification_channel_in_class">Class Progress</string>
@@ -263,6 +399,9 @@
     <string name="affair_notes_placeholder">Details or preparations needed...</string>
     <string name="affair_save_btn">Save Item</string>
     <string name="affair_update_btn">Confirm Changes</string>
+    <string name="affair_status_label">Affair Status</string>
+    <string name="affair_status_done">Completed</string>
+    <string name="affair_status_todo">Pending</string>
 
     <!-- Schedule & Course -->
     <string name="prev_week">Previous Week</string>
@@ -318,6 +457,12 @@
     <string name="import_idle_prompt">Please select or take a screenshot from the previous page</string>
     <string name="import_parsing_title">Analyzing screenshot with multimodal LLM...</string>
     <string name="import_parsing_desc">Extracting course names, classes, periods, weeks, and classrooms...</string>
+    <string name="import_parsing_title_timetable">Analyzing timetable screenshot with AI...</string>
+    <string name="import_parsing_desc_timetable">Extracting course names, classes, periods, weeks, and classrooms</string>
+    <string name="import_parsing_title_calendar">Analyzing school calendar screenshot with AI...</string>
+    <string name="import_parsing_desc_calendar">Extracting semester start date, teaching weeks, and holidays</string>
+    <string name="import_parsing_title_period_table">Analyzing period table screenshot with AI...</string>
+    <string name="import_parsing_desc_period_table">Extracting school period slots and class start/end times</string>
     <string name="import_calendar_extracted">Extracted Semester Calendar: %s</string>
     <string name="import_calendar_w1">Week 1 Monday: %s</string>
     <string name="import_calendar_teaching_weeks">Teaching Weeks: Week %1$d–%2$d</string>
@@ -335,6 +480,7 @@
     <string name="error_cannot_open_image">Cannot open selected image file</string>
     <string name="error_parse_failed">Analysis failed. Please check image or API settings</string>
     <string name="error_parse_exception">Analysis exception: %s</string>
+    <string name="error_no_courses_found">No class schedule was detected in this image.\n\n💡 Tip: Current feature is [Course Timetable Import]. If your image is an [Academic Calendar / Event Schedule] with semester start dates, holidays, or exam weeks, please go to Settings and select [Import School Calendar] instead.</string>
     <string name="error_calendar_parse_failed">Calendar analysis failed</string>
     <string name="error_calendar_parse_exception">Calendar analysis exception: %s</string>
     <string name="default_imported_calendar_name">Imported Semester Calendar</string>
@@ -353,4 +499,24 @@
     <string name="capsule_period_format">P%d</string>
     <string name="capsule_in_class">Class</string>
     <string name="capsule_recess">Rest</string>
+
+    <!-- AI Smart Affair Recognition -->
+    <string name="affair_smart_paste_title">AI Smart Autofill</string>
+    <string name="affair_smart_paste_tip">Extract event info from text</string>
+    <string name="affair_smart_paste_placeholder">Paste notice text, e.g. "Meeting at Admin 401 this Friday 2pm..."</string>
+    <string name="affair_smart_paste_clipboard">Paste</string>
+    <string name="affair_smart_paste_clear">Clear</string>
+    <string name="affair_smart_paste_btn">Smart Autofill</string>
+    <string name="affair_smart_paste_parsing">AI is analyzing...</string>
+    <string name="affair_smart_paste_success">✨ Information extracted successfully</string>
+    <string name="affair_smart_paste_empty_clipboard">Clipboard is empty</string>
+    <string name="affair_smart_paste_empty_text">Please paste or type notice text first</string>
+
+    <!-- System Calendar Sync -->
+    <string name="sync_system_calendar_title">Sync to System Calendar</string>
+    <string name="sync_system_calendar_sub_on">Courses and tasks synced to phone calendar, lock screen, and watch</string>
+    <string name="sync_system_calendar_sub_off">Enable to automatically show courses and affairs on phone calendar, lock screen, and watch</string>
+    <string name="sync_system_calendar_toast_synced">Synced schedule and affairs to system calendar</string>
+    <string name="sync_system_calendar_toast_cleared">System calendar sync disabled and cleared</string>
+    <string name="sync_system_calendar_permission_denied">Calendar permission is required to sync schedule and affairs</string>
 </resources>

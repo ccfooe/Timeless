@@ -21,4 +21,7 @@ data class Semester(
     val practiceTo: Int? = 21,
     val notes: String = "",
     val isActive: Boolean = false
-)
+) {
+    val totalWeeks: Int
+        get() = maxOf(teachingTo, examTo ?: 0, practiceTo ?: 0, 20)
+}
