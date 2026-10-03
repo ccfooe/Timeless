@@ -31,7 +31,7 @@ import java.util.TimeZone
  */
 object CalendarSyncManager {
 
-    private const val ACCOUNT_NAME = "com.classbell.app"
+    private const val ACCOUNT_NAME = "com.timeless.app"
     private const val ACCOUNT_TYPE = CalendarContract.ACCOUNT_TYPE_LOCAL
     private const val CALENDAR_NAME = "Timeless 课表与日程"
     private const val CALENDAR_DISPLAY_NAME = "Timeless 课表与日程"

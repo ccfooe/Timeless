@@ -20,11 +20,11 @@ class AlarmScheduler(private val context: Context) {
     private val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
     companion object {
-        const val ACTION_CLASS_START = "com.classbell.app.ACTION_CLASS_START"
-        const val ACTION_CLASS_WARN = "com.classbell.app.ACTION_CLASS_WARN"
-        const val ACTION_CLASS_END = "com.classbell.app.ACTION_CLASS_END"
-        const val ACTION_PERIOD_TRANSITION = "com.classbell.app.ACTION_PERIOD_TRANSITION"
-        const val ACTION_AFFAIR = "com.classbell.app.ACTION_AFFAIR"
+        const val ACTION_CLASS_START = "com.timeless.app.ACTION_CLASS_START"
+        const val ACTION_CLASS_WARN = "com.timeless.app.ACTION_CLASS_WARN"
+        const val ACTION_CLASS_END = "com.timeless.app.ACTION_CLASS_END"
+        const val ACTION_PERIOD_TRANSITION = "com.timeless.app.ACTION_PERIOD_TRANSITION"
+        const val ACTION_AFFAIR = "com.timeless.app.ACTION_AFFAIR"
 
         const val EXTRA_COURSE_NAME = "extra_course_name"
         const val EXTRA_CLASS_NAME = "extra_class_name"

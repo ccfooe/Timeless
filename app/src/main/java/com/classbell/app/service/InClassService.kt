@@ -48,9 +48,9 @@ class InClassService : Service() {
         const val NOTIFICATION_ID = 1001
         const val CHANNEL_ID = ClassBellApp.CHANNEL_IN_CLASS_ID
 
-        const val ACTION_START_IN_CLASS = "com.classbell.app.START_IN_CLASS"
-        const val ACTION_STOP_IN_CLASS = "com.classbell.app.STOP_IN_CLASS"
-        const val ACTION_EXTEND_IN_CLASS = "com.classbell.app.EXTEND_IN_CLASS"
+        const val ACTION_START_IN_CLASS = "com.timeless.app.START_IN_CLASS"
+        const val ACTION_STOP_IN_CLASS = "com.timeless.app.STOP_IN_CLASS"
+        const val ACTION_EXTEND_IN_CLASS = "com.timeless.app.EXTEND_IN_CLASS"
 
         fun start(
             context: Context,
