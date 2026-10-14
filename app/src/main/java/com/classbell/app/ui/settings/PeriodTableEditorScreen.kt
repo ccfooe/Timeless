@@ -58,9 +58,12 @@ import com.classbell.app.core.TimeUtils
 import com.classbell.app.data.model.PeriodSlot
 import com.classbell.app.data.repository.PeriodRepository
 import com.classbell.app.ui.theme.AccentOrange
+import androidx.compose.runtime.rememberCoroutineScope
+import com.classbell.app.ClassBellApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.time.LocalTime
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -73,6 +76,7 @@ fun PeriodTableEditorScreen(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
     val registryOwner = LocalActivityResultRegistryOwner.current
 
     val periodPickerLauncher = if (registryOwner != null) {
@@ -174,8 +178,14 @@ fun PeriodTableEditorScreen(
                                 Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.edit))
                             }
                             IconButton(onClick = {
-                                CoroutineScope(Dispatchers.IO).launch {
-                                    periodRepository.deletePeriodSlot(slot)
+                                coroutineScope.launch {
+                                    withContext(Dispatchers.IO) {
+                                        periodRepository.deletePeriodSlot(slot)
+                                        val app = context.applicationContext as? ClassBellApp
+                                        if (app != null) {
+                                            ClassBellApp.cachedPeriodSlots = app.database.periodSlotDao().getAllPeriodSlotsSync()
+                                        }
+                                    }
                                 }
                             }) {
                                 Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.delete), tint = Color.Red)
@@ -197,11 +207,17 @@ fun PeriodTableEditorScreen(
                     isAddingSlot = false
                 },
                 onSave = { savedSlot ->
-                    CoroutineScope(Dispatchers.IO).launch {
-                        if (savedSlot.id == 0L) {
-                            periodRepository.insertPeriodSlot(savedSlot)
-                        } else {
-                            periodRepository.updatePeriodSlot(savedSlot)
+                    coroutineScope.launch {
+                        withContext(Dispatchers.IO) {
+                            if (savedSlot.id == 0L) {
+                                periodRepository.insertPeriodSlot(savedSlot)
+                            } else {
+                                periodRepository.updatePeriodSlot(savedSlot)
+                            }
+                            val app = context.applicationContext as? ClassBellApp
+                            if (app != null) {
+                                ClassBellApp.cachedPeriodSlots = app.database.periodSlotDao().getAllPeriodSlotsSync()
+                            }
                         }
                         editingSlot = null
                         isAddingSlot = false

@@ -98,8 +98,8 @@ object CalendarSyncManager {
         }
     }
 
-    fun clearCalendar(context: Context) {
-        if (!hasCalendarPermissions(context)) return
+    suspend fun clearCalendar(context: Context) = withContext(Dispatchers.IO) {
+        if (!hasCalendarPermissions(context)) return@withContext
         runCatching {
             context.contentResolver.delete(
                 syncCalendarUri(),

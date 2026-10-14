@@ -1,6 +1,7 @@
 package com.classbell.app.service
 
 import android.app.AlarmManager
+import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
@@ -40,6 +41,7 @@ class AlarmScheduler(private val context: Context) {
         const val EXTRA_IS_BREAK = "extra_is_break"
         const val EXTRA_BREAK_TITLE = "extra_break_title"
         const val EXTRA_NEXT_PERIOD_LABEL = "extra_next_period_label"
+        const val EXTRA_AFFAIR_ID = "extra_affair_id"
         const val EXTRA_AFFAIR_TITLE = "extra_affair_title"
         const val EXTRA_AFFAIR_PLACE = "extra_affair_place"
         const val EXTRA_AFFAIR_TIME = "extra_affair_time"
@@ -227,10 +229,16 @@ class AlarmScheduler(private val context: Context) {
             context,
             affairId.toInt() + 100000,
             intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE
         )
-        alarmManager.cancel(pendingIntent)
-        pendingIntent.cancel()
+        if (pendingIntent != null) {
+            alarmManager.cancel(pendingIntent)
+            pendingIntent.cancel()
+        }
+
+        // Also cancel any active status bar notification for this affair
+        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
+        notificationManager?.cancel(affairId.toInt() + 100000)
     }
 
     fun scheduleAffairAlarm(affair: Affair) {
@@ -254,6 +262,7 @@ class AlarmScheduler(private val context: Context) {
         if (alarmDateTime.isAfter(LocalDateTime.now())) {
             val intent = Intent(context, AlarmReceiver::class.java).apply {
                 action = ACTION_AFFAIR
+                putExtra(EXTRA_AFFAIR_ID, affair.id)
                 putExtra(EXTRA_AFFAIR_TITLE, affair.title)
                 putExtra(EXTRA_AFFAIR_PLACE, affair.place)
                 putExtra(EXTRA_AFFAIR_TIME, eventTime.toString())

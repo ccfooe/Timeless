@@ -170,7 +170,9 @@ class AlarmReceiver : BroadcastReceiver() {
                     .setContentIntent(pendingIntent)
                     .build()
 
-                notificationManager.notify((System.currentTimeMillis() % 100000).toInt(), notification)
+                val affairId = intent.getLongExtra(AlarmScheduler.EXTRA_AFFAIR_ID, 0L)
+                val notificationId = if (affairId > 0) affairId.toInt() + 100000 else (System.currentTimeMillis() % 100000).toInt()
+                notificationManager.notify(notificationId, notification)
             }
         }
     }

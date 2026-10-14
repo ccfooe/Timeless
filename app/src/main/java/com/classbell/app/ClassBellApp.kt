@@ -22,7 +22,7 @@ import kotlinx.coroutines.launch
 class ClassBellApp : Application() {
 
     companion object {
-        const val CHANNEL_IN_CLASS_ID = "classbell_in_class_v5"
+        const val CHANNEL_IN_CLASS_ID = "classbell_in_class_v6"
         const val CHANNEL_WARNING_ID = "classbell_warning"
         const val CHANNEL_AFFAIRS_ID = "classbell_affairs"
 
@@ -83,19 +83,20 @@ class ClassBellApp : Application() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-            // Purge obsolete channels to force recreation with optimal ColorOS Fluid Cloud & lockscreen settings
+            // Purge obsolete channels to force recreation with optimal ColorOS Fluid Cloud, HyperOS Focus & lockscreen settings
             runCatching {
                 manager.deleteNotificationChannel("classbell_in_class")
                 manager.deleteNotificationChannel("classbell_in_class_v2")
                 manager.deleteNotificationChannel("classbell_in_class_v3")
                 manager.deleteNotificationChannel("classbell_in_class_v4")
+                manager.deleteNotificationChannel("classbell_in_class_v5")
             }
 
-            // 1. In-Class Progress Channel (Default importance guarantees stable lockscreen card on ColorOS & Android while keeping silent)
+            // 1. In-Class Progress Channel (IMPORTANCE_HIGH required by ColorOS 15/16 Fluid Cloud, HyperOS & OriginOS to qualify as Live Capsule, kept completely silent)
             val inClassChannel = NotificationChannel(
                 CHANNEL_IN_CLASS_ID,
                 getString(R.string.notification_channel_in_class),
-                NotificationManager.IMPORTANCE_DEFAULT
+                NotificationManager.IMPORTANCE_HIGH
             ).apply {
                 description = getString(R.string.notification_channel_in_class_desc)
                 setShowBadge(false)

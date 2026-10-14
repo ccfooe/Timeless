@@ -251,7 +251,9 @@ class LlmClient(
                     }
                     try {
                         Thread.sleep(1200)
-                    } catch (_: InterruptedException) {}
+                    } catch (_: InterruptedException) {
+                        Thread.currentThread().interrupt()
+                    }
                     continue
                 }
 
@@ -273,7 +275,9 @@ class LlmClient(
                     currentModel = "gemini-3.6-flash"
                     try {
                         Thread.sleep(1200)
-                    } catch (_: InterruptedException) {}
+                    } catch (_: InterruptedException) {
+                        Thread.currentThread().interrupt()
+                    }
                     continue
                 }
                 throw Exception(extractFriendlyErrorMessage(e, url))
@@ -338,7 +342,9 @@ class LlmClient(
                     }
                     try {
                         Thread.sleep(1200)
-                    } catch (_: InterruptedException) {}
+                    } catch (_: InterruptedException) {
+                        Thread.currentThread().interrupt()
+                    }
                     continue
                 }
 
@@ -360,7 +366,9 @@ class LlmClient(
                     currentModel = "gemini-3.6-flash"
                     try {
                         Thread.sleep(1200)
-                    } catch (_: InterruptedException) {}
+                    } catch (_: InterruptedException) {
+                        Thread.currentThread().interrupt()
+                    }
                     continue
                 }
                 throw Exception(extractFriendlyErrorMessage(e, url))

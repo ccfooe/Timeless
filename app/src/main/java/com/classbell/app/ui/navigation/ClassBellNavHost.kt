@@ -103,10 +103,10 @@ fun ClassBellNavHost(modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val app = context.applicationContext as ClassBellApp
 
-    // ViewModels with updated factories
+    // ViewModels with updated factories (using app / applicationContext to prevent Activity leaks)
     val todayViewModel: TodayViewModel = viewModel(
         factory = TodayViewModel.Factory(
-            context,
+            app,
             app.scheduleRepository,
             app.courseRepository,
             app.affairRepository,
@@ -124,7 +124,7 @@ fun ClassBellNavHost(modifier: Modifier = Modifier) {
 
     val calendarViewModel: CalendarViewModel = viewModel(
         factory = CalendarViewModel.Factory(
-            context,
+            app,
             app.scheduleRepository,
             app.affairRepository,
             app.settingsRepository,
@@ -149,7 +149,7 @@ fun ClassBellNavHost(modifier: Modifier = Modifier) {
 
     val importViewModel: ImportViewModel = viewModel(
         factory = ImportViewModel.Factory(
-            context,
+            app,
             app.settingsRepository,
             app.courseRepository,
             app.semesterRepository,

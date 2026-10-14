@@ -256,6 +256,41 @@ class TodayViewModel(
         initialValue = TodayUiState()
     )
 
+    init {
+        // Auto reconcile InClassService with currently active class state
+        viewModelScope.launch {
+            uiState.collect { state ->
+                val meeting = state.currentMeeting
+                val suppression = state.sessionSuppression
+                if (meeting != null && !meeting.isHolidaySuppressed) {
+                    val sub = meeting.subPeriodState
+                    val isSuppressed = suppression.isSuppressed(meeting, sub?.periodOrder)
+                    if (!isSuppressed && sub != null && sub.kind != com.classbell.app.data.model.SubPeriodKind.FINISHED) {
+                        val role = state.userRole
+                        val displayClass = if (role == SettingsRepository.ROLE_STUDENT) {
+                            meeting.course.teacher?.takeIf { it.isNotBlank() } ?: meeting.course.className
+                        } else {
+                            meeting.course.className
+                        }
+                        InClassService.reconcile(
+                            context = context,
+                            courseName = meeting.course.name,
+                            className = displayClass,
+                            room = meeting.course.room,
+                            startTime = meeting.startTime.toString(),
+                            endTime = meeting.endTime.toString(),
+                            periodStart = meeting.periodStart,
+                            periodEnd = meeting.periodEnd,
+                            isManualSession = meeting.course.id < 0
+                        )
+                    } else if (isSuppressed && InClassService.isRunning) {
+                        InClassService.stop(context)
+                    }
+                }
+            }
+        }
+    }
+
     fun saveWholeDayShift(date: LocalDate, followsWeekday: Int, note: String?) {
         viewModelScope.launch {
             val semId = uiState.value.activeSemester?.id ?: 1L

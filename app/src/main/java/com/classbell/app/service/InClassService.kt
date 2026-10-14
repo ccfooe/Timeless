@@ -1,11 +1,14 @@
 package com.classbell.app.service
 
+import android.app.AlarmManager
 import android.app.Notification
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
@@ -16,13 +19,14 @@ import com.classbell.app.core.OccurrenceEngine
 import com.classbell.app.data.model.Course
 import com.classbell.app.data.model.PeriodSlot
 import com.classbell.app.data.model.SubPeriodKind
-import com.classbell.app.data.repository.SettingsRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
@@ -42,7 +46,20 @@ class InClassService : Service() {
     private var isManualSession: Boolean = false
     private var startTime: LocalTime = LocalTime.of(8, 30)
     private var endTime: LocalTime = LocalTime.of(12, 0)
-    private var periodSlots: List<PeriodSlot> = emptyList()
+    @Volatile private var periodSlots: List<PeriodSlot> = emptyList()
+    private var screenReceiverRegistered = false
+
+    private val screenReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action == Intent.ACTION_SCREEN_ON) {
+                // Instantly update notification to newest second when user turns on screen
+                runCatching {
+                    val manager = getSystemService(NOTIFICATION_SERVICE) as? NotificationManager
+                    manager?.notify(NOTIFICATION_ID, buildProgressNotification())
+                }
+            }
+        }
+    }
 
     companion object {
         const val NOTIFICATION_ID = 1001
@@ -51,6 +68,30 @@ class InClassService : Service() {
         const val ACTION_START_IN_CLASS = "com.timeless.app.START_IN_CLASS"
         const val ACTION_STOP_IN_CLASS = "com.timeless.app.STOP_IN_CLASS"
         const val ACTION_EXTEND_IN_CLASS = "com.timeless.app.EXTEND_IN_CLASS"
+
+        @Volatile
+        var isRunning: Boolean = false
+            private set
+
+        @Volatile
+        var currentCourseName: String = ""
+            private set
+
+        fun reconcile(
+            context: Context,
+            courseName: String,
+            className: String,
+            room: String,
+            startTime: String,
+            endTime: String,
+            periodStart: Int = 1,
+            periodEnd: Int = 1,
+            isManualSession: Boolean = false
+        ) {
+            if (!isRunning || currentCourseName != courseName) {
+                start(context, courseName, className, room, startTime, endTime, periodStart, periodEnd, isManualSession)
+            }
+        }
 
         fun start(
             context: Context,
@@ -97,11 +138,23 @@ class InClassService : Service() {
         }
     }
 
+    override fun onCreate() {
+        super.onCreate()
+        isRunning = true
+        runCatching {
+            registerReceiver(screenReceiver, IntentFilter(Intent.ACTION_SCREEN_ON))
+            screenReceiverRegistered = true
+        }
+    }
+
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
             ACTION_STOP_IN_CLASS -> {
+                isRunning = false
+                currentCourseName = ""
+                cancelExactStopAlarm()
                 stopForeground(STOP_FOREGROUND_REMOVE)
                 stopSelf()
                 return START_NOT_STICKY
@@ -109,6 +162,7 @@ class InClassService : Service() {
             ACTION_EXTEND_IN_CLASS -> {
                 val mins = intent.getIntExtra("extra_extend_minutes", 5)
                 endTime = endTime.plusMinutes(mins.toLong())
+                scheduleExactStopAlarm(calculateTargetWhen(endTime))
                 val notification = buildProgressNotification()
                 val manager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
                 manager.notify(NOTIFICATION_ID, notification)
@@ -116,6 +170,7 @@ class InClassService : Service() {
             }
             ACTION_START_IN_CLASS -> {
                 courseName = intent.getStringExtra(AlarmScheduler.EXTRA_COURSE_NAME) ?: ""
+                currentCourseName = courseName
                 className = intent.getStringExtra(AlarmScheduler.EXTRA_CLASS_NAME) ?: ""
                 room = intent.getStringExtra(AlarmScheduler.EXTRA_ROOM) ?: ""
                 periodStart = intent.getIntExtra(AlarmScheduler.EXTRA_PERIOD_START, 1)
@@ -129,6 +184,9 @@ class InClassService : Service() {
                     runCatching { endTime = LocalTime.parse(it) }
                 }
 
+                // Schedule hardware wakeup alarm to kill service at exact end time (even in Doze deep sleep)
+                scheduleExactStopAlarm(calculateTargetWhen(endTime))
+
                 // Load period slots from memory cache or database if scheduled
                 if (!isManualSession) {
                     if (ClassBellApp.cachedPeriodSlots.isNotEmpty()) {
@@ -140,8 +198,10 @@ class InClassService : Service() {
                                 val slots = app.database.periodSlotDao().getAllPeriodSlotsSync()
                                 ClassBellApp.cachedPeriodSlots = slots
                                 periodSlots = slots
-                                val manager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-                                manager.notify(NOTIFICATION_ID, buildProgressNotification())
+                                withContext(Dispatchers.Main) {
+                                    val manager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+                                    manager.notify(NOTIFICATION_ID, buildProgressNotification())
+                                }
                             }
                         }
                     }
@@ -168,10 +228,35 @@ class InClassService : Service() {
             while (isActive) {
                 val now = LocalTime.now()
                 if (now.isAfter(endTime) || now == endTime) {
+                    cancelExactStopAlarm()
                     stopForeground(STOP_FOREGROUND_REMOVE)
                     stopSelf()
                     break
                 }
+
+                val dummyCourse = Course(
+                    id = 0L,
+                    semesterId = 0L,
+                    name = courseName,
+                    className = className,
+                    room = room,
+                    periodStart = periodStart,
+                    periodEnd = periodEnd,
+                    dayOfWeek = LocalDate.now().dayOfWeek.value,
+                    weekFrom = 1,
+                    weekTo = 25
+                )
+                val subPeriod = if (!isManualSession && periodSlots.isNotEmpty() && periodEnd >= periodStart) {
+                    OccurrenceEngine.resolveSubPeriodState(dummyCourse, periodSlots, now)
+                } else null
+
+                if (subPeriod != null && subPeriod.kind == SubPeriodKind.FINISHED) {
+                    cancelExactStopAlarm()
+                    stopForeground(STOP_FOREGROUND_REMOVE)
+                    stopSelf()
+                    break
+                }
+
                 val notification = buildProgressNotification()
                 val manager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
                 manager.notify(NOTIFICATION_ID, notification)
@@ -227,40 +312,17 @@ class InClassService : Service() {
         )
 
         val today = LocalDate.now()
-        fun calculateTargetWhen(targetTime: LocalTime): Long {
-            val zonedDateTime = if (targetTime.isBefore(now) && startTime.isAfter(targetTime)) {
-                targetTime.atDate(today.plusDays(1)).atZone(ZoneId.systemDefault())
-            } else {
-                targetTime.atDate(today).atZone(ZoneId.systemDefault())
-            }
-            return zonedDateTime.toInstant().toEpochMilli()
-        }
 
         fun createExtras(capsuleTitle: String, whenMillis: Long, progressPercent: Int): android.os.Bundle {
-            return android.os.Bundle().apply {
-                putBoolean("android.requestPromotedOngoing", true)
-                putBoolean("coloros.fluid_cloud", true)
-                putBoolean("coloros_capsule", true)
-                putBoolean("oplus.fluid_cloud", true)
-                putBoolean("oplus_capsule", true)
-                putInt("oplus_notification_type", 1)
-                putInt("oplus_view_type", 0) // 0: Capsule only in status bar; NO heads-up popup banner over app!
-                putInt("coloros_notification_type", 1)
-                putInt("coloros_view_type", 0)
-                putInt("coloros_progress", progressPercent)
-                putInt("oplus_progress", progressPercent)
-                putInt("coloros_progress_max", 100)
-                putInt("oplus_progress_max", 100)
-                putInt("coloros_progress_current", progressPercent)
-                putInt("oplus_progress_current", progressPercent)
-                putString("android.substName", getString(R.string.app_name))
-                putString("coloros_capsule_icon", "ic_stat_in_class")
-                putString("oplus_capsule_icon", "ic_stat_in_class")
-                putString("coloros_capsule_title", capsuleTitle)
-                putString("oplus_capsule_title", capsuleTitle)
-                putLong("coloros_capsule_time", whenMillis)
-                putLong("oplus_capsule_time", whenMillis)
-            }
+            val bundle = android.os.Bundle()
+            MultiOemDynamicIslandContract.populateBundle(
+                bundle = bundle,
+                capsuleTitle = capsuleTitle,
+                whenMillis = whenMillis,
+                progressPercent = progressPercent,
+                appName = getString(R.string.app_name)
+            )
+            return bundle
         }
 
         val flagPromoted = 0x00010000
@@ -273,22 +335,36 @@ class InClassService : Service() {
             val nextPeriod = subPeriod.nextPeriodLabel ?: ""
 
             val capsuleTitle = getString(R.string.capsule_recess)
-            val modernProgressBar = InClassNotificationFormatter.formatModernProgressBar(progressPercent, 16)
-            val bigTitle = "☕ $breakTitle"
+            val startClock = String.format("%02d:%02d", subPeriod.startTime.hour, subPeriod.startTime.minute)
+            val endClock = String.format("%02d:%02d", subPeriod.endTime.hour, subPeriod.endTime.minute)
+            val bigTitle = if (room.isNotBlank()) "☕ $breakTitle · $room" else "☕ $breakTitle"
             val subText = InClassNotificationFormatter.formatRecessSubText(breakTitle, progressPercent, room = room)
+            val lockscreenSubText = InClassNotificationFormatter.formatLockscreenSubText(breakTitle, progressPercent, barLength = 10)
             val contentText = InClassNotificationFormatter.formatRecessContentText(
                 nextPeriod = nextPeriod,
                 remainingMinutes = subPeriod.remainingMinutes.toInt(),
                 room = room
             )
-            val bigTextContent = "$breakTitle · 下一节: $nextPeriod\n地点: $room\n时间: ${subPeriod.endTime.hour}:${subPeriod.endTime.minute.toString().padStart(2, '0')}\n剩余: ${subPeriod.remainingMinutes.toInt()}分钟 ($progressPercent%)\n$modernProgressBar"
+            val bigTextContent = InClassNotificationFormatter.formatBauhausRecessBigText(
+                remainingMinutes = subPeriod.remainingMinutes.toInt(),
+                nextStartTimeStr = endClock,
+                nextPeriod = nextPeriod
+            )
+            val lockscreenBigText = InClassNotificationFormatter.formatLockscreenRecessBigText(
+                startTimeStr = startClock,
+                endTimeStr = endClock,
+                nextPeriod = nextPeriod,
+                remainingMinutes = subPeriod.remainingMinutes.toInt(),
+                progressPercent = progressPercent,
+                barLength = 10
+            )
             val extras = createExtras(capsuleTitle, targetWhen, progressPercent)
 
             val publicNotification = NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_stat_in_class)
                 .setContentTitle(capsuleTitle)
                 .setContentText(contentText)
-                .setSubText(subText)
+                .setSubText(lockscreenSubText)
                 .setUsesChronometer(true)
                 .setChronometerCountDown(true)
                 .setWhen(targetWhen)
@@ -298,11 +374,11 @@ class InClassService : Service() {
                     NotificationCompat.BigTextStyle()
                         .setBigContentTitle(bigTitle)
                         .setSummaryText(getString(R.string.recess_progress_format, progressPercent))
-                        .bigText(bigTextContent)
+                        .bigText(lockscreenBigText)
                 )
                 .setOngoing(true)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setCategory(NotificationCompat.CATEGORY_STOPWATCH)
                 .setContentIntent(contentIntent)
                 .addAction(0, getString(R.string.btn_start_next_period_now), stopIntent)
@@ -333,7 +409,7 @@ class InClassService : Service() {
                 .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
                 .setContentIntent(contentIntent)
                 .addAction(0, getString(R.string.btn_start_next_period_now), stopIntent)
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .addExtras(extras)
                 .build()
 
@@ -346,11 +422,11 @@ class InClassService : Service() {
             // Case B: Pre-Class Preparation
             val targetWhen = calculateTargetWhen(subPeriod.endTime)
             val capsuleTitle = getString(R.string.capsule_pre_class)
-            val bigTitle = "⏰ $courseName · 课前准备"
+            val bigTitle = if (room.isNotBlank()) "⏰ $courseName · 课前准备 · $room" else "⏰ $courseName · 课前准备"
             val startClock = String.format("%02d:%02d", subPeriod.endTime.hour, subPeriod.endTime.minute)
-            val subText = "即将上课 · $startClock 开始  ·  📍 $room"
-            val contentText = "$courseName · 📍 $room · 距上课 ${subPeriod.remainingMinutes} 分钟"
-            val bigTextContent = "课程：$courseName\n教室：$room\n班级：$className\n上课时间：$startClock (距现在还有 ${subPeriod.remainingMinutes} 分钟)"
+            val subText = "即将上课 · $startClock 开始"
+            val contentText = "$courseName · 距上课 ${subPeriod.remainingMinutes} 分钟"
+            val bigTextContent = "课程: $courseName\n地点: $room · 上课时间: $startClock\n距上课还有 ${subPeriod.remainingMinutes} 分钟"
             val extras = createExtras(capsuleTitle, targetWhen, 0)
 
             val publicNotification = NotificationCompat.Builder(this, CHANNEL_ID)
@@ -370,7 +446,7 @@ class InClassService : Service() {
                 )
                 .setOngoing(true)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setCategory(NotificationCompat.CATEGORY_STOPWATCH)
                 .setContentIntent(contentIntent)
                 .addAction(0, getString(R.string.btn_cancel_pre_class), stopIntent)
@@ -400,7 +476,7 @@ class InClassService : Service() {
                 .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
                 .setContentIntent(contentIntent)
                 .addAction(0, getString(R.string.btn_cancel_pre_class), stopIntent)
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .addExtras(extras)
                 .build()
 
@@ -416,25 +492,41 @@ class InClassService : Service() {
             val statusLabel = getString(R.string.status_in_progress)
 
             val capsuleTitle = getString(R.string.capsule_period_format, subPeriod.periodOrder)
-            val modernProgressBar = InClassNotificationFormatter.formatModernProgressBar(progressPercent, 16)
-            val bigTitle = "📕 $courseName · ${subPeriod.periodLabel} ($periodStart-$periodEnd 节)"
+            val startClock = String.format("%02d:%02d", subPeriod.startTime.hour, subPeriod.startTime.minute)
+            val endClock = String.format("%02d:%02d", subPeriod.endTime.hour, subPeriod.endTime.minute)
+            val bigTitle = if (room.isNotBlank()) "📕 $courseName · ${subPeriod.periodLabel} · $room" else "📕 $courseName · ${subPeriod.periodLabel}"
             val subText = InClassNotificationFormatter.formatInClassSubText(
                 periodLabel = subPeriod.periodLabel,
                 progressPercent = progressPercent,
                 room = room
             )
+            val lockscreenSubText = InClassNotificationFormatter.formatLockscreenSubText(
+                label = subPeriod.periodLabel,
+                progressPercent = progressPercent,
+                barLength = 10
+            )
             val contentText = InClassNotificationFormatter.formatInClassContentText(
                 remainingMinutes = subPeriod.remainingMinutes.toInt(),
                 room = room
             )
-            val bigTextContent = "课程: $courseName\n地点: $room\n节次: ${subPeriod.periodLabel}\n下课时间: ${subPeriod.endTime.hour}:${subPeriod.endTime.minute.toString().padStart(2, '0')}\n剩余: ${subPeriod.remainingMinutes.toInt()}分钟 ($progressPercent%)\n$modernProgressBar"
+            val bigTextContent = InClassNotificationFormatter.formatBauhausInClassBigText(
+                remainingMinutes = subPeriod.remainingMinutes.toInt(),
+                endTimeStr = endClock
+            )
+            val lockscreenBigText = InClassNotificationFormatter.formatLockscreenInClassBigText(
+                startTimeStr = startClock,
+                endTimeStr = endClock,
+                remainingMinutes = subPeriod.remainingMinutes.toInt(),
+                progressPercent = progressPercent,
+                barLength = 10
+            )
             val extras = createExtras(capsuleTitle, targetWhen, progressPercent)
 
             val publicNotification = NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_stat_in_class)
                 .setContentTitle(capsuleTitle)
                 .setContentText(contentText)
-                .setSubText(subText)
+                .setSubText(lockscreenSubText)
                 .setUsesChronometer(true)
                 .setChronometerCountDown(true)
                 .setWhen(targetWhen)
@@ -444,11 +536,11 @@ class InClassService : Service() {
                     NotificationCompat.BigTextStyle()
                         .setBigContentTitle(bigTitle)
                         .setSummaryText("$statusLabel · $progressPercent%")
-                        .bigText(bigTextContent)
+                        .bigText(lockscreenBigText)
                 )
                 .setOngoing(true)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setCategory(NotificationCompat.CATEGORY_STOPWATCH)
                 .setContentIntent(contentIntent)
                 .addAction(0, getString(R.string.btn_end_class), stopIntent)
@@ -481,7 +573,7 @@ class InClassService : Service() {
                 .setContentIntent(contentIntent)
                 .addAction(0, getString(R.string.btn_end_class), stopIntent)
                 .addAction(0, getString(R.string.btn_extend_5min), extendIntent)
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .addExtras(extras)
                 .build()
 
@@ -504,25 +596,41 @@ class InClassService : Service() {
             } else {
                 getString(R.string.capsule_in_class)
             }
-            val modernProgressBar = InClassNotificationFormatter.formatModernProgressBar(progressPercent, 16)
-            val bigTitle = "📕 $courseName · $className"
+            val startClock = String.format("%02d:%02d", startTime.hour, startTime.minute)
+            val endClock = String.format("%02d:%02d", endTime.hour, endTime.minute)
+            val bigTitle = if (room.isNotBlank()) "📕 $courseName · $room" else "📕 $courseName"
             val subText = InClassNotificationFormatter.formatInClassSubText(
                 periodLabel = statusLabel,
                 progressPercent = progressPercent,
                 room = room
             )
+            val lockscreenSubText = InClassNotificationFormatter.formatLockscreenSubText(
+                label = statusLabel,
+                progressPercent = progressPercent,
+                barLength = 10
+            )
             val contentText = InClassNotificationFormatter.formatInClassContentText(
                 remainingMinutes = remainingMinutes.toInt(),
                 room = room
             )
-            val bigTextContent = "课程: $courseName\n地点: $room\n下课时间: ${endTime.hour}:${endTime.minute.toString().padStart(2, '0')}\n剩余: ${remainingMinutes.toInt()}分钟 ($progressPercent%)\n$modernProgressBar"
+            val bigTextContent = InClassNotificationFormatter.formatBauhausInClassBigText(
+                remainingMinutes = remainingMinutes.toInt(),
+                endTimeStr = endClock
+            )
+            val lockscreenBigText = InClassNotificationFormatter.formatLockscreenInClassBigText(
+                startTimeStr = startClock,
+                endTimeStr = endClock,
+                remainingMinutes = remainingMinutes.toInt(),
+                progressPercent = progressPercent,
+                barLength = 10
+            )
             val extras = createExtras(capsuleTitle, targetWhen, progressPercent)
 
             val publicNotification = NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_stat_in_class)
                 .setContentTitle(capsuleTitle)
                 .setContentText(contentText)
-                .setSubText(subText)
+                .setSubText(lockscreenSubText)
                 .setUsesChronometer(true)
                 .setChronometerCountDown(true)
                 .setWhen(targetWhen)
@@ -532,11 +640,11 @@ class InClassService : Service() {
                     NotificationCompat.BigTextStyle()
                         .setBigContentTitle(bigTitle)
                         .setSummaryText("$statusLabel · $progressPercent%")
-                        .bigText(bigTextContent)
+                        .bigText(lockscreenBigText)
                 )
                 .setOngoing(true)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setCategory(NotificationCompat.CATEGORY_STOPWATCH)
                 .setContentIntent(contentIntent)
                 .addAction(0, getString(R.string.btn_end_class), stopIntent)
@@ -569,7 +677,7 @@ class InClassService : Service() {
                 .setContentIntent(contentIntent)
                 .addAction(0, getString(R.string.btn_end_class), stopIntent)
                 .addAction(0, getString(R.string.btn_extend_5min), extendIntent)
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .addExtras(extras)
                 .build()
 
@@ -580,8 +688,69 @@ class InClassService : Service() {
         }
     }
 
+    private fun calculateTargetWhen(targetTime: LocalTime): Long {
+        val now = LocalTime.now()
+        val today = LocalDate.now()
+        val zonedDateTime = if (targetTime.isBefore(now) && startTime.isAfter(targetTime)) {
+            targetTime.atDate(today.plusDays(1)).atZone(ZoneId.systemDefault())
+        } else {
+            targetTime.atDate(today).atZone(ZoneId.systemDefault())
+        }
+        return zonedDateTime.toInstant().toEpochMilli()
+    }
+
+    private fun scheduleExactStopAlarm(targetMillis: Long) {
+        cancelExactStopAlarm()
+        val alarmManager = getSystemService(Context.ALARM_SERVICE) as? AlarmManager ?: return
+        val intent = Intent(this, InClassService::class.java).apply {
+            action = ACTION_STOP_IN_CLASS
+        }
+        val pendingIntent = PendingIntent.getService(
+            this,
+            1001,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if (alarmManager.canScheduleExactAlarms()) {
+                alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, targetMillis, pendingIntent)
+            } else {
+                alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, targetMillis, pendingIntent)
+            }
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, targetMillis, pendingIntent)
+        } else {
+            alarmManager.setExact(AlarmManager.RTC_WAKEUP, targetMillis, pendingIntent)
+        }
+    }
+
+    private fun cancelExactStopAlarm() {
+        val alarmManager = getSystemService(Context.ALARM_SERVICE) as? AlarmManager ?: return
+        val intent = Intent(this, InClassService::class.java).apply {
+            action = ACTION_STOP_IN_CLASS
+        }
+        val pendingIntent = PendingIntent.getService(
+            this,
+            1001,
+            intent,
+            PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE
+        )
+        if (pendingIntent != null) {
+            alarmManager.cancel(pendingIntent)
+            pendingIntent.cancel()
+        }
+    }
+
     override fun onDestroy() {
         super.onDestroy()
+        isRunning = false
+        currentCourseName = ""
         tickerJob?.cancel()
+        serviceScope.cancel()
+        cancelExactStopAlarm()
+        if (screenReceiverRegistered) {
+            runCatching { unregisterReceiver(screenReceiver) }
+            screenReceiverRegistered = false
+        }
     }
 }

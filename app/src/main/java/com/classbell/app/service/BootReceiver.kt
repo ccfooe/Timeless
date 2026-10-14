@@ -20,22 +20,28 @@ class BootReceiver : BroadcastReceiver() {
             action == Intent.ACTION_TIMEZONE_CHANGED
         ) {
             val app = context.applicationContext as? ClassBellApp ?: return
-            val scope = CoroutineScope(Dispatchers.IO)
+            val pendingResult = goAsync()
 
-            scope.launch {
-                val warnMin = app.settingsRepository.endWarnMinutesFlow.firstOrNull() ?: 5
-                val today = LocalDate.now()
+            CoroutineScope(Dispatchers.IO).launch {
+                try {
+                    val warnMin = app.settingsRepository.endWarnMinutesFlow.firstOrNull() ?: 5
+                    val today = LocalDate.now()
+                    val slots = app.database.periodSlotDao().getAllPeriodSlotsSync()
+                    ClassBellApp.cachedPeriodSlots = slots
 
-                // Reschedule today's meetings
-                val meetings = app.scheduleRepository.getMeetingsOnDate(today).firstOrNull() ?: emptyList()
-                for (m in meetings) {
-                    app.alarmScheduler.scheduleClassAlarms(m, warnMin)
-                }
+                    // Reschedule today's meetings with sub-period precision
+                    val meetings = app.scheduleRepository.getMeetingsOnDate(today).firstOrNull() ?: emptyList()
+                    for (m in meetings) {
+                        app.alarmScheduler.scheduleClassAlarms(m, warnMin, slots)
+                    }
 
-                // Reschedule upcoming affairs
-                val affairs = app.affairRepository.getAllAffairsSync()
-                for (a in affairs) {
-                    app.alarmScheduler.scheduleAffairAlarm(a)
+                    // Reschedule upcoming affairs
+                    val affairs = app.affairRepository.getAllAffairsSync()
+                    for (a in affairs) {
+                        app.alarmScheduler.scheduleAffairAlarm(a)
+                    }
+                } finally {
+                    pendingResult.finish()
                 }
             }
         }

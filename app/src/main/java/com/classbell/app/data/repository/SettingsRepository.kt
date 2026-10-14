@@ -45,13 +45,8 @@ class SettingsRepository(private val context: Context) {
             return runCatching {
                 val b64 = OBFUSCATED_OFFICIAL_KEY_PARTS.joinToString("")
                 String(android.util.Base64.decode(b64, android.util.Base64.DEFAULT), Charsets.UTF_8)
-            }.getOrDefault("569eb1aa6e3e4c90b57932540442f832.6JeQxx208H4qjU5Q")
+            }.getOrDefault("")
         }
-
-        // 2. Deprecated / Stripped official Gemini API key for release security
-        private val OBFUSCATED_GEMINI_KEY_PARTS = emptyList<String>()
-
-        fun getOfficialGeminiApiKey(): String = ""
     }
 
     private object PreferencesKeys {
