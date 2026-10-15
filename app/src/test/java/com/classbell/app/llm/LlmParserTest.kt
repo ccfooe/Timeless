@@ -532,6 +532,46 @@ class LlmParserTest {
         assertEquals("09:30", medicalAffair.time)
         org.junit.Assert.assertTrue(medicalAffair.note?.contains("提前30分钟") == true)
     }
+
+    @Test
+    fun testPromptCoversOnlineSurveyAndQuestionnaireScenario() {
+        val prompt = LlmPrompts.getUniversalIngestPrompt(
+            referenceDate = java.time.LocalDate.of(2026, 10, 15),
+            userZone = java.time.ZoneId.of("Asia/Shanghai")
+        )
+        // 7. 问卷填报与统计表截止通知
+        org.junit.Assert.assertTrue("Prompt must cover 金山/WPS/腾讯文档/问卷", prompt.contains("金山文档") || prompt.contains("WPS") || prompt.contains("问卷"))
+        org.junit.Assert.assertTrue("Prompt must explicitly state deadline over statistical range", prompt.contains("截止时间优先于统计") || prompt.contains("截止完成时间"))
+    }
+
+    @Test
+    fun testOnlineSurveyNoticeJsonParsingWithDeadlineOverHistoricalRange() {
+        val surveyJson = """
+            {
+              "primaryIntent": "AFFAIR",
+              "summary": "完成对内开展培训明细统计调查表填报，截止本周六20:00",
+              "affairs": [
+                {
+                  "title": "完成参培统计表填报",
+                  "date": "2026-10-17",
+                  "time": "20:00",
+                  "place": "金山文档 / WPS云文档",
+                  "category": "AFFAIR",
+                  "note": "链接: https://www.kdocs.cn/l/cirH1TTFchqg\n文档名称: 对内开展培训明细统计调查表20261015\n统计时间区间: 2025年9月1日-2026年8月31日"
+                }
+              ]
+            }
+        """.trimIndent()
+        val parsedSurvey = json.decodeFromString<UniversalIngestResult>(surveyJson)
+        val surveyAffair = parsedSurvey.resolvedAffairs()[0]
+        assertEquals("完成参培统计表填报", surveyAffair.title)
+        assertEquals("2026-10-17", surveyAffair.date)
+        assertEquals("20:00", surveyAffair.time)
+        assertEquals("金山文档 / WPS云文档", surveyAffair.place)
+        assertEquals("AFFAIR", surveyAffair.category)
+        org.junit.Assert.assertTrue(surveyAffair.note?.contains("kdocs.cn") == true)
+        org.junit.Assert.assertTrue(surveyAffair.note?.contains("2025年9月1日") == true)
+    }
 }
 
 

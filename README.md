@@ -5,7 +5,7 @@
   <img src="https://img.shields.io/badge/Kotlin-2.0+-7F52FF?style=flat-square&logo=kotlin&logoColor=white" alt="Kotlin" />
   <img src="https://img.shields.io/badge/UI-Jetpack_Compose_M3-4285F4?style=flat-square&logo=jetpackcompose&logoColor=white" alt="Compose" />
   <img src="https://img.shields.io/badge/License-GPLv3-blue?style=flat-square" alt="License" />
-  <img src="https://img.shields.io/badge/Release-v2.4.0-orange?style=flat-square" alt="Release" />
+  <img src="https://img.shields.io/badge/Release-v2.4.7-orange?style=flat-square" alt="Release" />
 </p>
 
 面向高校教师和大学生的 Android 课表与日程应用，将课程、个人事项、提醒和计时放在一起。无广告，支持通过 AI 识别减少手动录入。

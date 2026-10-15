@@ -21,24 +21,110 @@ object FastLocalParser {
 
     private val TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm")
 
+    fun parse(rawText: String, refDate: LocalDate = LocalDate.now()): UniversalIngestResult? = tryParse(rawText, refDate)
+
     fun tryParse(rawText: String, refDate: LocalDate = LocalDate.now()): UniversalIngestResult? {
-        val text = rawText.trim()
-        if (text.isBlank() || text.length > 250) {
+        val trimmed = rawText.trim()
+        if (trimmed.isBlank() || trimmed.length > 250) {
             return null
         }
 
+        // =========================================================================
+        // Step 1 & 2: Complexity_Scanning & Smart_Routing_Gate
+        // (meta_parser_guardrails.yaml: URLs, collaborative markers, multi-time-domain)
+        // =========================================================================
+
+        // 1. External URLs or web links -> leave to LLM for deep semantic understanding
+        val hasUrl = trimmed.contains("http://", ignoreCase = true) ||
+                trimmed.contains("https://", ignoreCase = true) ||
+                trimmed.contains("www.", ignoreCase = true) ||
+                trimmed.contains(".cn/", ignoreCase = true) ||
+                trimmed.contains(".com/", ignoreCase = true) ||
+                trimmed.contains("kdocs", ignoreCase = true) ||
+                trimmed.contains("wjx.cn", ignoreCase = true) ||
+                trimmed.contains("forms.", ignoreCase = true) ||
+                trimmed.contains("feishu", ignoreCase = true)
+        if (hasUrl) return null
+
+        // 2. Collaborative forms, online surveys, questionnaires -> leave to LLM
+        val isCollaborativeSurvey = trimmed.contains("金山文档") ||
+                trimmed.contains("WPS") ||
+                trimmed.contains("腾讯文档") ||
+                trimmed.contains("问卷星") ||
+                trimmed.contains("飞书文档") ||
+                trimmed.contains("调查表") ||
+                trimmed.contains("统计表") ||
+                trimmed.contains("多维表格") ||
+                trimmed.contains("报名链接") ||
+                trimmed.contains("填报") ||
+                trimmed.contains("在线文档")
+        if (isCollaborativeSurvey) return null
+
+        // 3. Multi-time-domain & Statistical intervals (confuses single-event local regex)
+        val hasStatisticalInterval = trimmed.contains("时间区间") ||
+                trimmed.contains("统计区间") ||
+                trimmed.contains("统计范围") ||
+                trimmed.contains("区间为") ||
+                trimmed.contains("统计时间") ||
+                trimmed.contains("统计周期") ||
+                trimmed.contains("起止时间") ||
+                trimmed.contains("统计跨度")
+        if (hasStatisticalInterval) return null
+
+        // Multi-time-domain: detects mixed time ranges or multiple conflicting dates
+        if (detectMultiTimeDomain(trimmed)) return null
+
         // If it looks like a complex table or whole week schedule, leave to LLM
-        if (text.contains("|") && text.count { it == '|' } > 3) return null
-        if (text.count { it == '\n' } > 4) return null
-        if (text.contains("课程名称") && text.contains("教室") && text.contains("周次")) return null
+        if (trimmed.contains("|") && trimmed.count { it == '|' } > 3) return null
+        if (trimmed.count { it == '\n' } > 4) return null
+        if (trimmed.contains("课程名称") && trimmed.contains("教室") && trimmed.contains("周次")) return null
+
+        // =========================================================================
+        // Step 3: Noise_Cleaning_Pipe (Apply pre-filter to strip boilerplate prefixes)
+        // =========================================================================
+        val cleanText = cleanNoisePrefixes(trimmed)
+        if (cleanText.isBlank()) return null
 
         // 1. Try to parse Shift / Cancel Announcement
-        parseShiftOverride(text, refDate)?.let { return it }
+        parseShiftOverride(cleanText, refDate)?.let { return it }
 
         // 2. Try to parse Affair / Meeting / Exam
-        parseAffair(text, refDate)?.let { return it }
+        parseAffair(cleanText, refDate)?.let { return it }
 
         return null
+    }
+
+    /**
+     * Noise_Cleaning_Pipe: Pre-filter boilerplate prefixes (\u2005/@全体成员/请各位老师)
+     */
+    fun cleanNoisePrefixes(raw: String): String {
+        return raw
+            .replace(Regex("@(?:所有人|全体成员|群成员|all|Everyone)[\\u2005\\s]*", RegexOption.IGNORE_CASE), "")
+            .replace(Regex("^[【\\[](?:通知|紧急通知|重要通知|温馨提示|公告|日程提醒)[】\\]][：:\\s]*"), "")
+            .replace(Regex("^(?:通知|紧急通知|重要通知|温馨提示|公告|日程提醒)[：:\\s]+"), "")
+            .replace(Regex("^(?:请各位老师|请各位同学|各位老师|各位同学|请各部门|各部门同事|请大家|请)[，,。！!？?：:；;\\s]*"), "")
+            .trim()
+    }
+
+    /**
+     * Complexity_Scanning: Detects multi-time-domain (mixed date ranges and deadline keywords)
+     */
+    private fun detectMultiTimeDomain(text: String): Boolean {
+        // e.g. "2024-01-01 至 2025-12-31" or "2024年...至...2025年"
+        val rangeRegex = Regex("""[0-9]{4}[年\-/.][0-9]{1,2}[月\-/.][0-9]{1,2}[日号]?\s*(?:至|到|~|-)\s*[0-9]{4}[年\-/.][0-9]{1,2}[月\-/.][0-9]{1,2}[日号]?""")
+        if (rangeRegex.containsMatchIn(text)) return true
+
+        // Count distinct year or full date occurrences (e.g. 2024, 2025)
+        val yearPattern = Regex("""\b(?:202[0-9])年?""")
+        val yearMatches = yearPattern.findAll(text).map { it.value }.toSet()
+        if (yearMatches.size >= 2) return true
+
+        // If contains deadline keywords AND multiple dates
+        val hasDeadlineKeyword = text.contains("之前") || text.contains("前完成") || text.contains("前提交") || text.contains("截止")
+        val dateMatches = Regex("""[0-9]{1,2}[月\-/.][0-9]{1,2}[日号]?""").findAll(text).count()
+        if (hasDeadlineKeyword && dateMatches >= 2) return true
+
+        return false
     }
 
     private fun parseShiftOverride(text: String, refDate: LocalDate): UniversalIngestResult? {
@@ -340,6 +426,8 @@ object FastLocalParser {
 
     private fun cleanTitle(raw: String, category: String): String {
         var clean = raw
+            .replace(Regex("@(所有人|全体成员|群成员)[\\u2005\\s]*"), " ")
+            .replace(Regex("^(请各位老师|请各位同学|各位老师|各位同学|请大家|请|通知|提醒|记得)[，,。！!？?：:；;\\s]*"), " ")
             .replace(Regex("[，,。！!？?：:；;、（）()]+"), " ")
             .replace("在", " ")
             .replace("地点", " ")
@@ -349,15 +437,20 @@ object FastLocalParser {
             .replace("各老师", " ")
             .replace("各位老师", " ")
             .replace("各位同学", " ")
+            .replace("请各位老师", " ")
+            .replace("请各位同学", " ")
+            .replace("请大家", " ")
             .replace("请准时", " ")
             .replace("准时参加", " ")
             .replace("参加", " ")
+            .replace("去", " ")
             .trim()
 
-        clean = clean.split("\\s+".toRegex()).firstOrNull { it.isNotBlank() } ?: clean
+        val tokens = clean.split("\\s+".toRegex()).filter { it.isNotBlank() }
+        val candidate = tokens.firstOrNull { it.length >= 2 } ?: clean
 
-        return if (clean.length >= 2) {
-            clean
+        return if (candidate.length >= 2) {
+            candidate
         } else {
             when (category) {
                 "MEETING" -> "会议待办"

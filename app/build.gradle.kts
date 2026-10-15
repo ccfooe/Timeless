@@ -14,8 +14,8 @@ android {
         applicationId = "com.timeless.app"
         minSdk = 26
         targetSdk = 35
-        versionCode = 54
-        versionName = "2.4.4"
+        versionCode = 57
+        versionName = "2.4.7"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

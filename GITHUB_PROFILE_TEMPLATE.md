@@ -133,6 +133,6 @@ If you try Timeless, bug reports and suggestions are welcome. Please open an iss
 
 * **Post 4 (Call to Action)**：
   > It’s 100% free and open-source under GPLv3.  
-  > Download the v2.4.0 APK now on GitHub Releases:  
+  > Download the v2.4.7 APK now on GitHub Releases:  
   > 👉 github.com/ccfooe/Timeless/releases  
   > Stars and feedback are deeply appreciated! ❤️

@@ -103,4 +103,33 @@ class FastLocalParserTest {
         val result = FastLocalParser.tryParse(tableText, refDate)
         assertNull(result) // Fallback to LLM
     }
+
+    @Test
+    fun testComplexNoticeWithLinkAndSurveyFallsBackToLlm() {
+        val notice = """
+            @所有人 请各位老师，本周周六20:00之前完成参培统计表，统计时间区间为：2025年9月1日-2026年8月31日。
+            【金山文档 | WPS云文档】 对内开展培训明细统计调查表20261015
+            https://www.kdocs.cn/l/cirH1TTFchqg
+        """.trimIndent()
+        // Today is Thursday 2026-10-15
+        val today = LocalDate.of(2026, 10, 15)
+        val result = FastLocalParser.tryParse(notice, today)
+        // Complex notice with external link, WPS doc and statistical range MUST fall back to LLM
+        assertNull("Complex notice with URL/survey must fall back to LLM", result)
+    }
+
+    @Test
+    fun testLocalParserCleansAtEveryonePrefix() {
+        val text = "@所有人 请各位老师，周五上午10点去教研室交大纲"
+        val result = FastLocalParser.tryParse(text, refDate)
+        assertNotNull(result)
+        val affair = result!!.affairs.first()
+        assertEquals("2026-10-02", affair.date)
+        assertEquals("10:00", affair.time)
+        assertEquals("教研室", affair.place)
+        // Title MUST NOT be "@所有人" or "@所有人请各位老师"
+        org.junit.Assert.assertFalse("Title must not contain @所有人", affair.title.contains("@所有人"))
+        org.junit.Assert.assertFalse("Title must not contain 各位老师", affair.title.contains("各位老师"))
+        org.junit.Assert.assertTrue("Title should contain core action", affair.title.contains("交大纲"))
+    }
 }

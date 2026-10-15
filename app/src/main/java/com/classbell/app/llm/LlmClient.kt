@@ -164,7 +164,8 @@ class LlmClient(
                     userText = rawText
                 )
                 val cleanJson = extractJsonFromMarkdown(rawResponse)
-                json.decodeFromString<ParsedAffair>(cleanJson)
+                val rawAffair = json.decodeFromString<ParsedAffair>(cleanJson)
+                com.classbell.app.core.TemporalNormalizer.normalizeAffair(rawAffair, rawText, refDate)
             }
         }
 
@@ -195,7 +196,8 @@ class LlmClient(
             }
 
             val cleanJson = extractJsonFromMarkdown(rawResponse)
-            json.decodeFromString<UniversalIngestResult>(cleanJson)
+            val rawResult = json.decodeFromString<UniversalIngestResult>(cleanJson)
+            com.classbell.app.core.TemporalNormalizer.normalize(rawResult, rawText ?: "", refDate)
         }
     }
 

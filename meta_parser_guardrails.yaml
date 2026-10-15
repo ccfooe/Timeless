@@ -1,0 +1,34 @@
+# meta_parser_guardrails.yaml
+skill_id: "PARSER-OVERLOAD-RECOVERY"
+version: "1.0.0"
+trigger_signals:
+  - "local_parser_returns_fast(<5ms) but fields are missing/misaligned"
+  - "input contains multi-time-domain or external links/collaborative docs"
+  - "regex/greedy-first-match breaks business intent"
+
+decision_pipeline:
+  - step: 1
+    name: "Complexity_Scanning"
+    action: "Inspect input for URLs(kdocs/wps/feishu), collaborative markers, multiple dates, @prefixes"
+  - step: 2
+    name: "Smart_Routing_Gate"
+    condition: "If ANY trigger_signal matches"
+    action: "Set local_parser return to null -> silent handoff to LLM semantic layer"
+  - step: 3
+    name: "Noise_Cleaning_Pipe"
+    action: "Apply pre-filter to strip boilerplate prefixes (\u2005/@全体成员/请各位老师)"
+  - step: 4
+    name: "Entity_Priority_Contract"
+    prompt_injection: "Enforce explicit priority in LLM system prompt: `[Deadline > Reference_Period > Absolute_Date]`. Prohibit greedy capture."
+  - step: 5
+    name: "TDD_Boundary_Check"
+    requirement: "Verify both branches: Complex input triggers routing / Clean input maintains <2ms local speed"
+
+generalization_domain:
+  - "OCR Receipt Field Misalignment"
+  - "Email Body Key-Info Extraction"
+  - "Calendar Event Conflict Resolution"
+  - "Multi-source Form Deadline Alerts"
+
+usage_instruction: |
+  When diagnosing extraction bugs or designing new parsers, apply this pipeline before writing code. Ensure tests cover both 'routing bypass' and 'local fallback'.

@@ -88,19 +88,28 @@ object LlmPrompts {
         }
         val currentOffset = userZone.rules.getOffset(java.time.Instant.now())
         val zoneDisplay = "${userZone.id} ($currentOffset)"
+        val calendarBlock = buildCalendarAlignmentBlock(referenceDate)
         return """
 你是一个针对高校与职场日程、邮件与群通知的专业智能文本解析中枢。
 请解析用户输入的通知、邮件或公文便签，提取出核心待办事项，并严格按照 JSON 格式输出，不要输出任何额外的解释、说明或 Markdown 标记。
 
-【当前基准时间与用户本地时区】：
-- 今天是 $referenceDate ($dayOfWeekChinese)。
+$calendarBlock
 - 用户当前设备所处的本地时区为: $zoneDisplay。
 
-【绝对公历日期与时间识别优先级（极关键）】：
-- 必须优先识别并尊重文本中明确给出的公历绝对日期（例如："Feb 6, 2027"、"February 6, 2027"、"2027年2月6日"、"2027-02-06"）。绝对日期拥有最高优先级！
-- 严禁误认混淆：严禁将活动标题或学期名称中的修饰词（如 "Autumn 2026"、"Day 5"、"第1天"）误当成会议举行的日期！
-- 英文月份规范换算：Jan=01, Feb=02, Mar=03, Apr=04, May=05, Jun=06, Jul=07, Aug=08, Sep=09, Oct=10, Nov=11, Dec=12。
-- 12小时制时间换算：必须转换为 24 小时制 "HH:mm"（如 "10:00 AM" -> "10:00"，"02:30 PM" -> "14:30"），绝不可误判为全天！
+【时间实体优先级契约 (Entity Priority Contract) - 极关键】：
+本中枢严格执行三级时间实体优先级：
+★ [优先级 1：行动履约与截止时间 (Deadline / Action Time)] 
+  > [优先级 2：业务统计与参考跨度 (Reference / Statistical Period)]
+  > [优先级 3：修饰性绝对公历日期 (Descriptive / Historical Date)]
+
+1. 【截止时间绝对优先】：若文本中同时包含“行动截止/提交/开会时间”（如“本周六20:00前完成”、“请于下周五17:00前填报”、“明天上午10点开会”）与“业务统计跨度/历史区间”（如“统计区间为2025年9月1日-2026年8月31日”）：
+   - 必须且只能以【行动截止时间】作为事项的 date 与 time！
+   - 严禁贪婪截获：严禁将业务统计区间、历史跨度中的起始公历日期（如 2025年9月1日）误当成待办截止日期！
+2. 【相对截止词结合优先】：对于明确的履约截止行动，“本周六”、“明天”、“下周五”结合截止词（“前”、“之前”、“截止”、“完成”）享有高于任何背景统计年份的绝对优先级，必须准确换算为用户本地时区的具体公历日期 YYYY-MM-DD！
+3. 【绝对公历日期识别准则】：在无截止冲突的常规场景下（如线上会议、差旅机票、考试安排），优先识别并尊重文本中明确给出的公历绝对日期（例如："Feb 6, 2027"、"2027年2月6日"、"2027-02-06"）。
+   - 严禁误认混淆：严禁将活动标题或学期名称中的修饰词（如 "Autumn 2026"、"Day 5"、"第1天"）误当成会议举行的日期！
+   - 英文月份规范换算：Jan=01, Feb=02, Mar=03, Apr=04, May=05, Jun=06, Jul=07, Aug=08, Sep=09, Oct=10, Nov=11, Dec=12。
+   - 12小时制时间换算：必须转换为 24 小时制 "HH:mm"（如 "10:00 AM" -> "10:00"，"02:30 PM" -> "14:30"），绝不可误判为全天！
 
 【国际时区自适应自动换算准则 (Timezone Conversion)】：
 - 当通知/邮件文本中明确标明了异地或国际时区（例如："London" / "GMT" / "BST"、"EST" / "EDT"、"PST" / "PDT"、"JST"、"UTC" 等）：
@@ -191,19 +200,28 @@ object LlmPrompts {
         }
         val currentOffset = userZone.rules.getOffset(java.time.Instant.now())
         val zoneDisplay = "${userZone.id} ($currentOffset)"
+        val calendarBlock = buildCalendarAlignmentBlock(referenceDate)
         return """
 你是一个针对高校教师与学生的【校园智能全能解析中枢】。
 你能自动分析用户提供的任意内容（纯文字通知、截图/照片、邮件、在线会议邀请或图文混合），自动判断其意图类型，并提取为标准 JSON 数据结构。
 
-【当前基准时间与用户本地时区】：
-- 今天是 $referenceDate ($dayOfWeekChinese)。
+$calendarBlock
 - 用户当前设备所处的本地时区为: $zoneDisplay。
 
-【绝对公历日期与时间识别优先级（极关键）】：
-- 必须优先识别并尊重文本中明确给出的公历绝对日期（例如："Feb 6, 2027"、"February 6, 2027"、"2027年2月6日"、"2027-02-06"）。绝对日期拥有最高优先级！
-- 严禁误认混淆：严禁将活动标题或学期名称中的修饰词（如 "Autumn 2026"、"Day 5"、"第1天"）误当成会议举行的日期！
-- 英文月份规范换算：Jan=01, Feb=02, Mar=03, Apr=04, May=05, Jun=06, Jul=07, Aug=08, Sep=09, Oct=10, Nov=11, Dec=12。
-- 12小时制时间换算：必须转换为 24 小时制 "HH:mm"（如 "10:00 AM" -> "10:00"，"02:30 PM" -> "14:30"），绝不可误判为全天！
+【时间实体优先级契约 (Entity Priority Contract) - 极关键】：
+本解析中枢严格执行三级时间实体优先级：
+★ [优先级 1：行动履约与截止时间 (Deadline / Action Time)] 
+  > [优先级 2：业务统计与参考跨度 (Reference / Statistical Period)]
+  > [优先级 3：修饰性绝对公历日期 (Descriptive / Historical Date)]
+
+1. 【截止时间绝对优先】：若文本中同时包含“行动截止/提交/开会时间”（如“本周六20:00前完成”、“请于下周五17:00前填报”、“明天下午3点开会”）与“业务统计跨度/历史区间”（如“统计区间为2025年9月1日-2026年8月31日”）：
+   - 必须且只能以【行动截止时间】作为事项的 date 与 time！
+   - 严禁贪婪截获：严禁将业务统计区间、历史跨度中的起始公历日期（如 2025年9月1日）误当成待办截止日期！
+2. 【相对截止词结合优先】：对于明确的履约截止行动，“本周六”、“明天”、“下周五”结合截止词（“前”、“之前”、“截止”、“完成”）享有高于任何背景统计年份的绝对优先级，必须准确换算为用户本地时区的具体公历日期 YYYY-MM-DD！
+3. 【绝对公历日期识别准则】：在无截止冲突的常规场景下（如线上会议、差旅机票、考试安排），优先识别并尊重文本中明确给出的公历绝对日期（例如："Feb 6, 2027"、"2027年2月6日"、"2027-02-06"）。
+   - 严禁误认混淆：严禁将活动标题或学期名称中的修饰词（如 "Autumn 2026"、"Day 5"、"第1天"）误当成会议举行的日期！
+   - 英文月份规范换算：Jan=01, Feb=02, Mar=03, Apr=04, May=05, Jun=06, Jul=07, Aug=08, Sep=09, Oct=10, Nov=11, Dec=12。
+   - 12小时制时间换算：必须转换为 24 小时制 "HH:mm"（如 "10:00 AM" -> "10:00"，"02:30 PM" -> "14:30"），绝不可误判为全天！
 
 【国际时区自适应自动换算准则 (Timezone Conversion)】：
 - 当通知/邮件文本中明确标明了异地或国际时区（例如："London" / "GMT" / "BST"、"EST" / "EDT"、"PST" / "PDT"、"JST"、"UTC" 等）：
@@ -219,7 +237,7 @@ object LlmPrompts {
      * 若跨日（如美东晚上换算至北京次日），date 必须自动调整为本地对应的次日公历日期；
   3. 换算说明：若发生时区换算，必须在 note 字段首行附加明确说明，如："原时间: 2027-02-06 10:00 AM (London GMT冬令时，已自动换算为本地时间)"。
 
-【6 大高频通知场景深度降噪与资产提炼规范 (Noise Reduction & Asset Extraction)】：
+【7 大高频通知场景深度降噪与资产提炼规范 (Noise Reduction & Asset Extraction)】：
 ① 线上会议（Zoom / 腾讯会议 / 钉钉 / 飞书 / Teams / Google Meet）：
    - 过滤模板噪声：邮件打招呼、退订/修改注册链接、日历导入（Add to Calendar (.ics)）、客户端下载指南（WAYS TO JOIN ZOOM）等废话；
    - 提炼资产：
@@ -249,6 +267,19 @@ object LlmPrompts {
 ⑥ 生活履约 / 缴费期限通知（信用卡还款 / 水电燃气 / 物业费账单）：
    - 过滤模板噪声：滞纳金法律条款、用量明细、客服投诉电话；
    - 提炼资产：【动词+核心对象】（如“偿还招商银行信用卡”、“缴纳9月份电费”），截止日当天全天待办，应缴金额与户号记录在 note 中。
+⑦ 在线问卷填报、统计调查与协同表单截止通知（金山文档 / WPS云文档 / 腾讯文档 / 问卷星 / 飞书多维表格 / 材料申报截止）：
+   - 过滤模板噪声：群发前缀套话（@所有人、@所有人 、请各位老师/各位同学/各部门同事）、无关客套话；
+   - ★【截止完成时间优先于统计/历史区间铁律 (Deadline over Statistical Range)】：
+     * 若通知中同时存在「截止完成时间」（如“本周周六20:00之前完成”、“于10月18日17:00前填报”）与「业务统计区间/历史跨度」（如“统计时间区间为：2025年9月1日-2026年8月31日”）：
+     * 必须且只能以【截止完成时间】作为事项的 date 与 time！
+       - 例如：今天是 2026-10-15（周四），通知中“本周周六20:00之前完成”，date 必须计算为对应周六公历日期 2026-10-17，time="20:00"；
+       - 严禁将统计区间起始年份（如 2025年9月1日）误判为待办日期！
+   - 提炼资产：
+     * 标题 (title)：【动词+表单/统计对象】（如“完成参培统计表填报”、“对内开展培训明细统计调查表填报”）；
+     * 地点 (place)：表单平台名称（如“金山文档 / WPS云文档”、“腾讯文档”或“问卷星”）；
+     * 分类 (category)：必须定为 "AFFAIR"；
+     * 备注 (note)：首行保留表单链接（如“链接: https://www.kdocs.cn/l/cirH1TTFchqg”），次行保留文档标题与说明，末行注明统计时间区间（如“统计时间区间: 2025年9月1日-2026年8月31日”）。
+
 
 【意图类型判定规则】：
 1. SHIFT_OVERRIDE（高校调课/补课/换课/停课通知）：
@@ -332,5 +363,58 @@ object LlmPrompts {
 """.trimIndent()
     }
 
+    private fun buildCalendarAlignmentBlock(referenceDate: LocalDate): String {
+        val monday = referenceDate.with(java.time.DayOfWeek.MONDAY)
+        val tuesday = referenceDate.with(java.time.DayOfWeek.TUESDAY)
+        val wednesday = referenceDate.with(java.time.DayOfWeek.WEDNESDAY)
+        val thursday = referenceDate.with(java.time.DayOfWeek.THURSDAY)
+        val friday = referenceDate.with(java.time.DayOfWeek.FRIDAY)
+        val saturday = referenceDate.with(java.time.DayOfWeek.SATURDAY)
+        val sunday = referenceDate.with(java.time.DayOfWeek.SUNDAY)
 
+        val nextMonday = monday.plusWeeks(1)
+        val nextFriday = friday.plusWeeks(1)
+        val nextSaturday = saturday.plusWeeks(1)
+        val nextSunday = sunday.plusWeeks(1)
+
+        val tomorrow = referenceDate.plusDays(1)
+        val dayAfterTomorrow = referenceDate.plusDays(2)
+        val monthEnd = referenceDate.withDayOfMonth(referenceDate.lengthOfMonth())
+
+        val weekdayFullName = when (referenceDate.dayOfWeek.value) {
+            1 -> "星期一"
+            2 -> "星期二"
+            3 -> "星期三"
+            4 -> "星期四"
+            5 -> "星期五"
+            6 -> "星期六"
+            else -> "星期日"
+        }
+
+        return """
+【当前基准时间与公历星期对照表 (Calendar Alignment - 必须严格查表，严禁心算)】：
+- 今天是: $referenceDate ($weekdayFullName)
+- 本周公历日期映射表：
+  * 本周一: $monday
+  * 本周二: $tuesday
+  * 本周三: $wednesday
+  * 本周四: $thursday
+  * 本周五: $friday
+  * 本周六: $saturday
+  * 本周日: $sunday
+- 下周公历日期映射表：
+  * 下周一: $nextMonday
+  * 下周五: $nextFriday
+  * 下周六: $nextSaturday
+  * 下周日: $nextSunday
+- 相对时态推导速查（严禁将以下未来日期误填为今天 $referenceDate！）：
+  * “今天” / “今晚” = $referenceDate
+  * “明天” / “明晚” / “次日” = $tomorrow
+  * “后天” = $dayAfterTomorrow
+  * “本周六” / “周六” = $saturday（今天若不是周六，绝对严禁写成今天 $referenceDate！）
+  * “本周日” / “周日” / “周末” = $saturday 或 $sunday
+  * “下周五” = $nextFriday
+  * “月底” / “月末” = $monthEnd
+""".trimIndent()
+    }
 }

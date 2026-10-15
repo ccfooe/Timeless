@@ -201,7 +201,7 @@
     <string name="dialog_clear_content">确定要清除所有课程、校历与日程数据吗？此操作无法撤销。清除后将恢复内置的初始学期与作息时间表。</string>
     <string name="dialog_warn_minutes_title">设置下课前提醒</string>
     <string name="dialog_warn_minutes_content">在下课前 %d 分钟通过强力震动与锁屏横幅提醒防拖堂。</string>
-    <string name="dialog_about_body" formatted="false">版本：v2.4.4 (Build 54)\n独立设计与研发：李超 (Chao Li)\n\nTimeless 是一款专为大学校园设计的极简作息与课表管理工具。坚持现代极简纯净美学，拒绝冗余社交与商业广告，专注于每一次准时守候。\n\n核心特性：\n• 教师 / 学生双模式智能自适应：同一套课表，一键无缝切换身份视角。老师专注授课班级与防拖堂，学生聚焦上课教室与任课老师。\n• 全能智能录入：主页全局一键智能识别排课、校历与调课公文。\n• 锁屏常驻与前台倒计时：状态栏与锁屏常驻卡片，实时掌握下课节拍。\n• 纯本地离线与数据主权：数据 100% 存储于手机本地 SQLite 数据库，支持一键 JSON 备份与换机迁移。</string>
+    <string name="dialog_about_body" formatted="false">版本：v2.4.7 (Build 57)\n独立设计与研发：李超 (Chao Li)\n\nTimeless 是一款专为大学校园设计的极简作息与课表管理工具。坚持现代极简纯净美学，拒绝冗余社交与商业广告，专注于每一次准时守候。\n\n核心特性：\n• 教师 / 学生双模式智能自适应：同一套课表，一键无缝切换身份视角。老师专注授课班级与防拖堂，学生聚焦上课教室与任课老师。\n• 全能智能录入：主页全局一键智能识别排课、校历与调课公文。\n• 锁屏常驻与前台倒计时：状态栏与锁屏常驻卡片，实时掌握下课节拍。\n• 纯本地离线与数据主权：数据 100% 存储于手机本地 SQLite 数据库，支持一键 JSON 备份与换机迁移。</string>
 
     <!-- Hero Card & Today Screen -->
     <string name="hero_start_class_title">开始新的一节课</string>
